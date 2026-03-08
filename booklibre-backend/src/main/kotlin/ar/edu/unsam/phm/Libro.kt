@@ -4,16 +4,53 @@ import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
 
 abstract class Libro(
-    val titulo: String,
-    val autor: String,
-    val descripcion: String,
-    val genero: Genero,
-    val cantidadPaginas: Int,
-    val isbn: String,
-    val idioma: Idioma,
-    val editorial: String,
-    val fechaPublicacion: LocalDate,
+    val id: Int,
+    var titulo: String,
+    var autor: String,
+    var descripcion: String,
+    var genero: Genero,
+    var cantidadPaginas: Int,
+    var isbn: String,
+    var idioma: Idioma,
+    var editorial: String,
+    var fechaPublicacion: LocalDate,
     var estado: EstadoLibro,
-    val reservas: MutableList<Reserva> = mutableListOf()
+    var reservas: MutableList<Reserva> = mutableListOf()
 ) {
+    fun calcularBiblioKarmaTotal(usuario: Usuario, desde: LocalDate, hasta: LocalDate): Int {
+        val diasReserva = ChronoUnit.DAYS.between(desde, hasta).toInt() + 1
+        return (5 * diasReserva) + plusBiblioKarma(usuario)
+    }
+
+    abstract fun plusBiblioKarma(usuario: Usuario): Int
+
+    fun agregarReserva(reserva: Reserva) {
+        reservas.add(reserva)
+    }
+}
+class LibroComun(
+    id: Int, titulo: String, autor: String, descripcion: String, genero: Genero,
+    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro
+) : Libro(id, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado) {
+    override fun plusBiblioKarma(usuario: Usuario): Int {
+        val multiplicador = if (usuario.bibliokarmas < 1000) 5 else 2
+        return cantidadPaginas * multiplicador
+    }
+}
+class LibroConDedicatoria(
+    id: Int, titulo: String, autor: String, descripcion: String, genero: Genero,
+    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro
+) : Libro(id, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado) {
+    override fun plusBiblioKarma(usuario: Usuario): Int {
+        return 200 + (10 * reservas.size)
+    }
+}
+class LibroColeccionable(
+    id: Int, titulo: String, autor: String, descripcion: String, genero: Genero,
+    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro
+) : Libro(id, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado) {
+    override fun plusBiblioKarma(usuario: Usuario): Int {
+        val karmaParte = ceil(usuario.bibliokarmas / 5.0).toInt()
+        return karmaParte + cantidadPaginas
+    }
 }
