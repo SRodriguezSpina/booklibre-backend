@@ -1,0 +1,11 @@
+package ar.edu.unsam.phm
+
+import java.time.LocalDate
+
+class Reserva (
+    val id: Int,    // confirmar
+    val libro: Libro,   //titulo, autor
+    val duenio: Usuario,
+    val fechaDesde: LocalDate,
+    val fechaHasta: LocalDate,
+) { }
