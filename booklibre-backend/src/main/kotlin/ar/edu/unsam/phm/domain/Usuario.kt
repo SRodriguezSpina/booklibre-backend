@@ -1,9 +1,6 @@
 package ar.edu.unsam.phm
 
-enum class TipoUsuario{
-    LECTOR,
-    PUBLICADOR,
-    LECTOR_PUBLICADOR
+interface TipoUsuario{
 } //si cobran comportamientos lo migro a strategy
 
 class Usuario(
@@ -20,3 +17,7 @@ class Usuario(
     // calificar libro
     // cobrar karmas
 }
+
+class UsuarioLector () : TipoUsuario {}
+class UsuarioPublicador () : TipoUsuario {}
+class UsuarioLectorPublicador () : TipoUsuario {}

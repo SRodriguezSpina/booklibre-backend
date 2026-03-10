@@ -5,7 +5,7 @@ import java.time.LocalDate
 class Reserva (
     val id: Int,    // confirmar
     val libro: Libro,   //titulo, autor
-    val duenio: Usuario,
+    val usuario: Usuario,   //persona que lo recibe
     val fechaDesde: LocalDate,
     val fechaHasta: LocalDate,
 ) { }
