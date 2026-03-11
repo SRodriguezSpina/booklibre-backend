@@ -14,8 +14,7 @@ class Usuario(
     var tipoUsuario: TipoUsuario,
     var bibliokarmas: Int
 ) {
-    // calificar libro
-    // cobrar karmas
+    fun getCredencial(): Credencial = credencial
 }
 
 class UsuarioLector () : TipoUsuario {}

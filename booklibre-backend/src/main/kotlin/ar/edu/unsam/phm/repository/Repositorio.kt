@@ -15,7 +15,15 @@ class Repository<T : Any> {
 }
 
 @Component
-class UsuarioRepository : Repository<Usuario>()
+class UsuarioRepository : Repository<Usuario>() {
+
+    fun findById(id: Int): Usuario? = objetos.find { it.id == id }
+
+    fun update(usuario: Usuario) {
+        val i = objetos.indexOfFirst { it.id == usuario.id }
+        if (i >= 0) objetos[i] = usuario
+    }
+}
 
 @Component
 class LibroRepository : Repository<Libro>()
