@@ -12,7 +12,6 @@ class AppBootstrap(
 ): InitializingBean {
    //USUARIOS
     val user1 = Usuario(
-        id = 0,
         credencial = Credencial("juanp", "pass123"),
         nombre = "Juan Pérez",
         desc = "Lector intrépido",
@@ -23,7 +22,6 @@ class AppBootstrap(
         bibliokarmas = 100 // Puntos iniciales de prueba
     )
     val user2 = Usuario(
-        id = 0,
         credencial = Credencial("mariag", "pass456"),
         nombre = "María Gómez",
         desc = "Devoradora de libros",
@@ -34,7 +32,6 @@ class AppBootstrap(
         bibliokarmas = 500
     )
     val user3 = Usuario(
-        id = 0,
         credencial = Credencial("carlosl", "pass789"),
         nombre = "Carlos López",
         desc = "Fan de la ciencia ficción",
@@ -45,7 +42,6 @@ class AppBootstrap(
         bibliokarmas = 1200 // Este tiene más de 1000, ideal para probar la regla del Libro Común
     )
     val user4 = Usuario(
-        id = 0,
         credencial = Credencial("anad", "pass000"),
         nombre = "Ana Díaz",
         desc = "Amante del drama",

@@ -15,10 +15,10 @@ class DataInitializer(
 
     override fun run(vararg args: String?) {
         // 1. Usuarios con sus credenciales [cite: 37, 87]
-        val emilia = Usuario(1, Credencial("emilia", "123"), "Emilia Romero", "Lectora Ávida", "emilia@example.com", "11223344", "CABA", UsuarioLectorPublicador(), 2345)
-        val juan = Usuario(2, Credencial("juan", "123"), "Juan Pérez", "Lector intrépido", "juan@example.com", "11556677", "Morón", UsuarioLector(), 500)
-        val ana = Usuario(3, Credencial("ana", "123"), "Ana García", "Publicadora", "ana@example.com", "11889900", "Quilmes", UsuarioPublicador(), 1200)
-        val carlos = Usuario(4, Credencial("carlos", "123"), "Carlos Ruiz", "Fan de los clásicos", "carlos@example.com", "11334455", "Lanús", UsuarioLector(), 150)
+        val emilia = Usuario( Credencial("emilia", "123"), "Emilia Romero", "Lectora Ávida", "emilia@example.com", "11223344", "CABA", UsuarioLectorPublicador(), 2345)
+        val juan = Usuario(Credencial("juan", "123"), "Juan Pérez", "Lector intrépido", "juan@example.com", "11556677", "Morón", UsuarioLector(), 500)
+        val ana = Usuario( Credencial("ana", "123"), "Ana García", "Publicadora", "ana@example.com", "11889900", "Quilmes", UsuarioPublicador(), 1200)
+        val carlos = Usuario( Credencial("carlos", "123"), "Carlos Ruiz", "Fan de los clásicos", "carlos@example.com", "11334455", "Lanús", UsuarioLector(), 150)
 
         listOf(emilia, juan, ana, carlos).forEach { usuarioRepo.create(it) } // [cite: 81]
 
