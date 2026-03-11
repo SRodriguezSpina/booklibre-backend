@@ -1,10 +1,11 @@
 package ar.edu.unsam.phm
 
+import ar.edu.unsam.phm.repository.BaseEntity
+
 interface TipoUsuario{
 } //si cobran comportamientos lo migro a strategy
 
 class Usuario(
-    val id: Int,    //para ser único?
     private val credencial: Credencial,
     val nombre: String,
     var desc: String,   //con límiteee
@@ -13,7 +14,7 @@ class Usuario(
     var ciudad: String,
     var tipoUsuario: TipoUsuario,
     var bibliokarmas: Int
-) {
+) : BaseEntity() {
     // calificar libro
     // cobrar karmas
 }

@@ -1,5 +1,6 @@
 package ar.edu.unsam.phm.controllers
 
+import ar.edu.unsam.phm.Libro
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.services.LibroService
 import org.springframework.web.bind.annotation.*
@@ -8,6 +9,9 @@ import org.springframework.web.bind.annotation.*
 @CrossOrigin(origins = ["*"]) // Permite que tu frontend de React se conecte [cite: 48]
 @RequestMapping("/usuarios")
 class LibroController(val libroService: LibroService) {
+
+    @GetMapping("/{id}")
+    fun getLibroById(@PathVariable id: Int): Libro = libroService.getLibro(id)
 
     @GetMapping("/{usuarioId}/prestamos")
     fun getPrestamos(
