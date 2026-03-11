@@ -8,9 +8,10 @@ import java.time.format.DateTimeFormatter
 
 @Service
 class LibroService(val libroRepository: LibroRepository) {
+    fun getLibro(id: Int): Libro = libroRepository.getById(id)
 
     fun obtenerPrestamos(usuarioId: Int, tipo: String): List<LibroDTO> {
-        val libros = libroRepository.all()
+        val libros = libroRepository.getLibros()
 
         val filtrados = when (tipo) {
             "prestados-a-mi" -> libros.filter { libro ->
