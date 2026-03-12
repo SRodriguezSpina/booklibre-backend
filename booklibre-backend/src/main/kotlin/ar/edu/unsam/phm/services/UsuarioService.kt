@@ -28,7 +28,6 @@ class UsuarioService(
         val existente = usuarioRepository.findById(id) ?: return null
         val tipoUsuario = parseTipoUsuario(request.tipoUsuario)
         val actualizado = Usuario(
-            existente.id,
             existente.getCredencial(),
             request.nombre,
             request.desc,
@@ -38,6 +37,7 @@ class UsuarioService(
             tipoUsuario,
             existente.bibliokarmas
         )
+        actualizado.id = existente.id
         usuarioRepository.update(actualizado)
         return actualizado.toResponse()
     }
@@ -53,7 +53,7 @@ class UsuarioService(
 
     fun obtenerLibrosDeUsuario(usuarioId: Int): List<LibroUsuarioItemDTO> {
         val hoy = LocalDate.now()
-        return libroRepository.all()
+        return libroRepository.getLibros()
             .filter { it.duenio.id == usuarioId }
             .map { libro ->
                 val disponible = libro.reservas.none { !hoy.isBefore(it.fechaDesde) && !hoy.isAfter(it.fechaHasta) }
