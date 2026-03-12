@@ -5,7 +5,7 @@ data class UsuarioResponse(
     val nombre: String,
     val desc: String,
     val email: String,
-    val fechaRegistro: String
+    val fechaRegistro: String,
     val celular: String,
     val ciudad: String,
     val tipoUsuario: String,
