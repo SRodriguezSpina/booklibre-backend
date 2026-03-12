@@ -53,14 +53,14 @@ class AppBootstrap(
     )
 
     //LIBROS
-    val libro1 = LibroComun(user1, 0, "1984", "George Orwell", "Distopía clásica", Genero.CIENCIA_FICCION, 328, "978-0451524935", Idioma.ESPANOL, "Debolsillo", LocalDate.of(1949, 6, 8), EstadoLibro.EXCELENTE)
-    val libro2 = LibroComun(user3, 0, "Clean Code", "Robert C. Martin", "Buenas prácticas de programación", Genero.DISENO, 464, "978-0132350884", Idioma.INGLES, "Prentice Hall", LocalDate.of(2008, 8, 1), EstadoLibro.MUY_BUENO)
+    val libro1 = LibroComun(user1, 0, "1984", "George Orwell", "Distopía clásica", Genero.CIENCIA_FICCION, 328, "978-0451524935", Idioma.ESPANOL, "Debolsillo", LocalDate.of(1949, 6, 8), EstadoLibro.EXCELENTE, "")
+    val libro2 = LibroComun(user3, 0, "Clean Code", "Robert C. Martin", "Buenas prácticas de programación", Genero.DISENO, 464, "978-0132350884", Idioma.INGLES, "Prentice Hall", LocalDate.of(2008, 8, 1), EstadoLibro.MUY_BUENO, "")
 
-    val libro3 = LibroConDedicatoria(user2, 0, "Orgullo y Prejuicio", "Jane Austen", "Clásico del romance", Genero.ROMANCE, 432, "978-8420671848", Idioma.ESPANOL, "Alianza", LocalDate.of(1813, 1, 28), EstadoLibro.BUENO)
-    val libro4 = LibroConDedicatoria(user3, 0, "Hábitos Atómicos", "James Clear", "Mejora personal", Genero.AUTOAYUDA, 320, "978-1847941831", Idioma.INGLES, "Penguin", LocalDate.of(2018, 10, 16), EstadoLibro.EXCELENTE)
+    val libro3 = LibroConDedicatoria(user2, 0, "Orgullo y Prejuicio", "Jane Austen", "Clásico del romance", Genero.ROMANCE, 432, "978-8420671848", Idioma.ESPANOL, "Alianza", LocalDate.of(1813, 1, 28), EstadoLibro.BUENO, "")
+    val libro4 = LibroConDedicatoria(user3, 0, "Hábitos Atómicos", "James Clear", "Mejora personal", Genero.AUTOAYUDA, 320, "978-1847941831", Idioma.INGLES, "Penguin", LocalDate.of(2018, 10, 16), EstadoLibro.EXCELENTE, "")
 
-    val libro5 = LibroColeccionable(user2, 0, "El Señor de los Anillos (Edición Ilustrada)", "J.R.R. Tolkien", "Edición tapa dura de colección", Genero.CIENCIA_FICCION, 1200, "978-8445071754", Idioma.ESPANOL, "Minotauro", LocalDate.of(1954, 7, 29), EstadoLibro.EXCELENTE)
-    val libro6 = LibroColeccionable(user4, 0, "Hamlet (Primera Edición Facsímil)", "William Shakespeare", "Copia exacta del original", Genero.DRAMA, 200, "978-0743477123", Idioma.INGLES, "Simon & Schuster", LocalDate.of(1603, 1, 1), EstadoLibro.REGULAR)
+    val libro5 = LibroColeccionable(user2, 0, "El Señor de los Anillos (Edición Ilustrada)", "J.R.R. Tolkien", "Edición tapa dura de colección", Genero.CIENCIA_FICCION, 1200, "978-8445071754", Idioma.ESPANOL, "Minotauro", LocalDate.of(1954, 7, 29), EstadoLibro.EXCELENTE, "")
+    val libro6 = LibroColeccionable(user4, 0, "Hamlet (Primera Edición Facsímil)", "William Shakespeare", "Copia exacta del original", Genero.DRAMA, 200, "978-0743477123", Idioma.INGLES, "Simon & Schuster", LocalDate.of(1603, 1, 1), EstadoLibro.REGULAR, "")
 
 
     fun crearLibros(){
