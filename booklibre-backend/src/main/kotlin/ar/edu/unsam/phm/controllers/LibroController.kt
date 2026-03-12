@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.*
 @CrossOrigin(origins = ["*"])
 class LibroController(val libroService: LibroService) {
 
-    @GetMapping("/libros/{id}")
+    @GetMapping("/libros/{libroId}")
     fun getLibro(
-        @PathVariable id: Int,
+        @PathVariable libroId: Int,
         @RequestParam usuarioId: Int
-    ): LibroDTO =  libroService.getLibro(id, usuarioId)
+    ): LibroDTO =  libroService.getLibro(libroId, usuarioId)
 
     @GetMapping("/usuarios/{usuarioId}/prestamos")
     fun getPrestamos(
