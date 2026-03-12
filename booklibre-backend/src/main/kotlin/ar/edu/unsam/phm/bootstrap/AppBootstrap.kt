@@ -12,8 +12,58 @@ class AppBootstrap(
     val libroRepository: LibroRepository,
     private val usuarioRepository: UsuarioRepository,
 ): InitializingBean {
+    // 1. Usuarios con sus credenciales
+    val emilia = Usuario(
+        Credencial("emilia", "123"),
+        "Emilia Romero",
+        "Lectora Ávida",
+        "emilia@example.com",
+        "11223344",
+        "CABA",
+        UsuarioLectorPublicador(),
+        2345,
+        fechaRegistro = LocalDate.of(2021, 6, 1)
+    )
+
+    val juan = Usuario(
+        Credencial("juan", "123"),
+        "Juan Pérez",
+        "Lector intrépido",
+        "juan@example.com",
+        "11556677",
+        "Morón",
+        UsuarioLector(),
+        500,
+        fechaRegistro = LocalDate.of(2020, 9, 15)
+    )
+
+    val ana = Usuario(
+        Credencial("ana", "123"),
+        "Ana García",
+        "Publicadora",
+        "ana@example.com",
+        "11889900",
+        "Quilmes",
+        UsuarioPublicador(),
+        1200,
+        fechaRegistro = LocalDate.of(2022, 2, 10)
+    )
+
+    val carlos = Usuario(
+        Credencial("carlos", "123"),
+        "Carlos Ruiz",
+        "Fan de los clásicos",
+        "carlos@example.com",
+        "11334455",
+        "Lanús",
+        UsuarioLector(),
+        150,
+        fechaRegistro = LocalDate.of(2019, 12, 30)
+    )
+
     //USUARIOS
-        val user1 = Usuario(
+
+    val user1 = Usuario(
         credencial = Credencial("juanp", "pass123"),
         nombre = "Juan Pérez",
         desc = "Lector intrépido",
@@ -60,6 +110,42 @@ class AppBootstrap(
         bibliokarmas = 50,
         fechaRegistro = LocalDate.of(2022, 1, 20)
     )
+    fun crearReservas(){
+        listOf(emilia, juan, ana, carlos).forEach { usuarioRepository.create(it) }
+
+        // 2. CATEGORÍA: "PRESTADOS A MÍ" (Emilia reserva libros de otros)
+        repeat(5) { i ->
+            // Ana es la dueña, Emilia reserva
+            val libro = LibroComun(ana, 100 + i, "Harry Potter $i", "Coscu", "Desc", Genero.CIENCIA_FICCION, 300, "97801$i", Idioma.ESPANOL, "Minotauro", LocalDate.now(), EstadoLibro.EXCELENTE, "https://http2.mlstatic.com/D_NQ_NP_805995-MLA99469869724_112025-O.webp")
+            libroRepository.create(libro)
+
+            val res = Reserva(i, libro, emilia, LocalDate.now().plusDays(i.toLong()), LocalDate.now().plusDays(i.toLong() + 3))
+            libro.agregarReserva(res) // [cite: 32, 33]
+            emilia.bibliokarmas += libro.calcularBiblioKarmaTotal(emilia, res.fechaDesde, res.fechaHasta) //
+        }
+
+        // 3. CATEGORÍA: "PRESTADOS POR MÍ" (Otros reservan libros de Emilia) [cite: 42, 63]
+        repeat(5) { i ->
+            // Emilia es la dueña, Juan reserva
+            val libro = LibroConDedicatoria(emilia, 200 + i, "El señor de los anillos $i", "Maria Claudia", "Desc", Genero.LITERATURA_CLASICA, 150, "97802$i", Idioma.FRANCES, "Sur", LocalDate.now(), EstadoLibro.MUY_BUENO, "https://http2.mlstatic.com/D_NQ_NP_639267-MLA81008530369_112024-O.webp")
+            libroRepository.create(libro)
+
+            val res = Reserva(50 + i, libro, juan, LocalDate.now().plusDays(i.toLong()), LocalDate.now().plusDays(i.toLong() + 5))
+            libro.agregarReserva(res)
+        }
+
+        // 4. Libros Coleccionables adicionales (sin reservas actuales) [cite: 15, 86]
+        repeat(8) { i ->
+            val libro = LibroColeccionable(carlos, 300 + i, "Aura $i", "Luis", "Desc", Genero.DISENO, 800, "97803$i", Idioma.INGLES, "Taschen", LocalDate.now(), EstadoLibro.EXCELENTE, "https://http2.mlstatic.com/D_NQ_NP_2X_898813-MLA100509611482_122025-F.jpg")
+            libroRepository.create(libro)
+        }
+
+        // 5. Casos de borde: Próximo a vencer para Emilia (vence mañana)
+        val libroEspecial = LibroColeccionable(ana, 999, "Libro Raro", "Thomas", "Desc", Genero.CIENCIA_FICCION, 400, "978999", Idioma.ESPANOL, "Editor", LocalDate.now(), EstadoLibro.EXCELENTE, "https://dcdn-us.mitiendanube.com/stores/006/438/987/products/9789504984603_c6818713-5a23-42b4-9abc-3776eff69435-e4047a0d3582f16b5a17603956575426-480-0.webp")
+        libroRepository.create(libroEspecial)
+        val resVencimiento = Reserva(99, libroEspecial, emilia, LocalDate.now().minusDays(2), LocalDate.now().plusDays(1))
+        libroEspecial.agregarReserva(resVencimiento)
+    }
 
     fun crearUsuarios(){
         usuarioRepository.apply {
@@ -179,6 +265,7 @@ class AppBootstrap(
     }
 
     override fun afterPropertiesSet() {
+        crearReservas()
         crearUsuarios()
         crearLibros()
     }
