@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm
 
 import ar.edu.unsam.phm.repository.BaseEntity
+import java.time.LocalDate
 
 interface TipoUsuario {
 }
@@ -13,12 +14,13 @@ class Usuario(
     var celular: String,
     var ciudad: String,
     var tipoUsuario: TipoUsuario,
-    var bibliokarmas: Int
+    var bibliokarmas: Int,
+    var fechaRegistro: LocalDate = LocalDate.now()
 ) : BaseEntity() {
 
-    fun getCredencial(): Credencial = credencial ///
+    fun getCredencial(): Credencial = credencial
 }
 
-class UsuarioLector () : TipoUsuario {}
-class UsuarioPublicador () : TipoUsuario {}
-class UsuarioLectorPublicador () : TipoUsuario {}
+class UsuarioLector() : TipoUsuario {}
+class UsuarioPublicador() : TipoUsuario {}
+class UsuarioLectorPublicador() : TipoUsuario {}

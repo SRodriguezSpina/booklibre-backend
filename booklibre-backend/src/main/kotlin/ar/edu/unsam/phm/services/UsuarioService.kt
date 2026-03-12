@@ -35,7 +35,8 @@ class UsuarioService(
             request.celular,
             request.ciudad,
             tipoUsuario,
-            existente.bibliokarmas
+            existente.bibliokarmas,
+            existente.fechaRegistro
         )
         actualizado.id = existente.id
         usuarioRepository.update(actualizado)
@@ -81,6 +82,7 @@ class UsuarioService(
             nombre = nombre,
             desc = desc,
             email = email,
+            fechaRegistro = fechaRegistro.toString(),
             celular = celular,
             ciudad = ciudad,
             tipoUsuario = tipoStr,
