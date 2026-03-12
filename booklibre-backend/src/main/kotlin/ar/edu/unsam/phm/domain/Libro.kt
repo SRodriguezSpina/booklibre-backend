@@ -16,7 +16,8 @@ abstract class Libro(
     var editorial: String,
     var fechaPublicacion: LocalDate,
     var estado: EstadoLibro,
-    var reservas: MutableList<Reserva> = mutableListOf()
+    var imagenUrl: String,
+    var reservas: MutableList<Reserva> = mutableListOf(),
 ): BaseEntity() {
     fun calcularBiblioKarmaTotal(usuario: Usuario, desde: LocalDate, hasta: LocalDate): Int {
         val diasReserva = ChronoUnit.DAYS.between(desde, hasta).toInt() + 1
@@ -31,8 +32,8 @@ abstract class Libro(
 }
 class LibroComun(
     duenio: Usuario, id: Int, titulo: String, autor: String, descripcion: String, genero: Genero,
-    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro
-) : Libro(duenio, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado) {
+    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro, imagenUrl: String
+) : Libro(duenio, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado, imagenUrl) {
     override fun plusBiblioKarma(usuario: Usuario): Int {
         val multiplicador = if (usuario.bibliokarmas < 1000) 5 else 2
         return cantidadPaginas * multiplicador
@@ -40,16 +41,16 @@ class LibroComun(
 }
 class LibroConDedicatoria(
     duenio: Usuario, id: Int, titulo: String, autor: String, descripcion: String, genero: Genero,
-    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro
-) : Libro(duenio, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado) {
+    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro, imagenUrl: String
+) : Libro(duenio, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado, imagenUrl) {
     override fun plusBiblioKarma(usuario: Usuario): Int {
         return 200 + (10 * reservas.size)
     }
 }
 class LibroColeccionable(
     duenio: Usuario, id: Int, titulo: String, autor: String, descripcion: String, genero: Genero,
-    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro
-) : Libro(duenio, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado) {
+    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro, imagenUrl: String
+) : Libro(duenio, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado, imagenUrl) {
     override fun plusBiblioKarma(usuario: Usuario): Int {
         val karmaParte = ceil(usuario.bibliokarmas / 5.0).toInt()
         return karmaParte + cantidadPaginas
