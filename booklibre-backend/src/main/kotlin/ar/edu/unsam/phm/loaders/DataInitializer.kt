@@ -14,11 +14,54 @@ class DataInitializer(
 ) : CommandLineRunner {
 
     override fun run(vararg args: String?) {
-        // 1. Usuarios con sus credenciales [cite: 37, 87]
-        val emilia = Usuario( Credencial("emilia", "123"), "Emilia Romero", "Lectora Ávida", "emilia@example.com", "11223344", "CABA", UsuarioLectorPublicador(), 2345)
-        val juan = Usuario(Credencial("juan", "123"), "Juan Pérez", "Lector intrépido", "juan@example.com", "11556677", "Morón", UsuarioLector(), 500)
-        val ana = Usuario( Credencial("ana", "123"), "Ana García", "Publicadora", "ana@example.com", "11889900", "Quilmes", UsuarioPublicador(), 1200)
-        val carlos = Usuario( Credencial("carlos", "123"), "Carlos Ruiz", "Fan de los clásicos", "carlos@example.com", "11334455", "Lanús", UsuarioLector(), 150)
+        // 1. Usuarios con sus credenciales
+        val emilia = Usuario(
+            Credencial("emilia", "123"),
+            "Emilia Romero",
+            "Lectora Ávida",
+            "emilia@example.com",
+            "11223344",
+            "CABA",
+            UsuarioLectorPublicador(),
+            2345,
+            fechaRegistro = LocalDate.of(2021, 6, 1)
+        )
+
+        val juan = Usuario(
+            Credencial("juan", "123"),
+            "Juan Pérez",
+            "Lector intrépido",
+            "juan@example.com",
+            "11556677",
+            "Morón",
+            UsuarioLector(),
+            500,
+            fechaRegistro = LocalDate.of(2020, 9, 15)
+        )
+
+        val ana = Usuario(
+            Credencial("ana", "123"),
+            "Ana García",
+            "Publicadora",
+            "ana@example.com",
+            "11889900",
+            "Quilmes",
+            UsuarioPublicador(),
+            1200,
+            fechaRegistro = LocalDate.of(2022, 2, 10)
+        )
+
+        val carlos = Usuario(
+            Credencial("carlos", "123"),
+            "Carlos Ruiz",
+            "Fan de los clásicos",
+            "carlos@example.com",
+            "11334455",
+            "Lanús",
+            UsuarioLector(),
+            150,
+            fechaRegistro = LocalDate.of(2019, 12, 30)
+        )
 
         listOf(emilia, juan, ana, carlos).forEach { usuarioRepo.create(it) } // [cite: 81]
 
