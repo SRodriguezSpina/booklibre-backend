@@ -13,7 +13,7 @@ class AppBootstrap(
     private val usuarioRepository: UsuarioRepository,
 ): InitializingBean {
     //USUARIOS
-    val user1 = Usuario(
+        val user1 = Usuario(
         credencial = Credencial("juanp", "pass123"),
         nombre = "Juan Pérez",
         desc = "Lector intrépido",
@@ -21,8 +21,10 @@ class AppBootstrap(
         celular = "11223344",
         ciudad = "San Martín",
         tipoUsuario = UsuarioLector(),
-        bibliokarmas = 100 // Puntos iniciales de prueba
+        bibliokarmas = 100,
+        fechaRegistro = LocalDate.of(2021, 3, 15)
     )
+
     val user2 = Usuario(
         credencial = Credencial("mariag", "pass456"),
         nombre = "María Gómez",
@@ -31,8 +33,10 @@ class AppBootstrap(
         celular = "11556677",
         ciudad = "Villa Ballester",
         tipoUsuario = UsuarioPublicador(),
-        bibliokarmas = 500
+        bibliokarmas = 500,
+        fechaRegistro = LocalDate.of(2020, 6, 10)
     )
+
     val user3 = Usuario(
         credencial = Credencial("carlosl", "pass789"),
         nombre = "Carlos López",
@@ -41,8 +45,10 @@ class AppBootstrap(
         celular = "11889900",
         ciudad = "Caseros",
         tipoUsuario = UsuarioLectorPublicador(),
-        bibliokarmas = 1200 // Este tiene más de 1000, ideal para probar la regla del Libro Común
+        bibliokarmas = 1200,
+        fechaRegistro = LocalDate.of(2019, 9, 5)
     )
+
     val user4 = Usuario(
         credencial = Credencial("anad", "pass000"),
         nombre = "Ana Díaz",
@@ -51,7 +57,8 @@ class AppBootstrap(
         celular = "11443322",
         ciudad = "San Andrés",
         tipoUsuario = UsuarioLector(),
-        bibliokarmas = 50
+        bibliokarmas = 50,
+        fechaRegistro = LocalDate.of(2022, 1, 20)
     )
 
     fun crearUsuarios(){
