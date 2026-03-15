@@ -5,6 +5,5 @@ import org.springframework.stereotype.Component
 
 @Component
 class UsuarioRepository : CommonRepository<Usuario>() {
-
     fun findById(id: Int): Usuario? = lista.find { it.id == id }
 }

@@ -119,8 +119,15 @@ class AppBootstrap(
             val libro = LibroComun(ana, 100 + i, "Harry Potter $i", "Coscu", "Desc", Genero.CIENCIA_FICCION, 300, "97801$i", Idioma.ESPANOL, "Minotauro", LocalDate.now(), EstadoLibro.EXCELENTE, "https://http2.mlstatic.com/D_NQ_NP_805995-MLA99469869724_112025-O.webp")
             libroRepository.create(libro)
 
-            val res = Reserva(i, libro, emilia, LocalDate.now().plusDays(i.toLong()), LocalDate.now().plusDays(i.toLong() + 3))
+            val res = Reserva(
+                libro,
+                emilia,
+                LocalDate.now().plusDays(i.toLong()),
+                LocalDate.now().plusDays(i.toLong() + 3)
+            )
             libro.agregarReserva(res) // [cite: 32, 33]
+            emilia.agregarReserva(res)
+            ana.agregarReserva(res)
             emilia.bibliokarmas += libro.calcularBiblioKarmaTotal(emilia, res.fechaDesde, res.fechaHasta) //
         }
 
@@ -130,8 +137,15 @@ class AppBootstrap(
             val libro = LibroConDedicatoria(emilia, 200 + i, "El señor de los anillos $i", "Maria Claudia", "Desc", Genero.LITERATURA_CLASICA, 150, "97802$i", Idioma.FRANCES, "Sur", LocalDate.now(), EstadoLibro.MUY_BUENO, "https://http2.mlstatic.com/D_NQ_NP_639267-MLA81008530369_112024-O.webp")
             libroRepository.create(libro)
 
-            val res = Reserva(50 + i, libro, juan, LocalDate.now().plusDays(i.toLong()), LocalDate.now().plusDays(i.toLong() + 5))
+            val res = Reserva(
+                libro,
+                juan,
+                LocalDate.now().plusDays(i.toLong()),
+                LocalDate.now().plusDays(i.toLong() + 5)
+            )
             libro.agregarReserva(res)
+            emilia.agregarReserva(res)
+            juan.agregarReserva(res)
         }
 
         // 4. Libros Coleccionables adicionales (sin reservas actuales) [cite: 15, 86]
@@ -143,8 +157,11 @@ class AppBootstrap(
         // 5. Casos de borde: Próximo a vencer para Emilia (vence mañana)
         val libroEspecial = LibroColeccionable(ana, 999, "Libro Raro", "Thomas", "Desc", Genero.CIENCIA_FICCION, 400, "978999", Idioma.ESPANOL, "Editor", LocalDate.now(), EstadoLibro.EXCELENTE, "https://dcdn-us.mitiendanube.com/stores/006/438/987/products/9789504984603_c6818713-5a23-42b4-9abc-3776eff69435-e4047a0d3582f16b5a17603956575426-480-0.webp")
         libroRepository.create(libroEspecial)
-        val resVencimiento = Reserva(99, libroEspecial, emilia, LocalDate.now().minusDays(2), LocalDate.now().plusDays(1))
+        val resVencimiento =
+            Reserva(libroEspecial, emilia, LocalDate.now().minusDays(2), LocalDate.now().plusDays(1))
         libroEspecial.agregarReserva(resVencimiento)
+        emilia.agregarReserva(resVencimiento)
+        ana.agregarReserva(resVencimiento)
     }
 
     fun crearUsuarios(){

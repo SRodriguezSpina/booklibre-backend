@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component
 @Component
 class LibroRepository: CommonRepository<Libro>() {
     fun getLibros(): List<Libro> = lista
-
     fun search(value: String): List<Libro> {
         if (value.isBlank()) return lista
 

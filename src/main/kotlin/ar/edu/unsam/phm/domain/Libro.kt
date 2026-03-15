@@ -18,14 +18,14 @@ abstract class Libro(
     var estado: EstadoLibro,
     var imagenUrl: String,
     var reservas: MutableList<Reserva> = mutableListOf(),
+    var calificaciones: MutableList<Int> = mutableListOf(),
 ): BaseEntity() {
     fun calcularBiblioKarmaTotal(usuario: Usuario, desde: LocalDate, hasta: LocalDate): Int {
         val diasReserva = ChronoUnit.DAYS.between(desde, hasta).toInt() + 1
         return (5 * diasReserva) + plusBiblioKarma(usuario)
     }
-
+    fun getCalificacion(): Double = calificaciones.average()
     abstract fun plusBiblioKarma(usuario: Usuario): Int
-
     fun agregarReserva(reserva: Reserva) {
         reservas.add(reserva)
     }
