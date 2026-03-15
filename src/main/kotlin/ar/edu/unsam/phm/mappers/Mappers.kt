@@ -1,8 +1,9 @@
 package ar.edu.unsam.phm.mappers
 
 import ar.edu.unsam.phm.Libro
+import ar.edu.unsam.phm.Reserva
 import ar.edu.unsam.phm.dtos.LibroDTO
-import ar.edu.unsam.phm.dtos.PrestamoDTO
+import ar.edu.unsam.phm.dtos.ReservaDTO
 import java.time.format.DateTimeFormatter
 
 fun Libro.toDTO(usuarioConsultaId: Int): LibroDTO {
@@ -30,21 +31,20 @@ fun Libro.toDTO(usuarioConsultaId: Int): LibroDTO {
     )
 }
 
-fun Libro.toPrestamoDTO(usuarioConsultaId: Int): PrestamoDTO {
-    val ultimaReserva = this.reservas.lastOrNull()
-    return PrestamoDTO(
+fun Reserva.toDTO(usuarioConsultaId: Int): ReservaDTO {
+    return ReservaDTO(
         id = this.id,
-        titulo = this.titulo,
-        autor = this.autor,
-        estado = this.estado.name,
-        propietarioId = this.duenio.id,
-        imagenUrl = this.imagenUrl,
-        alquiladoPorId = ultimaReserva?.usuario?.id,
-        fechaDesde = ultimaReserva?.fechaDesde?.format(DateTimeFormatter.ISO_DATE),
-        fechaHasta = ultimaReserva?.fechaHasta?.format(DateTimeFormatter.ISO_DATE),
+        titulo = this.libro.titulo,
+        autor = this.libro.autor,
+        estado = this.libro.estado.name,
+        propietarioId = this.libro.duenio.id,
+        imagenUrl = this.libro.imagenUrl,
+        alquiladoPorId = usuario.id,
+        fechaDesde = fechaDesde.format(DateTimeFormatter.ISO_DATE),
+        fechaHasta = fechaHasta.format(DateTimeFormatter.ISO_DATE),
         rating = 4.5,
-        bibliokarma = ultimaReserva?.let {
-            this.calcularBiblioKarmaTotal(it.usuario, it.fechaDesde, it.fechaHasta)
+        bibliokarma = let {
+            this.libro.calcularBiblioKarmaTotal(it.usuario, it.fechaDesde, it.fechaHasta)
         }
     )
 }

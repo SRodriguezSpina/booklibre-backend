@@ -1,4 +1,4 @@
-package ar.edu.unsam.algo3.exceptions
+package ar.edu.unsam.phm.exceptions
 
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ResponseStatus
