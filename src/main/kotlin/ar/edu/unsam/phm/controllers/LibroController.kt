@@ -12,14 +12,10 @@ import org.springframework.web.bind.annotation.*
 class LibroController(val libroService: LibroService) {
 
     @GetMapping("/libros/{libroId}")
-    fun getLibro(
-        @PathVariable libroId: Int,
-        @RequestParam usuarioId: Int
+    fun getLibro(@PathVariable libroId: Int, @RequestParam usuarioId: Int
     ): LibroDTO =  libroService.getLibro(libroId, usuarioId)
 
     @GetMapping("/usuarios/{usuarioId}/prestamos")
-    fun getPrestamos(
-        @PathVariable usuarioId: Int,
-        @RequestParam tipo: String
+    fun getPrestamos(@PathVariable usuarioId: Int, @RequestParam tipo: String
     ): List<PrestamoDTO> = libroService.obtenerPrestamos(usuarioId, tipo)
 }

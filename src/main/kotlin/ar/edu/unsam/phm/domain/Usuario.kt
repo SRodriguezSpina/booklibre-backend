@@ -17,7 +17,6 @@ class Usuario(
     var bibliokarmas: Int,
     var fechaRegistro: LocalDate = LocalDate.now()
 ) : BaseEntity() {
-
     fun getCredencial(): Credencial = credencial
 }
 
