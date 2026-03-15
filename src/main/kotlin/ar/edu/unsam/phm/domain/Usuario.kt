@@ -22,7 +22,6 @@ class Usuario(
     fun getCredencial(): Credencial = credencial
     fun agregarReserva(reserva: Reserva) {
         reservas.add(reserva)
-        reserva.libro.agregarReserva(reserva)
     }
 }
 

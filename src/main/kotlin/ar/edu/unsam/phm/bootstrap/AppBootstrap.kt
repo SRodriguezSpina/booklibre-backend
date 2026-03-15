@@ -125,7 +125,6 @@ class AppBootstrap(
                 LocalDate.now().plusDays(i.toLong()),
                 LocalDate.now().plusDays(i.toLong() + 3)
             )
-            libro.agregarReserva(res) // [cite: 32, 33]
             emilia.agregarReserva(res)
             ana.agregarReserva(res)
             emilia.bibliokarmas += libro.calcularBiblioKarmaTotal(emilia, res.fechaDesde, res.fechaHasta) //
@@ -143,7 +142,6 @@ class AppBootstrap(
                 LocalDate.now().plusDays(i.toLong()),
                 LocalDate.now().plusDays(i.toLong() + 5)
             )
-            libro.agregarReserva(res)
             emilia.agregarReserva(res)
             juan.agregarReserva(res)
         }
@@ -159,7 +157,6 @@ class AppBootstrap(
         libroRepository.create(libroEspecial)
         val resVencimiento =
             Reserva(libroEspecial, emilia, LocalDate.now().minusDays(2), LocalDate.now().plusDays(1))
-        libroEspecial.agregarReserva(resVencimiento)
         emilia.agregarReserva(resVencimiento)
         ana.agregarReserva(resVencimiento)
     }
