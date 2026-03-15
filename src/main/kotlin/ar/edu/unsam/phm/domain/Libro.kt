@@ -17,7 +17,6 @@ abstract class Libro(
     var fechaPublicacion: LocalDate,
     var estado: EstadoLibro,
     var imagenUrl: String,
-    var reservas: MutableList<Reserva> = mutableListOf(),
     var calificaciones: MutableList<Int> = mutableListOf(),
 ): BaseEntity() {
     fun calcularBiblioKarmaTotal(usuario: Usuario, desde: LocalDate, hasta: LocalDate): Int {
@@ -26,9 +25,6 @@ abstract class Libro(
     }
     fun getCalificacion(): Double = calificaciones.average()
     abstract fun plusBiblioKarma(usuario: Usuario): Int
-    fun agregarReserva(reserva: Reserva) {
-        reservas.add(reserva)
-    }
 }
 class LibroComun(
     duenio: Usuario, id: Int, titulo: String, autor: String, descripcion: String, genero: Genero,
@@ -44,7 +40,7 @@ class LibroConDedicatoria(
     paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro, imagenUrl: String
 ) : Libro(duenio, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado, imagenUrl) {
     override fun plusBiblioKarma(usuario: Usuario): Int {
-        return 200 + (10 * reservas.size)
+        return 200 + (10 * duenio.reservas.size)
     }
 }
 class LibroColeccionable(

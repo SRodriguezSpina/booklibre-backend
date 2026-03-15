@@ -53,7 +53,7 @@ class UsuarioService(
         return libroRepository.getLibros()
             .filter { it.duenio.id == usuarioId }
             .map { libro ->
-                val disponible = libro.reservas.none { !hoy.isBefore(it.fechaDesde) && !hoy.isAfter(it.fechaHasta) }
+                val disponible = libro.duenio.reservas.none { !hoy.isBefore(it.fechaDesde) && !hoy.isAfter(it.fechaHasta) }
                 LibroUsuarioItemDTO(
                     id = libro.id,
                     titulo = libro.titulo,

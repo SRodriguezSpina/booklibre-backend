@@ -7,7 +7,7 @@ import ar.edu.unsam.phm.dtos.ReservaDTO
 import java.time.format.DateTimeFormatter
 
 fun Libro.toDTO(usuarioConsultaId: Int): LibroDTO {
-    val ultimaReserva = this.reservas.lastOrNull()
+    val ultimaReserva = this.duenio.reservas.lastOrNull()
     return LibroDTO(
         id = this.id,
         titulo = this.titulo,
