@@ -64,7 +64,7 @@ class AppBootstrap(
     //USUARIOS
 
     val user1 = Usuario(
-        credencial = Credencial("juanp", "pass123"),
+        credencial = Credencial("juan@mail.com", "pass123"),
         nombre = "Juan Pérez",
         desc = "Lector intrépido",
         email = "juan@mail.com",
@@ -158,7 +158,7 @@ class AppBootstrap(
 
     //LIBROS
     val libro1 = LibroComun(
-        user1,
+        juan,
         0,
         "1984",
         "George Orwell",
@@ -174,7 +174,7 @@ class AppBootstrap(
     )
 
     val libro2 = LibroComun(
-        user3,
+        juan,
         0,
         "Clean Code",
         "Robert C. Martin",
@@ -206,7 +206,7 @@ class AppBootstrap(
     )
 
     val libro4 = LibroConDedicatoria(
-        user3,
+        juan,
         0,
         "Hábitos Atómicos",
         "James Clear",
