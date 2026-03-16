@@ -23,3 +23,20 @@ data class LibroDTO(
     val fechaDevolucion: String?,
     val bibliokarma: Int? // Opcional para mostrar el karma que dio/dará
 )
+
+data class LibroHomeDTO(
+    val id: Int,
+    val imagenUrl: String,
+    //
+    val genero: Genero,
+    val titulo: String,
+    val autor: String,
+    val calificacion: Int,
+    //
+    val isbn: String,
+    val idioma: Idioma,
+    val tipo: String,
+    val bibliokarma: Int?,
+    val estado: String,
+    val duenio: String
+)
