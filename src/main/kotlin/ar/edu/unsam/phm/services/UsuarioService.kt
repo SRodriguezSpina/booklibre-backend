@@ -14,7 +14,6 @@ class UsuarioService(
     val usuarioRepository: UsuarioRepository,
     val libroRepository: LibroRepository
 ) {
-
     fun obtenerUsuario(id: Int): UsuarioResponse? {
         val usuario = usuarioRepository.findById(id) ?: return null
         return usuario.toResponse()

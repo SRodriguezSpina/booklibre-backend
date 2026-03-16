@@ -1,4 +1,5 @@
 package ar.edu.unsam.phm
+import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.repository.BaseEntity
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -17,13 +18,23 @@ abstract class Libro(
     var fechaPublicacion: LocalDate,
     var estado: EstadoLibro,
     var imagenUrl: String,
-    var calificaciones: MutableList<Int> = mutableListOf(),
+    var calificaciones: MutableList<Calificacion> = mutableListOf(),
 ): BaseEntity() {
     fun calcularBiblioKarmaTotal(usuario: Usuario, desde: LocalDate, hasta: LocalDate): Int {
         val diasReserva = ChronoUnit.DAYS.between(desde, hasta).toInt() + 1
         return (5 * diasReserva) + plusBiblioKarma(usuario)
     }
-    fun getCalificacion(): Double = calificaciones.average()
+    // En tu clase Libro.kt
+    fun agregarCalificacion(nueva: Calificacion) {
+        if (calificaciones.any { it.usuarioId == nueva.usuarioId }) {
+            throw BusinessException("Usuario ${nueva.usuarioId} ya calificó este libro")
+        }
+        calificaciones.add(nueva)
+    }
+    fun getCalificacion(): Double {
+        if (calificaciones.isEmpty()) return 0.0
+        return calificaciones.map { it.valor }.average()
+    }
     abstract fun plusBiblioKarma(usuario: Usuario): Int
 }
 class LibroComun(

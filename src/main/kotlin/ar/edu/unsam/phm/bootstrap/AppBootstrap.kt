@@ -12,275 +12,77 @@ class AppBootstrap(
     val libroRepository: LibroRepository,
     private val usuarioRepository: UsuarioRepository,
 ): InitializingBean {
-    // 1. Usuarios con sus credenciales
-    val emilia = Usuario(
-        Credencial("emilia", "123"),
-        "Emilia Romero",
-        "Lectora Ávida",
-        "emilia@example.com",
-        "11223344",
-        "CABA",
-        UsuarioLectorPublicador(),
-        2345,
-        fechaRegistro = LocalDate.of(2021, 6, 1)
-    )
 
-    val juan = Usuario(
-        Credencial("juan", "123"),
-        "Juan Pérez",
-        "Lector intrépido",
-        "juan@example.com",
-        "11556677",
-        "Morón",
-        UsuarioLector(),
-        500,
-        fechaRegistro = LocalDate.of(2020, 9, 15)
-    )
-
-    val ana = Usuario(
-        Credencial("ana", "123"),
-        "Ana García",
-        "Publicadora",
-        "ana@example.com",
-        "11889900",
-        "Quilmes",
-        UsuarioPublicador(),
-        1200,
-        fechaRegistro = LocalDate.of(2022, 2, 10)
-    )
-
-    val carlos = Usuario(
-        Credencial("carlos", "123"),
-        "Carlos Ruiz",
-        "Fan de los clásicos",
-        "carlos@example.com",
-        "11334455",
-        "Lanús",
-        UsuarioLector(),
-        150,
-        fechaRegistro = LocalDate.of(2019, 12, 30)
-    )
-
-    //USUARIOS
-
-    val user1 = Usuario(
-        credencial = Credencial("juan@mail.com", "pass123"),
-        nombre = "Juan Pérez",
-        desc = "Lector intrépido",
-        email = "juan@mail.com",
-        celular = "11223344",
-        ciudad = "San Martín",
-        tipoUsuario = UsuarioLector(),
-        bibliokarmas = 100,
-        fechaRegistro = LocalDate.of(2021, 3, 15)
-    )
-
-    val user2 = Usuario(
-        credencial = Credencial("mariag", "pass456"),
-        nombre = "María Gómez",
-        desc = "Devoradora de libros",
-        email = "maria@mail.com",
-        celular = "11556677",
-        ciudad = "Villa Ballester",
-        tipoUsuario = UsuarioPublicador(),
-        bibliokarmas = 500,
-        fechaRegistro = LocalDate.of(2020, 6, 10)
-    )
-
-    val user3 = Usuario(
-        credencial = Credencial("carlosl", "pass789"),
-        nombre = "Carlos López",
-        desc = "Fan de la ciencia ficción",
-        email = "carlos@mail.com",
-        celular = "11889900",
-        ciudad = "Caseros",
-        tipoUsuario = UsuarioLectorPublicador(),
-        bibliokarmas = 1200,
-        fechaRegistro = LocalDate.of(2019, 9, 5)
-    )
-
-    val user4 = Usuario(
-        credencial = Credencial("anad", "pass000"),
-        nombre = "Ana Díaz",
-        desc = "Amante del drama",
-        email = "ana@mail.com",
-        celular = "11443322",
-        ciudad = "San Andrés",
-        tipoUsuario = UsuarioLector(),
-        bibliokarmas = 50,
-        fechaRegistro = LocalDate.of(2022, 1, 20)
-    )
-    fun crearReservas(){
-        listOf(emilia, juan, ana, carlos).forEach { usuarioRepository.create(it) }
-
-        // 2. CATEGORÍA: "PRESTADOS A MÍ" (Emilia reserva libros de otros)
-        repeat(5) { i ->
-            // Ana es la dueña, Emilia reserva
-            val libro = LibroComun(ana, 100 + i, "Harry Potter $i", "Coscu", "Desc", Genero.CIENCIA_FICCION, 300, "97801$i", Idioma.ESPANOL, "Minotauro", LocalDate.now(), EstadoLibro.EXCELENTE, "https://http2.mlstatic.com/D_NQ_NP_805995-MLA99469869724_112025-O.webp")
-            libroRepository.create(libro)
-
-            val res = Reserva(
-                libro,
-                emilia,
-                LocalDate.now().plusDays(i.toLong()),
-                LocalDate.now().plusDays(i.toLong() + 3)
-            )
-            emilia.agregarReserva(res)
-            ana.agregarReserva(res)
-            emilia.bibliokarmas += libro.calcularBiblioKarmaTotal(emilia, res.fechaDesde, res.fechaHasta) //
-        }
-
-        // 3. CATEGORÍA: "PRESTADOS POR MÍ" (Otros reservan libros de Emilia) [cite: 42, 63]
-        repeat(5) { i ->
-            // Emilia es la dueña, Juan reserva
-            val libro = LibroConDedicatoria(emilia, 200 + i, "El señor de los anillos $i", "Maria Claudia", "Desc", Genero.LITERATURA_CLASICA, 150, "97802$i", Idioma.FRANCES, "Sur", LocalDate.now(), EstadoLibro.MUY_BUENO, "https://http2.mlstatic.com/D_NQ_NP_639267-MLA81008530369_112024-O.webp")
-            libroRepository.create(libro)
-
-            val res = Reserva(
-                libro,
-                juan,
-                LocalDate.now().plusDays(i.toLong()),
-                LocalDate.now().plusDays(i.toLong() + 5)
-            )
-            emilia.agregarReserva(res)
-            juan.agregarReserva(res)
-        }
-
-        // 4. Libros Coleccionables adicionales (sin reservas actuales) [cite: 15, 86]
-        repeat(8) { i ->
-            val libro = LibroColeccionable(carlos, 300 + i, "Aura $i", "Luis", "Desc", Genero.DISENO, 800, "97803$i", Idioma.INGLES, "Taschen", LocalDate.now(), EstadoLibro.EXCELENTE, "https://http2.mlstatic.com/D_NQ_NP_2X_898813-MLA100509611482_122025-F.jpg")
-            libroRepository.create(libro)
-        }
-
-        // 5. Casos de borde: Próximo a vencer para Emilia (vence mañana)
-        val libroEspecial = LibroColeccionable(ana, 999, "Libro Raro", "Thomas", "Desc", Genero.CIENCIA_FICCION, 400, "978999", Idioma.ESPANOL, "Editor", LocalDate.now(), EstadoLibro.EXCELENTE, "https://dcdn-us.mitiendanube.com/stores/006/438/987/products/9789504984603_c6818713-5a23-42b4-9abc-3776eff69435-e4047a0d3582f16b5a17603956575426-480-0.webp")
-        libroRepository.create(libroEspecial)
-        val resVencimiento =
-            Reserva(libroEspecial, emilia, LocalDate.now().minusDays(2), LocalDate.now().plusDays(1))
-        emilia.agregarReserva(resVencimiento)
-        ana.agregarReserva(resVencimiento)
-    }
-
-    fun crearUsuarios(){
-        usuarioRepository.apply {
-            create(user1)
-            create(user2)
-            create(user3)
-            create(user4)
-        }
-    }
-
-    //LIBROS
-    val libro1 = LibroComun(
-        juan,
-        0,
-        "1984",
-        "George Orwell",
-        """En el año 1984 Londres es una ciudad lúgubre en la que la Policía del Pensamiento controla de forma asfixiante la vida de los ciudadanos. Winston Smith es un peón de este engranaje que comienza a darse cuenta de la farsa en la que vive y decide rebelarse.""".trimIndent(),
-        Genero.CIENCIA_FICCION,
-        328,
-        "978-0451524935",
-        Idioma.ESPANOL,
-        "Debolsillo",
-        LocalDate.of(1949, 6, 8),
-        EstadoLibro.EXCELENTE,
-        "https://contentv2.tap-commerce.com/cover/large/9789875669284_1.jpg?id_com=1156&back=fad2e1"
-    )
-
-    val libro2 = LibroComun(
-        juan,
-        0,
-        "Clean Code",
-        "Robert C. Martin",
-        """Incluso el mal código puede funcionar. Pero si el código no es limpio, puede acabar con una empresa de desarrollo. Este libro es una lectura obligada para cualquier desarrollador, ingeniero de software o director de proyectos que quiera escribir mejor código.""".trimIndent(),
-        Genero.DISENO,
-        464,
-        "978-0132350884",
-        Idioma.INGLES,
-        "Prentice Hall",
-        LocalDate.of(2008, 8, 1),
-        EstadoLibro.MUY_BUENO,
-        "https://m.media-amazon.com/images/I/51E2055ZGUL._AC_UF1000,1000_QL80_.jpg"
-    )
-
-    val libro3 = LibroConDedicatoria(
-        user2,
-        0,
-        "Orgullo y Prejuicio",
-        "Jane Austen",
-        """La historia sigue la vida de Elizabeth Bennet y sus cuatro hermanas, quienes enfrentan presiones sociales para casarse. La llegada del apuesto y rico Sr. Darcy y su amigo Bingley altera sus vidas, desatando una trama de amor, malentendidos y orgullo.""".trimIndent(),
-        Genero.ROMANCE,
-        432,
-        "978-8420671848",
-        Idioma.ESPANOL,
-        "Alianza",
-        LocalDate.of(1813, 1, 28),
-        EstadoLibro.BUENO,
-        "https://www.alianzaeditorial.es/imagenes/blog/9788411483018-orgullo-y-prejuicio.jpg"
-    )
-
-    val libro4 = LibroConDedicatoria(
-        juan,
-        0,
-        "Hábitos Atómicos",
-        "James Clear",
-        """A menudo pensamos que para cambiar de vida tenemos que pensar en hacer cambios grandes. Nada más lejos de la realidad. Según James Clear, el cambio real proviene del resultado de cientos de pequeñas decisiones cotidianas: los hábitos atómicos.""".trimIndent(),
-        Genero.AUTOAYUDA,
-        320,
-        "978-1847941831",
-        Idioma.INGLES,
-        "Penguin",
-        LocalDate.of(2018, 10, 16),
-        EstadoLibro.EXCELENTE,
-        "https://images.booksense.com/images/122/694/9786075694122.jpg"
-    )
-
-    val libro5 = LibroColeccionable(
-        user2,
-        0,
-        "El Señor de los Anillos: La Comunidad del Anillo",
-        "J.R.R. Tolkien",
-        """En la adormecida y pintoresca Comarca, un joven hobbit recibe un encargo: custodiar el Anillo Único y emprender un peligroso viaje para destruirlo en la Grieta del Destino. Una edición ilustrada espectacular e imperdible del clásico de la fantasía.""".trimIndent(),
-        Genero.CIENCIA_FICCION,
-        1200,
-        "978-8445071754",
-        Idioma.ESPANOL,
-        "Minotauro",
-        LocalDate.of(1954, 7, 29),
-        EstadoLibro.EXCELENTE,
-        "https://pdlibrosarg.cdnstatics2.com/usuaris/libros/thumbs/62c2f9e8-0ea1-403c-aa21-31c101eeaf40/d_360_620/384505_portada_el-senor-de-los-anillos-n-0103-la-comunidad-del-anillo-edicion-revisada_j-r-r-tolkien_202310231103.webp"
-    )
-
-    val libro6 = LibroColeccionable(
-        user4,
-        0,
-        "Hamlet (Primera Edición Facsímil)",
-        "William Shakespeare",
-        """Una de las obras más influyentes de la literatura mundial. El príncipe Hamlet de Dinamarca busca vengar la muerte de su padre, asesinado por su propio hermano, Claudio, quien ha usurpado el trono y se ha casado con la viuda.""".trimIndent(),
-        Genero.DRAMA,
-        200,
-        "978-0743477123",
-        Idioma.INGLES,
-        "Simon & Schuster",
-        LocalDate.of(1603, 1, 1),
-        EstadoLibro.REGULAR,
-        "https://m.media-amazon.com/images/I/51egMsRda2L.jpg"
-    )
-
-    fun crearLibros(){
-        libroRepository.apply {
-            create(libro1)
-            create(libro2)
-            create(libro3)
-            create(libro4)
-            create(libro5)
-            create(libro6)
-        }
-    }
+    // 1. DEFINICIÓN DE USUARIOS
+    val emilia = Usuario(Credencial("emilia", "123"), "Emilia Romero", "Lectora Ávida", "emilia@example.com", "11223344", "CABA", UsuarioLectorPublicador(), 2345, fechaRegistro = LocalDate.of(2021, 6, 1))
+    val juan = Usuario(Credencial("juan", "123"), "Juan Pérez", "Lector intrépido", "juan@mail.com", "11556677", "San Martín", UsuarioLector(), 500, fechaRegistro = LocalDate.of(2020, 9, 15))
+    val ana = Usuario(Credencial("ana", "123"), "Ana García", "Publicadora", "ana@example.com", "11889900", "Quilmes", UsuarioPublicador(), 1200, fechaRegistro = LocalDate.of(2022, 2, 10))
+    val carlos = Usuario(Credencial("carlos", "123"), "Carlos Ruiz", "Fan de los clásicos", "carlos@example.com", "11334455", "Lanús", UsuarioLector(), 150, fechaRegistro = LocalDate.of(2019, 12, 30))
 
     override fun afterPropertiesSet() {
-        crearReservas()
-        crearUsuarios()
-        crearLibros()
+        // Guardamos usuarios primero
+        listOf(juan, emilia , ana, carlos).forEach { usuarioRepository.create(it) }
+
+        configurarEscenarioJuan()
+        crearLibrosAdicionales()
+    }
+
+    fun configurarEscenarioJuan() {
+        // --- 2. LIBROS QUE JUAN PIDE PRESTADOS (Él es el deudor/reserva) ---
+        // Escenario: Juan tiene préstamos devueltos, activos y por vencer.
+
+        val librosDeAna = listOf(
+            Triple("Harry Potter y la Piedra Filosofal", "J.K. Rowling", "https://contentv2.tap-commerce.com/cover/large/9789875669284_1.jpg"),
+            Triple("El Código Da Vinci", "Dan Brown", "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSB8x01gOOsdG1D2IS0r3AquN2pGMtMnWLpFKPkF8pZZQ953Pbo1lHkAqxX1R_SWzHqmWeOC5Mcg7fbuJt_iLP76jzwWNtpbzPW3xMNlRZN"),
+            Triple("Crónica de una muerte anunciada", "Gabriel García Márquez", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVTCjrjj-XTtQPa0m4C8zNQtyvHz1HeB4zsQ&s"),
+            Triple("Steve Jobs", "Walter Isaacson", "data:image/jpeg;base64,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"),
+            Triple("El Psicoanalista", "John Katzenbach", "data:image/jpeg;base64,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")
+        )
+
+        librosDeAna.forEachIndexed { i, data ->
+            val libro = LibroComun(ana, 1000 + i, data.first, data.second, "Descripción de ${data.first}", Genero.LITERATURA_CLASICA, 300, "ISBN-$i", Idioma.ESPANOL, "Editorial", LocalDate.now(), EstadoLibro.EXCELENTE, data.third)
+            libroRepository.create(libro)
+
+            // Lógica de fechas (Hoy es 15 de Marzo 2026)
+            val (fechaDesde, fechaHasta) = when(i) {
+                0, 1 -> { // DEVUELTOS: Terminaron hace unos días
+                    LocalDate.of(2026, 3, 1) to LocalDate.of(2026, 3, 10)
+                }
+                2 -> { // PRÓXIMO A VENCER: Vence mañana 16
+                    LocalDate.of(2026, 3, 10) to LocalDate.of(2026, 3, 16)
+                }
+                else -> { // ACTIVO: Vence en una semana
+                    LocalDate.of(2026, 3, 12) to LocalDate.of(2026, 3, 22)
+                }
+            }
+
+            val reserva = Reserva(libro, juan, fechaDesde, fechaHasta)
+            juan.agregarReserva(reserva)
+            ana.agregarReserva(reserva)
+        }
+
+        // --- 3. LIBROS QUE JUAN PRESTA A OTROS (Él es el dueño) ---
+        val misLibros = listOf(
+            LibroComun(juan, 2001, "1984", "George Orwell", "Distopía clásica", Genero.CIENCIA_FICCION, 328, "978-0451524935", Idioma.ESPANOL, "Debolsillo", LocalDate.of(1949, 6, 8), EstadoLibro.EXCELENTE, "https://contentv2.tap-commerce.com/cover/large/9789875669284_1.jpg"),
+            LibroComun(juan, 2002, "Clean Code", "Robert C. Martin", "Manual de buen código", Genero.DISENO, 464, "978-0132350884", Idioma.INGLES, "Prentice Hall", LocalDate.of(2008, 8, 1), EstadoLibro.MUY_BUENO, "https://m.media-amazon.com/images/I/51E2055ZGUL._AC_UF1000,1000_QL80_.jpg"),
+            LibroConDedicatoria(juan, 2003, "Hábitos Atómicos", "James Clear", "Mejora personal", Genero.AUTOAYUDA, 320, "978-1847941831", Idioma.INGLES, "Penguin", LocalDate.of(2018, 10, 16), EstadoLibro.EXCELENTE, "https://images.booksense.com/images/122/694/9786075694122.jpg")
+        )
+
+        misLibros.forEach {
+            libroRepository.create(it)
+            // Agregamos una reserva de Emilia para sus libros
+            val res = Reserva(it, emilia, LocalDate.of(2026, 3, 5), LocalDate.of(2026, 3, 20))
+            juan.agregarReserva(res)
+            emilia.agregarReserva(res)
+        }
+    }
+
+    fun crearLibrosAdicionales() {
+        // Libros sueltos para búsqueda
+        val libro5 = LibroColeccionable(ana, 3005, "El Señor de los Anillos", "J.R.R. Tolkien", "Fantasía épica", Genero.CIENCIA_FICCION, 1200, "978-8445071754", Idioma.ESPANOL, "Minotauro", LocalDate.of(1954, 7, 29), EstadoLibro.EXCELENTE, "https://m.media-amazon.com/images/I/91R196S8S8L.jpg")
+        val libro6 = LibroColeccionable(carlos, 3006, "Hamlet", "William Shakespeare", "Tragedia", Genero.DRAMA, 200, "978-0743477123", Idioma.INGLES, "Simon & Schuster", LocalDate.of(1603, 1, 1), EstadoLibro.REGULAR, "https://m.media-amazon.com/images/I/51egMsRda2L.jpg")
+
+        libroRepository.create(libro5)
+        libroRepository.create(libro6)
     }
 }
