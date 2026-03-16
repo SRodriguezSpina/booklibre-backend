@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.mappers
 import ar.edu.unsam.phm.Libro
 import ar.edu.unsam.phm.Reserva
 import ar.edu.unsam.phm.dtos.LibroDTO
+import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import java.time.format.DateTimeFormatter
 
@@ -47,5 +48,22 @@ fun Reserva.toDTO(usuarioConsultaId: Int): ReservaDTO {
         bibliokarma = let {
             this.libro.calcularBiblioKarmaTotal(it.usuario, it.fechaDesde, it.fechaHasta)
         }
+    )
+}
+
+fun Libro.toHomeDTO(): LibroHomeDTO {
+    return LibroHomeDTO(
+        id = this.id,
+        imagenUrl = this.imagenUrl,
+        genero = this.genero,
+        titulo = this.titulo,
+        autor = this.autor,
+        calificacion = 0, // terminar de agregar
+        isbn = this.isbn,
+        idioma = this.idioma,
+        tipo = this.javaClass.simpleName.replace("Libro", ""),
+        bibliokarma = 0, // sin usuario no podemos calcularlo
+        estado = this.estado.name,
+        duenio = this.duenio.nombre,
     )
 }

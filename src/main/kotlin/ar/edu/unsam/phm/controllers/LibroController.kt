@@ -2,6 +2,7 @@ package ar.edu.unsam.phm.controllers
 
 import ar.edu.unsam.phm.Calificacion
 import ar.edu.unsam.phm.dtos.LibroDTO
+import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.services.LibroService
 import org.springframework.web.bind.annotation.*
 
@@ -9,6 +10,9 @@ import org.springframework.web.bind.annotation.*
 @CrossOrigin(origins = ["*"])
 @RequestMapping("/libros")
 class LibroController(val libroService: LibroService) {
+
+    @GetMapping("/libros")
+    fun getAll(): List<LibroHomeDTO> = libroService.getAll()
 
     @GetMapping("/{libroId}")
     fun getLibro(@PathVariable libroId: Int, @RequestParam usuarioId: Int
