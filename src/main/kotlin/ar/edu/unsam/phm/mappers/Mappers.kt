@@ -33,7 +33,8 @@ fun Libro.toDTO(usuarioConsultaId: Int): LibroDTO {
 
 fun Reserva.toDTO(usuarioConsultaId: Int): ReservaDTO {
     return ReservaDTO(
-        id = this.id,
+        id = this.libro.id,
+        prestamoId = this.id,
         titulo = this.libro.titulo,
         autor = this.libro.autor,
         estado = this.libro.estado.name,
@@ -42,7 +43,7 @@ fun Reserva.toDTO(usuarioConsultaId: Int): ReservaDTO {
         alquiladoPorId = usuario.id,
         fechaDesde = fechaDesde.format(DateTimeFormatter.ISO_DATE),
         fechaHasta = fechaHasta.format(DateTimeFormatter.ISO_DATE),
-        rating = 4.5,
+        rating = this.libro.getCalificacion(),
         bibliokarma = let {
             this.libro.calcularBiblioKarmaTotal(it.usuario, it.fechaDesde, it.fechaHasta)
         }

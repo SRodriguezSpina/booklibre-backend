@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm
 
-class Calificacion (
-    val valor: Int,
-    val comentario: String
+data class Calificacion(
+    val usuarioId: Int = 0,
+    val valor: Int = 0,
+    val comentario: String = ""
 )
