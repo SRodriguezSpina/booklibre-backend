@@ -1,4 +1,5 @@
 package ar.edu.unsam.phm
+import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.repository.BaseEntity
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -17,18 +18,24 @@ abstract class Libro(
     var fechaPublicacion: LocalDate,
     var estado: EstadoLibro,
     var imagenUrl: String,
-    var reservas: MutableList<Reserva> = mutableListOf(),
+    var calificaciones: MutableList<Calificacion> = mutableListOf(),
 ): BaseEntity() {
     fun calcularBiblioKarmaTotal(usuario: Usuario, desde: LocalDate, hasta: LocalDate): Int {
         val diasReserva = ChronoUnit.DAYS.between(desde, hasta).toInt() + 1
         return (5 * diasReserva) + plusBiblioKarma(usuario)
     }
-
-    abstract fun plusBiblioKarma(usuario: Usuario): Int
-
-    fun agregarReserva(reserva: Reserva) {
-        reservas.add(reserva)
+    // En tu clase Libro.kt
+    fun agregarCalificacion(nueva: Calificacion) {
+        if (calificaciones.any { it.usuarioId == nueva.usuarioId }) {
+            throw BusinessException("Usuario ${nueva.usuarioId} ya calificó este libro")
+        }
+        calificaciones.add(nueva)
     }
+    fun getCalificacion(): Double {
+        if (calificaciones.isEmpty()) return 0.0
+        return calificaciones.map { it.valor }.average()
+    }
+    abstract fun plusBiblioKarma(usuario: Usuario): Int
 }
 class LibroComun(
     duenio: Usuario, id: Int, titulo: String, autor: String, descripcion: String, genero: Genero,
@@ -44,7 +51,7 @@ class LibroConDedicatoria(
     paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro, imagenUrl: String
 ) : Libro(duenio, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado, imagenUrl) {
     override fun plusBiblioKarma(usuario: Usuario): Int {
-        return 200 + (10 * reservas.size)
+        return 200 + (10 * duenio.reservas.size)
     }
 }
 class LibroColeccionable(

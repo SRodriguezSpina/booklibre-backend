@@ -15,9 +15,14 @@ class Usuario(
     var ciudad: String,
     var tipoUsuario: TipoUsuario,
     var bibliokarmas: Int,
-    var fechaRegistro: LocalDate = LocalDate.now()
+    var fechaRegistro: LocalDate = LocalDate.now(),
+    val reservas: MutableList<Reserva> = mutableListOf(),
 ) : BaseEntity() {
+    fun todasLasReservas(): List<Reserva> = reservas
     fun getCredencial(): Credencial = credencial
+    fun agregarReserva(reserva: Reserva) {
+        reservas.add(reserva)
+    }
 }
 
 class UsuarioLector() : TipoUsuario {}

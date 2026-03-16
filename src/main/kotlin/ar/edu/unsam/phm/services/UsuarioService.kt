@@ -1,10 +1,6 @@
 package ar.edu.unsam.phm.services
 
-import ar.edu.unsam.phm.TipoUsuario
-import ar.edu.unsam.phm.Usuario
-import ar.edu.unsam.phm.UsuarioLector
-import ar.edu.unsam.phm.UsuarioLectorPublicador
-import ar.edu.unsam.phm.UsuarioPublicador
+import ar.edu.unsam.phm.*
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
@@ -18,7 +14,6 @@ class UsuarioService(
     val usuarioRepository: UsuarioRepository,
     val libroRepository: LibroRepository
 ) {
-
     fun obtenerUsuario(id: Int): UsuarioResponse? {
         val usuario = usuarioRepository.findById(id) ?: return null
         return usuario.toResponse()
@@ -57,7 +52,7 @@ class UsuarioService(
         return libroRepository.getLibros()
             .filter { it.duenio.id == usuarioId }
             .map { libro ->
-                val disponible = libro.reservas.none { !hoy.isBefore(it.fechaDesde) && !hoy.isAfter(it.fechaHasta) }
+                val disponible = libro.duenio.reservas.none { !hoy.isBefore(it.fechaDesde) && !hoy.isAfter(it.fechaHasta) }
                 LibroUsuarioItemDTO(
                     id = libro.id,
                     titulo = libro.titulo,
