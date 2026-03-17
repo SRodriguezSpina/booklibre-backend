@@ -4,6 +4,8 @@ import ar.edu.unsam.phm.*
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
+import ar.edu.unsam.phm.exceptions.NotFoundException
+import ar.edu.unsam.phm.mappers.toResponse
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import org.springframework.stereotype.Service
@@ -14,13 +16,13 @@ class UsuarioService(
     val usuarioRepository: UsuarioRepository,
     val libroRepository: LibroRepository
 ) {
-    fun obtenerUsuario(id: Int): UsuarioResponse? {
-        val usuario = usuarioRepository.findById(id) ?: return null
+    fun obtenerUsuario(id: Int): UsuarioResponse {
+        val usuario = usuarioRepository.findById(id) ?: throw NotFoundException("Usuario no encontrado")
         return usuario.toResponse()
     }
 
-    fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioResponse? {
-        val existente = usuarioRepository.findById(id) ?: return null
+    fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioResponse {
+        val existente = usuarioRepository.findById(id) ?: throw NotFoundException("Usuario no encontrado")
         val tipoUsuario = parseTipoUsuario(request.tipoUsuario)
         val actualizado = Usuario(
             existente.getCredencial(),
@@ -63,25 +65,5 @@ class UsuarioService(
                 )
             }
             .sortedByDescending { it.id }
-    }
-
-    private fun Usuario.toResponse(): UsuarioResponse {
-        val tipoStr = when (tipoUsuario) {
-            is UsuarioLector -> "Lector"
-            is UsuarioPublicador -> "Publicador"
-            is UsuarioLectorPublicador -> "LectorPublicador"
-            else -> "Lector"
-        }
-        return UsuarioResponse(
-            id = id,
-            nombre = nombre,
-            desc = desc,
-            email = email,
-            fechaRegistro = fechaRegistro.toString(),
-            celular = celular,
-            ciudad = ciudad,
-            tipoUsuario = tipoStr,
-            bibliokarmas = bibliokarmas
-        )
     }
 }
