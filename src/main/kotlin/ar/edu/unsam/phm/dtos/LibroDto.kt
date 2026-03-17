@@ -31,7 +31,7 @@ data class LibroHomeDTO(
     val genero: Genero,
     val titulo: String,
     val autor: String,
-    val calificacion: Int,
+    val calificacion: Double,
     //
     val isbn: String,
     val idioma: Idioma,
@@ -39,4 +39,10 @@ data class LibroHomeDTO(
     val bibliokarma: Int?,
     val estado: String,
     val duenio: String
+)
+
+data class PagedResponse<T>(
+    val content: List<T>,
+    val page: Int,
+    val totalPages: Int
 )
