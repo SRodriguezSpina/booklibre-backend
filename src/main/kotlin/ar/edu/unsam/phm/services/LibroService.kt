@@ -12,10 +12,11 @@ import ar.edu.unsam.phm.repository.UsuarioRepository
 
 @Service
 class LibroService(val libroRepository: LibroRepository, private val usuarioRepository: UsuarioRepository) {
-    fun search(query: String, generos: String, page: Int, size: Int): PagedResponse<LibroHomeDTO> {
+    fun search(query: String, generos: String, page: Int, size: Int, usuarioId: Int): PagedResponse<LibroHomeDTO> {
         val listaGeneros = if (generos.isBlank()) emptyList() else generos.split(",")
 
         val filtrados = libroRepository.getLibros()
+            .filter { it.duenio.id != usuarioId } //para excluir los libros que son dee el duhh
             .filter { libro ->
                 val matchQuery = query.isBlank() ||
                         libro.titulo.contains(query, ignoreCase = true) ||

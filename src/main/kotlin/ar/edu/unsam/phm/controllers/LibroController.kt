@@ -17,8 +17,9 @@ class LibroController(val libroService: LibroService) {
         @RequestParam(defaultValue = "") query: String,
         @RequestParam(defaultValue = "") generos: String,
         @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "6") size: Int
-    ): PagedResponse<LibroHomeDTO> = libroService.search(query, generos, page, size)
+        @RequestParam(defaultValue = "6") size: Int,    //podría sacar el default..
+        @RequestParam usuarioId: Int
+    ): PagedResponse<LibroHomeDTO> = libroService.search(query, generos, page, size, usuarioId)
 
     @GetMapping("/{libroId}")
     fun getLibro(@PathVariable libroId: Int, @RequestParam usuarioId: Int
