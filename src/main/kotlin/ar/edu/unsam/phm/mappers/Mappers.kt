@@ -58,11 +58,11 @@ fun Libro.toHomeDTO(): LibroHomeDTO {
         genero = this.genero,
         titulo = this.titulo,
         autor = this.autor,
-        calificacion = 0, // terminar de agregar
+        calificacion = this.getCalificacion(), // terminar de agregar
         isbn = this.isbn,
         idioma = this.idioma,
         tipo = this.javaClass.simpleName.replace("Libro", ""),
-        bibliokarma = 0, // sin usuario no podemos calcularlo
+        bibliokarma = 0,
         estado = this.estado.name,
         duenio = this.duenio.nombre,
     )

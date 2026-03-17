@@ -2,6 +2,7 @@ package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.Calificacion
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
+import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.repository.LibroRepository
@@ -11,8 +12,26 @@ import ar.edu.unsam.phm.repository.UsuarioRepository
 
 @Service
 class LibroService(val libroRepository: LibroRepository, private val usuarioRepository: UsuarioRepository) {
-    fun getAll(): List<LibroHomeDTO> {
-        return libroRepository.getLibros().map { it.toHomeDTO() }
+    fun search(query: String, generos: String, page: Int, size: Int): PagedResponse<LibroHomeDTO> {
+        val listaGeneros = if (generos.isBlank()) emptyList() else generos.split(",")
+
+        val filtrados = libroRepository.getLibros()
+            .filter { libro ->
+                val matchQuery = query.isBlank() ||
+                        libro.titulo.contains(query, ignoreCase = true) ||
+                        libro.autor.contains(query, ignoreCase = true)
+
+                val matchGenero = listaGeneros.isEmpty() ||
+                        listaGeneros.contains(libro.genero.name)
+
+                matchQuery && matchGenero
+            }
+            .map { it.toHomeDTO() }
+
+        val totalPages = Math.ceil(filtrados.size.toDouble() / size).toInt()
+        val content = filtrados.drop(page * size).take(size)
+
+        return PagedResponse(content, page, totalPages)
     }
     fun getLibro(id: Int, usuarioId: Int): LibroDTO {
         val libro = libroRepository.getById(id)

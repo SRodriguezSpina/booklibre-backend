@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.controllers
 import ar.edu.unsam.phm.Calificacion
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
+import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.services.LibroService
 import org.springframework.web.bind.annotation.*
 
@@ -11,8 +12,13 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/libros")
 class LibroController(val libroService: LibroService) {
 
-    @GetMapping("/libros")
-    fun getAll(): List<LibroHomeDTO> = libroService.getAll()
+    @GetMapping("/home")
+    fun search(
+        @RequestParam(defaultValue = "") query: String,
+        @RequestParam(defaultValue = "") generos: String,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "6") size: Int
+    ): PagedResponse<LibroHomeDTO> = libroService.search(query, generos, page, size)
 
     @GetMapping("/{libroId}")
     fun getLibro(@PathVariable libroId: Int, @RequestParam usuarioId: Int
