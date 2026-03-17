@@ -4,8 +4,6 @@ import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.services.UsuarioService
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -14,18 +12,12 @@ import org.springframework.web.bind.annotation.*
 class UsuarioController(val usuarioService: UsuarioService) {
 
     @GetMapping("/{id}")
-    fun getUsuario(@PathVariable id: Int): ResponseEntity<UsuarioResponse> {
-        val usuario = usuarioService.obtenerUsuario(id)
-        return if (usuario != null) ResponseEntity.ok(usuario)
-        else ResponseEntity.notFound().build()
-    }
+    fun getUsuario(@PathVariable id: Int): UsuarioResponse =
+        usuarioService.obtenerUsuario(id)
 
     @PutMapping("/{id}")
-    fun actualizarUsuario(@PathVariable id: Int, @RequestBody request: UsuarioUpdateRequest): ResponseEntity<UsuarioResponse> {
-        val actualizado = usuarioService.actualizarUsuario(id, request)
-        return if (actualizado != null) ResponseEntity.ok(actualizado)
-        else ResponseEntity.status(HttpStatus.NOT_FOUND).build()
-    }
+    fun actualizarUsuario(@PathVariable id: Int, @RequestBody request: UsuarioUpdateRequest): UsuarioResponse =
+        usuarioService.actualizarUsuario(id, request)
 
     @GetMapping("/{id}/libros")
     fun getLibrosDeUsuario(@PathVariable id: Int): List<LibroUsuarioItemDTO> =

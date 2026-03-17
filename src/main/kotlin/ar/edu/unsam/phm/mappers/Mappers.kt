@@ -2,10 +2,35 @@ package ar.edu.unsam.phm.mappers
 
 import ar.edu.unsam.phm.Libro
 import ar.edu.unsam.phm.Reserva
+import ar.edu.unsam.phm.Usuario
+import ar.edu.unsam.phm.UsuarioLector
+import ar.edu.unsam.phm.UsuarioLectorPublicador
+import ar.edu.unsam.phm.UsuarioPublicador
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
+import ar.edu.unsam.phm.dtos.UsuarioResponse
 import java.time.format.DateTimeFormatter
+
+fun Usuario.toResponse(): UsuarioResponse {
+    val tipoStr = when (tipoUsuario) {
+        is UsuarioLector -> "Lector"
+        is UsuarioPublicador -> "Publicador"
+        is UsuarioLectorPublicador -> "LectorPublicador"
+        else -> "Lector"
+    }
+    return UsuarioResponse(
+        id = id,
+        nombre = nombre,
+        desc = desc,
+        email = email,
+        fechaRegistro = fechaRegistro.toString(),
+        celular = celular,
+        ciudad = ciudad,
+        tipoUsuario = tipoStr,
+        bibliokarmas = bibliokarmas
+    )
+}
 
 fun Libro.toDTO(usuarioConsultaId: Int): LibroDTO {
     val ultimaReserva = this.duenio.reservas.lastOrNull()
