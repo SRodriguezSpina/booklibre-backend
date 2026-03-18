@@ -1,10 +1,10 @@
 package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.Calificacion
+import ar.edu.unsam.phm.EstadoLibro
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.mappers.toHomeDTO
-import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.repository.LibroRepository
 import org.springframework.stereotype.Service
 import ar.edu.unsam.phm.mappers.toDTO
@@ -62,6 +62,26 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
         val libro = libroRepository.getById(id)
         return libro.toDTO(usuarioId)
     }
+
+    fun actualizarLibro(id : Int, dto: LibroDTO) : LibroDTO{
+        val libroExistente = libroRepository.getById(id)
+
+        libroExistente.titulo = dto.titulo
+        libroExistente.autor = dto.autor
+        libroExistente.descripcion = dto.descripcion
+        libroExistente.genero = dto.genero
+        libroExistente.cantidadPaginas = dto.paginas
+        libroExistente.isbn = dto.isbn
+        libroExistente.idioma = dto.idioma
+        libroExistente.editorial = dto.editorial
+        libroExistente.estado = EstadoLibro.valueOf(dto.estado)
+        libroExistente.fechaPublicacion = dto.fechaPublicacion
+        libroExistente.imagenUrl = dto.imagenUrl
+
+        libroRepository.update(libroExistente)
+        return libroExistente.toDTO(libroExistente.duenio.id)
+    }
+
     fun agregarCalificacion(idLibro: Int, calificacion: Calificacion) {
         val libro = libroRepository.getById(idLibro)
         libro.agregarCalificacion(calificacion)

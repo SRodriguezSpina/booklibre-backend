@@ -29,7 +29,7 @@ class LibroController(val libroService: LibroService) {
 
     @GetMapping("/{libroId}")
     fun getLibro(@PathVariable libroId: Int, @RequestParam usuarioId: Int
-    ): LibroDTO =  libroService.getLibro(libroId, usuarioId)
+    ): LibroDTO = libroService.getLibro(libroId, usuarioId)
 
     @PostMapping("/{libroId}/calificar")
     fun agregarCalificacion(
@@ -39,4 +39,8 @@ class LibroController(val libroService: LibroService) {
         libroService.agregarCalificacion(libroId, dto)
         println("Libro $libroId calificado con ${dto.valor} y mensaje: ${dto.comentario}")
     }
+
+    @PutMapping("/{libroId}")
+    fun updateLibro(@PathVariable libroId: Int, @RequestBody dto
+    : LibroDTO) = libroService.actualizarLibro(libroId, dto)
 }
