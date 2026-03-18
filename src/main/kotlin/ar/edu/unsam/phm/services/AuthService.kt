@@ -17,7 +17,7 @@ class AuthService (private val usuarioRepository : UsuarioRepository) {
             .find { it.getCredencial().email == request.email }
             ?: throw UnauthorizedException("Usuario o contraseña incorrectos")
 
-        if (usuario.getCredencial().password != request.password)
+        if (usuario.validarPassword(request.password))
             throw UnauthorizedException("Usuario o contraseña incorrectos")
 
         return AuthResponseUsuario(true, "Login exitoso", usuario.toResponse())

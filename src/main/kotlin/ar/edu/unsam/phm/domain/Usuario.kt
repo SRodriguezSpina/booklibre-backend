@@ -23,6 +23,7 @@ class Usuario(
     fun agregarReserva(reserva: Reserva) {
         reservas.add(reserva)
     }
+    fun validarPassword(password: String) = password == credencial.password
 }
 
 class UsuarioLector() : TipoUsuario {}
