@@ -11,6 +11,6 @@ class ReservaRepository : CommonRepository<Reserva>() {
             val esSolicitante = reserva.usuario.id == usuarioId
 
             esDuenio || esSolicitante
-        }
+        } // Realiza el filtro en el repositorio
     }
 }
