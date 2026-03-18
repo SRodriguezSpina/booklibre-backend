@@ -10,7 +10,6 @@ class Usuario(
     private val credencial: Credencial,
     val nombre: String,
     var desc: String,
-    var email: String,
     var celular: String = "",
     var ciudad: String = "",
     var tipoUsuario: TipoUsuario = UsuarioLector(),

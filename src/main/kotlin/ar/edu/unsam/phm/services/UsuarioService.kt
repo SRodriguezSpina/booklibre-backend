@@ -28,7 +28,6 @@ class UsuarioService(
             existente.getCredencial(),
             request.nombre,
             request.desc,
-            request.email,
             request.celular,
             request.ciudad,
             tipoUsuario,

@@ -15,10 +15,10 @@ class AppBootstrap(
     val reservaRepository: ReservaRepository,
 ): InitializingBean {
 
-    val juan = Usuario(Credencial("juan", "123"), "Juan Pérez", "Lector intrépido", "juan@mail.com", "11556677", "San Martín", UsuarioLector(), 500, fechaRegistro = LocalDate.of(2020, 9, 15)).apply { id = 1 }
-    val emilia = Usuario(Credencial("emilia", "123"), "Emilia Romero", "Lectora Ávida", "emilia@example.com", "11223344", "CABA", UsuarioLectorPublicador(), 2345, fechaRegistro = LocalDate.of(2021, 6, 1)).apply { id = 2 }
-    val ana = Usuario(Credencial("ana", "123"), "Ana García", "Publicadora", "ana@example.com", "11889900", "Quilmes", UsuarioPublicador(), 1200, fechaRegistro = LocalDate.of(2022, 2, 10)).apply { id = 3 }
-    val carlos = Usuario(Credencial("carlos", "123"), "Carlos Ruiz", "Fan de los clásicos", "carlos@example.com", "11334455", "Lanús", UsuarioLector(), 150, fechaRegistro = LocalDate.of(2019, 12, 30)).apply { id = 4 }
+    val juan = Usuario(Credencial("juan@mail.com", "123"), "Juan Pérez", "Lector intrépido", "11556677", "San Martín", UsuarioLector(), 500, fechaRegistro = LocalDate.of(2020, 9, 15)).apply { id = 1 }
+    val emilia = Usuario(Credencial("emilia@example.com", "123"), "Emilia Romero", "Lectora Ávida", "11223344", "CABA", UsuarioLectorPublicador(), 2345, fechaRegistro = LocalDate.of(2021, 6, 1)).apply { id = 2 }
+    val ana = Usuario(Credencial("ana@example.com", "123"), "Ana García", "Publicadora", "11889900", "Quilmes", UsuarioPublicador(), 1200, fechaRegistro = LocalDate.of(2022, 2, 10)).apply { id = 3 }
+    val carlos = Usuario(Credencial("carlos@example.com", "123"), "Carlos Ruiz", "Fan de los clásicos", "11334455", "Lanús", UsuarioLector(), 150, fechaRegistro = LocalDate.of(2019, 12, 30)).apply { id = 4 }
 
     override fun afterPropertiesSet() {
         usuarioRepository.lista.clear()
