@@ -1,9 +1,13 @@
 package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.Calificacion
 import ar.edu.unsam.phm.EstadoLibro
+import ar.edu.unsam.phm.LibroColeccionable
+import ar.edu.unsam.phm.LibroComun
+import ar.edu.unsam.phm.LibroConDedicatoria
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
+import ar.edu.unsam.phm.exceptions.*
 import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.repository.LibroRepository
 import org.springframework.stereotype.Service
@@ -60,6 +64,33 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
     }
     fun getLibro(id: Int, usuarioId: Int): LibroDTO {
         val libro = libroRepository.getById(id)
+        return libro.toDTO(usuarioId)
+    }
+
+    fun crearLibro(dto: LibroDTO, usuarioId: Int): LibroDTO {
+        val duenio = usuarioRepository.findById(usuarioId)
+            ?: throw NotFoundException("Usuario no encontrado")
+
+        val libro = when (dto.tipo) {
+            "Comun" -> LibroComun(
+                duenio, 0, dto.titulo, dto.autor, dto.descripcion,
+                dto.genero, dto.paginas, dto.isbn, dto.idioma,
+                dto.editorial, dto.fechaPublicacion, EstadoLibro.valueOf(dto.estado), dto.imagenUrl
+            )
+            "ConDedicatoria" -> LibroConDedicatoria(
+                duenio, 0, dto.titulo, dto.autor, dto.descripcion,
+                dto.genero, dto.paginas, dto.isbn, dto.idioma,
+                dto.editorial, dto.fechaPublicacion, EstadoLibro.valueOf(dto.estado), dto.imagenUrl
+            )
+            "Coleccionable" -> LibroColeccionable(
+                duenio, 0, dto.titulo, dto.autor, dto.descripcion,
+                dto.genero, dto.paginas, dto.isbn, dto.idioma,
+                dto.editorial, dto.fechaPublicacion, EstadoLibro.valueOf(dto.estado), dto.imagenUrl
+            )
+            else -> throw BusinessException("Tipo de libro inválido: ${dto.tipo}")
+        }
+
+        libroRepository.create(libro)
         return libro.toDTO(usuarioId)
     }
 

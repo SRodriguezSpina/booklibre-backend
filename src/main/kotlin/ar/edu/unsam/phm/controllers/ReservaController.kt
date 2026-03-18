@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @CrossOrigin(origins = ["*"])
-@RequestMapping("/reservas")
+@RequestMapping("/api/reservas")
 class ReservaController(val reservaService: ReservaService) {
     @GetMapping("/{usuarioId}")
     fun getReservas(@PathVariable usuarioId: Int): List<ReservaDTO> = reservaService.obtenerReservas(usuarioId)

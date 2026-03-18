@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @CrossOrigin(origins = ["*"])
-@RequestMapping("/libros")
+@RequestMapping("/api/libros")
 class LibroController(val libroService: LibroService) {
 
     @GetMapping("/home")
@@ -43,4 +43,9 @@ class LibroController(val libroService: LibroService) {
     @PutMapping("/{libroId}")
     fun updateLibro(@PathVariable libroId: Int, @RequestBody dto
     : LibroDTO) = libroService.actualizarLibro(libroId, dto)
+
+    @PostMapping("/nuevo")
+    fun crearLibro(@RequestParam usuarioId: Int, @RequestBody dto: LibroDTO): LibroDTO {
+        return libroService.crearLibro(dto, usuarioId)
+    }
 }
