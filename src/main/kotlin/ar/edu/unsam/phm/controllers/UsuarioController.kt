@@ -22,6 +22,4 @@ class UsuarioController(val usuarioService: UsuarioService) {
     @GetMapping("/{id}/libros")
     fun getLibrosDeUsuario(@PathVariable id: Int): List<LibroUsuarioItemDTO> =
         usuarioService.obtenerLibrosDeUsuario(id)
-
-
 }
