@@ -33,7 +33,7 @@ fun Usuario.toResponse(): UsuarioResponse {
 }
 
 fun Libro.toDTO(usuarioConsultaId: Int): LibroDTO {
-    val ultimaReserva = this.duenio.reservas.lastOrNull()
+    val ultimaReserva = this.duenio.reservas.lastOrNull { it.libro.id == this.id }
     return LibroDTO(
         id = this.id,
         titulo = this.titulo,
