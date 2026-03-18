@@ -9,14 +9,16 @@ import ar.edu.unsam.phm.repository.LibroRepository
 import org.springframework.stereotype.Service
 import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.repository.UsuarioRepository
+import java.time.LocalDate
 
 @Service
 class LibroService(val libroRepository: LibroRepository, private val usuarioRepository: UsuarioRepository) {
-    fun search(query: String, generos: String, page: Int, size: Int, usuarioId: Int): PagedResponse<LibroHomeDTO> {
+    fun search(query: String, generos: String, page: Int, size: Int, usuarioId: Int, paginasMin: Int?, paginasMax: Int?,
+               fechaDesde: String?, fechaHasta: String?, isbn: String?, prestadoPor: String?): PagedResponse<LibroHomeDTO> {
         val listaGeneros = if (generos.isBlank()) emptyList() else generos.split(",")
 
         val filtrados = libroRepository.getLibros()
-            .filter { it.duenio.id != usuarioId } //para excluir los libros que son dee el duhh
+            .filter { it.duenio.id != usuarioId } //para excluir los libros que son de el
             .filter { libro ->
                 val matchQuery = query.isBlank() ||
                         libro.titulo.contains(query, ignoreCase = true) ||
@@ -25,7 +27,28 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
                 val matchGenero = listaGeneros.isEmpty() ||
                         listaGeneros.contains(libro.genero.name)
 
-                matchQuery && matchGenero
+                val matchPaginasMin = paginasMin == null || libro.cantidadPaginas >= paginasMin
+                val matchPaginasMax = paginasMax == null || libro.cantidadPaginas <= paginasMax
+
+                val matchIsbn = isbn.isNullOrBlank() ||
+                        libro.isbn.contains(isbn, ignoreCase = true)
+
+                val matchPrestadoPor = prestadoPor.isNullOrBlank() ||
+                        libro.duenio.nombre.contains(prestadoPor, ignoreCase = true)
+
+                val matchFechas = if (fechaDesde != null && fechaHasta != null) {
+                    val desde = LocalDate.parse(fechaDesde)
+                    val hasta = LocalDate.parse(fechaHasta)
+                    val reservasDelLibro = usuarioRepository.lista
+                        .flatMap { it.reservas }
+                        .filter { it.libro.id == libro.id }
+                    reservasDelLibro.none { reserva ->
+                        reserva.fechaDesde <= hasta && reserva.fechaHasta >= desde
+                    }
+                } else true
+
+                matchQuery && matchGenero && matchPaginasMin && matchPaginasMax &&
+                        matchIsbn && matchPrestadoPor && matchFechas
             }
             .map { it.toHomeDTO() }
 
