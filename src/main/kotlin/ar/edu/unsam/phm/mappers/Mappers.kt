@@ -22,8 +22,8 @@ fun Usuario.toResponse(): UsuarioResponse {
     return UsuarioResponse(
         id = id,
         nombre = nombre,
+        email = getCredencial().email,
         desc = desc,
-        email = email,
         fechaRegistro = fechaRegistro.toString(),
         celular = celular,
         ciudad = ciudad,
