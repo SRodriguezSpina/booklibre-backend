@@ -9,6 +9,7 @@ import ar.edu.unsam.phm.repository.LibroRepository
 import org.springframework.stereotype.Service
 import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.repository.UsuarioRepository
+import kotlin.math.ceil
 
 @Service
 class LibroService(val libroRepository: LibroRepository, private val usuarioRepository: UsuarioRepository) {
@@ -29,7 +30,7 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
             }
             .map { it.toHomeDTO() }
 
-        val totalPages = Math.ceil(filtrados.size.toDouble() / size).toInt()
+        val totalPages = ceil(filtrados.size.toDouble() / size).toInt()
         val content = filtrados.drop(page * size).take(size)
 
         return PagedResponse(content, page, totalPages)
@@ -41,6 +42,6 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
     fun agregarCalificacion(idLibro: Int, calificacion: Calificacion) {
         val libro = libroRepository.getById(idLibro)
         libro.agregarCalificacion(calificacion)
-        libroRepository.update(libro) // O save, dependiendo de tu repo
+        libroRepository.update(libro)
     }
 }
