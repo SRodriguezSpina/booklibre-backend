@@ -10,11 +10,10 @@ class Usuario(
     private val credencial: Credencial,
     val nombre: String,
     var desc: String,
-    var email: String,
-    var celular: String,
-    var ciudad: String,
-    var tipoUsuario: TipoUsuario,
-    var bibliokarmas: Int,
+    var celular: String = "",
+    var ciudad: String = "",
+    var tipoUsuario: TipoUsuario = UsuarioLector(),
+    var bibliokarmas: Int = 0,
     var fechaRegistro: LocalDate = LocalDate.now(),
     val reservas: MutableList<Reserva> = mutableListOf(),
 ) : BaseEntity() {
@@ -23,6 +22,7 @@ class Usuario(
     fun agregarReserva(reserva: Reserva) {
         reservas.add(reserva)
     }
+    fun validarPassword(password: String) = password == credencial.password
 }
 
 class UsuarioLector() : TipoUsuario {}

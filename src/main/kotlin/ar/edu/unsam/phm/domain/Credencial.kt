@@ -1,6 +1,6 @@
 package ar.edu.unsam.phm
 
 class Credencial(
-    val username: String,
+    val email: String,
     val password: String
 )

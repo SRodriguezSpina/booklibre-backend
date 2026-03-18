@@ -3,8 +3,8 @@ package ar.edu.unsam.phm.dtos
 data class UsuarioResponse(
     val id: Int,
     val nombre: String,
-    val desc: String,
     val email: String,
+    val desc: String,
     val fechaRegistro: String,
     val celular: String,
     val ciudad: String,
