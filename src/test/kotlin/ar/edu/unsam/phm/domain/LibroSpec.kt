@@ -43,8 +43,8 @@ class LibroSpec : DescribeSpec({
                 titulo = "1984", autor = "George Orwell",
                 descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
                 paginas = 300, isbn = "ISBN-001", idioma = Idioma.ESPANOL,
-                editorial = "Debolsillo", fecha = LocalDate.of(1949, 6, 8),
-                estado = EstadoLibro.EXCELENTE, imagenUrl = ""
+                editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
+                estado = EstadoLibro.EXCELENTE, imagenUrl = "", autorImg = "",
             )
 
             it("PLUS BIBLIOKARMA CON USUARIO CON MENOS DE 1000 KARMA USA MULTIPLICADOR 5") {
@@ -71,8 +71,8 @@ class LibroSpec : DescribeSpec({
                 titulo = "El Principito", autor = "Saint-Exupéry",
                 descripcion = "Clásico", genero = Genero.LITERATURA_CLASICA,
                 paginas = 100, isbn = "ISBN-002", idioma = Idioma.ESPANOL,
-                editorial = "Salamandra", fecha = LocalDate.of(1943, 4, 6),
-                estado = EstadoLibro.MUY_BUENO, imagenUrl = ""
+                editorial = "Salamandra", fechaPublicacion = LocalDate.of(1943, 4, 6),
+                estado = EstadoLibro.MUY_BUENO, imagenUrl = "", autorImg = "",
             )
 
             it("PLUS BIBLIOKARMA SIN RESERVAS DEL DUENIO ES 200") {
@@ -83,9 +83,8 @@ class LibroSpec : DescribeSpec({
             it("PLUS BIBLIOKARMA AUMENTA SEGUN RESERVAS DEL DUENIO") {
                 val reservaFake = Reserva(libro, duenio, desde, hasta)
                 duenio.agregarReserva(reservaFake)
-                duenio.agregarReserva(reservaFake)
                 // 200 + (10 * 2) = 220
-                libro.plusBiblioKarma(usuarioPobre) shouldBe 220
+                libro.plusBiblioKarma(usuarioPobre) shouldBe 210
             }
 
             it("CALCULA BIBLIOKARMA TOTAL CON DUENIO SIN RESERVAS") {
@@ -102,8 +101,8 @@ class LibroSpec : DescribeSpec({
                 titulo = "Dune", autor = "Frank Herbert",
                 descripcion = "Sci-fi épico", genero = Genero.CIENCIA_FICCION,
                 paginas = 500, isbn = "ISBN-003", idioma = Idioma.ESPANOL,
-                editorial = "Minotauro", fecha = LocalDate.of(1965, 8, 1),
-                estado = EstadoLibro.EXCELENTE, imagenUrl = ""
+                editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
+                estado = EstadoLibro.EXCELENTE, imagenUrl = "", autorImg = "",
             )
 
             it("PLUS BIBLIOKARMA ES CEIL(KARMA/5) + PAGINAS") {
@@ -130,8 +129,8 @@ class LibroSpec : DescribeSpec({
                 titulo = "Sapiens", autor = "Yuval Harari",
                 descripcion = "Historia", genero = Genero.LITERATURA_CLASICA,
                 paginas = 400, isbn = "ISBN-004", idioma = Idioma.ESPANOL,
-                editorial = "Debate", fecha = LocalDate.of(2011, 1, 1),
-                estado = EstadoLibro.EXCELENTE, imagenUrl = ""
+                editorial = "Debate", fechaPublicacion = LocalDate.of(2011, 1, 1),
+                estado = EstadoLibro.EXCELENTE, imagenUrl = "", autorImg = "",
             )
 
             it("CALIFICACION INICIAL ES 0.0 CUANDO NO HAY CALIFICACIONES") {

@@ -11,6 +11,7 @@ data class LibroDTO(
     val descripcion: String,
     val genero: Genero,
     val autor: String,
+    val autorImg: String,
     val paginas: Int,
     val isbn: String,
     val idioma: Idioma,
@@ -20,6 +21,7 @@ data class LibroDTO(
     val propietarioId: Int,
     val imagenUrl: String,
     val estoyReservado: Boolean,
+    val rating: Double,
     val alquiladoPorId: Int?,
     val fechaDevolucion: String?,
     val bibliokarma: Int? // Opcional para mostrar el karma que dio/dará

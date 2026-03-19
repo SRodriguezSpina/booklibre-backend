@@ -44,8 +44,8 @@ class UsuarioSpec : DescribeSpec({
             titulo = "Clean Code", autor = "Robert C. Martin",
             descripcion = "Buenas prácticas", genero = Genero.DISENO,
             paginas = 464, isbn = "ISBN-001", idioma = Idioma.INGLES,
-            editorial = "Prentice Hall", fecha = LocalDate.of(2008, 8, 1),
-            estado = EstadoLibro.EXCELENTE, imagenUrl = ""
+            editorial = "Prentice Hall", fechaPublicacion = LocalDate.of(2008, 8, 1),
+            estado = EstadoLibro.EXCELENTE, imagenUrl = "", autorImg = "",
         )
 
         val reserva = Reserva(
@@ -53,7 +53,7 @@ class UsuarioSpec : DescribeSpec({
             usuario = usuario,
             fechaDesde = LocalDate.of(2026, 3, 1),
             fechaHasta = LocalDate.of(2026, 3, 10),
-        )
+        ).apply { id = 0 }
 
         it("VALIDA PASSWORD CORRECTA") {
             usuario.validarPassword("1234") shouldBe true
@@ -69,7 +69,7 @@ class UsuarioSpec : DescribeSpec({
         }
 
         it("TODAS LAS RESERVAS DEVUELVE LA LISTA COMPLETA") {
-            val reserva2 = Reserva(libroComun, usuario, LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 10))
+            val reserva2 = Reserva(libroComun, usuario, LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 10)).apply { id = 1 }
             usuario.agregarReserva(reserva)
             usuario.agregarReserva(reserva2)
             usuario.todasLasReservas().size shouldBe 2

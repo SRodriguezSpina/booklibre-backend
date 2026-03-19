@@ -9,6 +9,7 @@ abstract class Libro(
     val duenio: Usuario,
     var titulo: String,
     var autor: String,
+    var autorImg: String,
     var descripcion: String,
     var genero: Genero,
     var cantidadPaginas: Int,
@@ -40,9 +41,9 @@ abstract class Libro(
     abstract fun plusBiblioKarma(usuario: Usuario): Int
 }
 class LibroComun(
-    duenio: Usuario, id: Int, titulo: String, autor: String, descripcion: String, genero: Genero,
-    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro, imagenUrl: String
-) : Libro(duenio, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado, imagenUrl) {
+    duenio: Usuario, id: Int, titulo: String, autor: String, autorImg: String, descripcion: String, genero: Genero,
+    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fechaPublicacion: LocalDate, estado: EstadoLibro, imagenUrl: String
+) : Libro(duenio, titulo, autor,autorImg, descripcion,  genero, paginas, isbn, idioma, editorial, fechaPublicacion, estado, imagenUrl) {
     override fun plusBiblioKarma(usuario: Usuario): Int {
         if (cantidadPaginas <= 0) throw BusinessException("La cantidad de páginas debe ser mayor a 0")
         val multiplicador = if (usuario.bibliokarmas < 1000) 5 else 2
@@ -50,17 +51,17 @@ class LibroComun(
     }
 }
 class LibroConDedicatoria(
-    duenio: Usuario, id: Int, titulo: String, autor: String, descripcion: String, genero: Genero,
-    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro, imagenUrl: String
-) : Libro(duenio, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado, imagenUrl) {
+    duenio: Usuario, id: Int, titulo: String, autor: String, autorImg: String, descripcion: String, genero: Genero,
+    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fechaPublicacion: LocalDate, estado: EstadoLibro, imagenUrl: String
+) : Libro(duenio, titulo, autor,autorImg, descripcion,  genero, paginas, isbn, idioma, editorial, fechaPublicacion, estado, imagenUrl) {
     override fun plusBiblioKarma(usuario: Usuario): Int {
         return 200 + (10 * duenio.reservas.size)
     }
 }
 class LibroColeccionable(
-    duenio: Usuario, id: Int, titulo: String, autor: String, descripcion: String, genero: Genero,
-    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro, imagenUrl: String
-) : Libro(duenio, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado, imagenUrl) {
+    duenio: Usuario, id: Int, titulo: String, autor: String, autorImg: String, descripcion: String, genero: Genero,
+    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fechaPublicacion: LocalDate, estado: EstadoLibro, imagenUrl: String
+) : Libro(duenio, titulo, autor,autorImg, descripcion,  genero, paginas, isbn, idioma, editorial, fechaPublicacion, estado, imagenUrl) {
     override fun plusBiblioKarma(usuario: Usuario): Int {
         if (usuario.bibliokarmas < 0) throw BusinessException("El usuario no puede tener bibliokarmas negativos")
         if (cantidadPaginas <= 0) throw BusinessException("La cantidad de páginas debe ser mayor a 0")
