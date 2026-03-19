@@ -62,7 +62,8 @@ class UsuarioService(
                     autor = libro.autor,
                     genero = libro.genero.name,
                     disponible = disponible,
-                    fechaAgregado = null
+                    fechaAgregado = null,
+                    imagenUrl = libro.imagenUrl
                 )
             }
             .sortedByDescending { it.id }
