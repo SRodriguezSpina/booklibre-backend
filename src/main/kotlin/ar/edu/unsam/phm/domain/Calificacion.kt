@@ -1,4 +1,4 @@
-package ar.edu.unsam.phm
+package ar.edu.unsam.phm.domain
 
 data class Calificacion(
     val usuarioId: Int = 0,

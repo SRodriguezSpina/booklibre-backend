@@ -1,6 +1,6 @@
 package ar.edu.unsam.phm.repository
 
-import ar.edu.unsam.phm.Reserva
+import ar.edu.unsam.phm.domain.Reserva
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 

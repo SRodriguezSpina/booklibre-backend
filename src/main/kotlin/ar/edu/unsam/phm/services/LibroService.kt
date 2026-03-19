@@ -1,9 +1,9 @@
 package ar.edu.unsam.phm.services
-import ar.edu.unsam.phm.Calificacion
-import ar.edu.unsam.phm.EstadoLibro
-import ar.edu.unsam.phm.LibroColeccionable
-import ar.edu.unsam.phm.LibroComun
-import ar.edu.unsam.phm.LibroConDedicatoria
+import ar.edu.unsam.phm.domain.Calificacion
+import ar.edu.unsam.phm.domain.EstadoLibro
+import ar.edu.unsam.phm.domain.LibroColeccionable
+import ar.edu.unsam.phm.domain.LibroComun
+import ar.edu.unsam.phm.domain.LibroConDedicatoria
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse

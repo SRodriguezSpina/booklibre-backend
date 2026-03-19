@@ -1,8 +1,8 @@
 package ar.edu.unsam.phm.services
 
-import ar.edu.unsam.phm.Credencial
-import ar.edu.unsam.phm.Usuario
-import ar.edu.unsam.phm.UsuarioLector
+import ar.edu.unsam.phm.domain.Credencial
+import ar.edu.unsam.phm.domain.Usuario
+import ar.edu.unsam.phm.domain.UsuarioLector
 import ar.edu.unsam.phm.dtos.LoginRequest
 import ar.edu.unsam.phm.dtos.RegisterRequest
 import ar.edu.unsam.phm.exceptions.ConflictException

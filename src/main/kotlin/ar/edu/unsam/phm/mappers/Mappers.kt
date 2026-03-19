@@ -1,11 +1,11 @@
 package ar.edu.unsam.phm.mappers
 
-import ar.edu.unsam.phm.Libro
-import ar.edu.unsam.phm.Reserva
-import ar.edu.unsam.phm.Usuario
-import ar.edu.unsam.phm.UsuarioLector
-import ar.edu.unsam.phm.UsuarioLectorPublicador
-import ar.edu.unsam.phm.UsuarioPublicador
+import ar.edu.unsam.phm.domain.Libro
+import ar.edu.unsam.phm.domain.Reserva
+import ar.edu.unsam.phm.domain.Usuario
+import ar.edu.unsam.phm.domain.UsuarioLector
+import ar.edu.unsam.phm.domain.UsuarioLectorPublicador
+import ar.edu.unsam.phm.domain.UsuarioPublicador
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO

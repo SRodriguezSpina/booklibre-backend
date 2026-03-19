@@ -1,13 +1,13 @@
 package ar.edu.unsam.phm.services
 
-import ar.edu.unsam.phm.Calificacion
-import ar.edu.unsam.phm.Credencial
-import ar.edu.unsam.phm.EstadoLibro
-import ar.edu.unsam.phm.Genero
-import ar.edu.unsam.phm.Idioma
-import ar.edu.unsam.phm.LibroComun
-import ar.edu.unsam.phm.Reserva
-import ar.edu.unsam.phm.Usuario
+import ar.edu.unsam.phm.domain.Calificacion
+import ar.edu.unsam.phm.domain.Credencial
+import ar.edu.unsam.phm.domain.EstadoLibro
+import ar.edu.unsam.phm.domain.Genero
+import ar.edu.unsam.phm.domain.Idioma
+import ar.edu.unsam.phm.domain.LibroComun
+import ar.edu.unsam.phm.domain.Reserva
+import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
