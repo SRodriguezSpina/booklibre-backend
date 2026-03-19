@@ -35,16 +35,26 @@ class ReservaService(
             )
         }
 
-        val usuario = usuarioRepository.getById(dto.usuarioId)
+        val usuarioSolicitante = usuarioRepository.getById(dto.usuarioId)
         val nuevaReserva = Reserva(
             libro = libro,
-            usuario = usuario,
+            usuario = usuarioSolicitante,
             fechaDesde = dto.fechaDesde,
             fechaHasta = dto.fechaHasta
         )
 
-        usuario.agregarReserva(nuevaReserva)
-        usuarioRepository.update(usuario)
-        return reservaRepository.create(nuevaReserva)
+        val reservaGuardada = reservaRepository.create(nuevaReserva)
+
+        usuarioSolicitante.agregarReserva(reservaGuardada)
+        usuarioRepository.update(usuarioSolicitante)
+
+        // 3. TERCERO, se la agregamos al dueño del libro (¡CLAVE para el Mapper toDTO!)
+        val duenio = libro.duenio
+        if (duenio.id != usuarioSolicitante.id) { // Por si alguien se alquila su propio libro
+            duenio.agregarReserva(reservaGuardada)
+            usuarioRepository.update(duenio)
+        }
+
+        return reservaGuardada
     }
 }
