@@ -5,13 +5,13 @@ data class LoginRequest(
     val password: String
 )
 
-class RegisterRequest(
+data class RegisterRequest(
     val nombre: String,
     val email: String,
     val password: String
 )
 
-class AuthResponseUsuario (
+data class AuthResponseUsuario (
      val success: Boolean,
      val message: String? = null,
      val usuario: UsuarioResponse? = null
