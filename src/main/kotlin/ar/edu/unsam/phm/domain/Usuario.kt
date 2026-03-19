@@ -1,5 +1,6 @@
 package ar.edu.unsam.phm
 
+import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.repository.BaseEntity
 import java.time.LocalDate
 
@@ -20,6 +21,7 @@ class Usuario(
     fun todasLasReservas(): List<Reserva> = reservas
     fun getCredencial(): Credencial = credencial
     fun agregarReserva(reserva: Reserva) {
+        if (reservas.any { it.id == reserva.id }) throw BusinessException("La reserva ya existe para este usuario")
         reservas.add(reserva)
     }
     fun validarPassword(password: String) = password == credencial.password
