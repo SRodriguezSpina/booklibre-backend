@@ -21,11 +21,13 @@ abstract class Libro(
     var calificaciones: MutableList<Calificacion> = mutableListOf(),
 ): BaseEntity() {
     fun calcularBiblioKarmaTotal(usuario: Usuario, desde: LocalDate, hasta: LocalDate): Int {
+        if (!hasta.isAfter(desde)) throw BusinessException("La fecha de hasta debe ser posterior a la fecha de desde")
         val diasReserva = ChronoUnit.DAYS.between(desde, hasta).toInt() + 1
         return (5 * diasReserva) + plusBiblioKarma(usuario)
     }
     // En tu clase Libro.kt
     fun agregarCalificacion(nueva: Calificacion) {
+        if (nueva.valor !in 1..5) throw BusinessException("La calificación debe estar entre 1 y 5")
         if (calificaciones.any { it.usuarioId == nueva.usuarioId }) {
             throw BusinessException("Usuario ${nueva.usuarioId} ya calificó este libro")
         }
@@ -42,6 +44,7 @@ class LibroComun(
     paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro, imagenUrl: String
 ) : Libro(duenio, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado, imagenUrl) {
     override fun plusBiblioKarma(usuario: Usuario): Int {
+        if (cantidadPaginas <= 0) throw BusinessException("La cantidad de páginas debe ser mayor a 0")
         val multiplicador = if (usuario.bibliokarmas < 1000) 5 else 2
         return cantidadPaginas * multiplicador
     }
@@ -59,6 +62,8 @@ class LibroColeccionable(
     paginas: Int, isbn: String, idioma: Idioma, editorial: String, fecha: LocalDate, estado: EstadoLibro, imagenUrl: String
 ) : Libro(duenio, titulo, autor, descripcion, genero, paginas, isbn, idioma, editorial, fecha, estado, imagenUrl) {
     override fun plusBiblioKarma(usuario: Usuario): Int {
+        if (usuario.bibliokarmas < 0) throw BusinessException("El usuario no puede tener bibliokarmas negativos")
+        if (cantidadPaginas <= 0) throw BusinessException("La cantidad de páginas debe ser mayor a 0")
         val karmaParte = ceil(usuario.bibliokarmas / 5.0).toInt()
         return karmaParte + cantidadPaginas
     }

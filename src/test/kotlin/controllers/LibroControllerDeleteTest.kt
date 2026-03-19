@@ -1,25 +1,27 @@
-package ar.edu.unsam.phm.controllers
+package controllers
 
+import ar.edu.unsam.phm.controllers.LibroController
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.services.LibroService
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.doThrow
-import org.mockito.Mockito.verify
+import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 
 @WebMvcTest(LibroController::class)
 @DisplayName("Dado un LibroController")
 class LibroControllerDeleteTest {
-    @Autowired lateinit var mockMvc: MockMvc
-    @MockBean lateinit var libroService: LibroService
+    @Autowired
+    lateinit var mockMvc: MockMvc
+    @MockBean
+    lateinit var libroService: LibroService
 
     @Test
     @DisplayName("cuando elimina ok, DELETE /api/libros/{id} devuelve 204")
@@ -27,10 +29,10 @@ class LibroControllerDeleteTest {
         val libroId = 10
         val usuarioId = 1
 
-        mockMvc.perform(delete("/api/libros/$libroId").param("usuarioId", usuarioId.toString()))
-            .andExpect(status().isNoContent)
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/libros/$libroId").param("usuarioId", usuarioId.toString()))
+            .andExpect(MockMvcResultMatchers.status().isNoContent)
 
-        verify(libroService).eliminarLibro(libroId, usuarioId)
+        Mockito.verify(libroService).eliminarLibro(libroId, usuarioId)
     }
 
     @Test
@@ -39,13 +41,13 @@ class LibroControllerDeleteTest {
         val libroId = 999
         val usuarioId = 1
 
-        doThrow(NotFoundException("Libro no encontrado"))
+        Mockito.doThrow(NotFoundException("Libro no encontrado"))
             .`when`(libroService).eliminarLibro(libroId, usuarioId)
 
-        mockMvc.perform(delete("/api/libros/$libroId").param("usuarioId", usuarioId.toString()))
-            .andExpect(status().isNotFound)
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/libros/$libroId").param("usuarioId", usuarioId.toString()))
+            .andExpect(MockMvcResultMatchers.status().isNotFound)
 
-        verify(libroService).eliminarLibro(libroId, usuarioId)
+        Mockito.verify(libroService).eliminarLibro(libroId, usuarioId)
     }
 
     @Test
@@ -54,13 +56,13 @@ class LibroControllerDeleteTest {
         val libroId = 10
         val usuarioId = 2
 
-        doThrow(UnauthorizedException("No autorizado"))
+        Mockito.doThrow(UnauthorizedException("No autorizado"))
             .`when`(libroService).eliminarLibro(libroId, usuarioId)
 
-        mockMvc.perform(delete("/api/libros/$libroId").param("usuarioId", usuarioId.toString()))
-            .andExpect(status().isUnauthorized)
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/libros/$libroId").param("usuarioId", usuarioId.toString()))
+            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
 
-        verify(libroService).eliminarLibro(libroId, usuarioId)
+        Mockito.verify(libroService).eliminarLibro(libroId, usuarioId)
     }
 
     @Test
@@ -69,13 +71,12 @@ class LibroControllerDeleteTest {
         val libroId = 10
         val usuarioId = 1
 
-        doThrow(ConflictException("No se puede eliminar "))
+        Mockito.doThrow(ConflictException("No se puede eliminar "))
             .`when`(libroService).eliminarLibro(libroId, usuarioId)
 
-        mockMvc.perform(delete("/api/libros/$libroId").param("usuarioId", usuarioId.toString()))
-            .andExpect(status().isConflict)
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/libros/$libroId").param("usuarioId", usuarioId.toString()))
+            .andExpect(MockMvcResultMatchers.status().isConflict)
 
-        verify(libroService).eliminarLibro(libroId, usuarioId)
+        Mockito.verify(libroService).eliminarLibro(libroId, usuarioId)
     }
 }
-
