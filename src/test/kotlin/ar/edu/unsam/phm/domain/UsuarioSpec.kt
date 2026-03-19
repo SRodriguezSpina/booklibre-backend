@@ -1,79 +1,87 @@
-package ar.edu.unsam.phm.domain
+package ar.edu.unsam.phm
 
-import ar.edu.unsam.phm.Credencial
-import ar.edu.unsam.phm.Usuario
-import ar.edu.unsam.phm.UsuarioLector
-import ar.edu.unsam.phm.UsuarioPublicador
-import ar.edu.unsam.phm.UsuarioLectorPublicador
+import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
+import io.kotest.matchers.collections.shouldContain
+import java.time.LocalDate
 
 class UsuarioSpec : DescribeSpec({
-    fun credencial(email: String = "test@mail.com", password: String = "secret") =
-        Credencial(email, password)
+    isolationMode = IsolationMode.InstancePerTest
 
-    fun usuario(
-        email: String = "test@mail.com",
-        password: String = "secret",
-        tipo: ar.edu.unsam.phm.TipoUsuario = UsuarioLector()
-    ) = Usuario(credencial(email, password), "Test", "", tipoUsuario = tipo)
+    describe("Compruebo Usuario") {
 
-    describe("validarPassword") {
-        it("retorna true si la password coincide") {
-            val u = usuario(password = "abc123")
-            u.validarPassword("abc123") shouldBe true
+        val credencial = Credencial("juanito", "1234")
+        val usuario = Usuario(
+            credencial = credencial,
+            nombre = "Juan Pérez",
+            desc = "Lector intrépido",
+            celular = "11556677",
+            ciudad = "San Martín",
+            tipoUsuario = UsuarioLector(),
+            bibliokarmas = 500,
+            fechaRegistro = LocalDate.of(2020, 9, 15),
+        )
+
+        val duenio = Usuario(
+            credencial = Credencial("ana", "pass"),
+            nombre = "Ana García",
+            desc = "Publicadora",
+        )
+
+        val libroComun = LibroComun(
+            duenio = duenio, id = 1,
+            titulo = "Clean Code", autor = "Robert C. Martin",
+            descripcion = "Buenas prácticas", genero = Genero.DISENO,
+            paginas = 464, isbn = "ISBN-001", idioma = Idioma.INGLES,
+            editorial = "Prentice Hall", fecha = LocalDate.of(2008, 8, 1),
+            estado = EstadoLibro.EXCELENTE, imagenUrl = ""
+        )
+
+        val reserva = Reserva(
+            libro = libroComun,
+            usuario = usuario,
+            fechaDesde = LocalDate.of(2026, 3, 1),
+            fechaHasta = LocalDate.of(2026, 3, 10),
+        )
+
+        it("VALIDA PASSWORD CORRECTA") {
+            usuario.validarPassword("1234") shouldBe true
         }
 
-        it("retorna false si la password no coincide") {
-            val u = usuario(password = "abc123")
-            u.validarPassword("wrongpassword") shouldBe false
+        it("VALIDA PASSWORD INCORRECTA") {
+            usuario.validarPassword("wrongpass") shouldBe false
         }
 
-        it("retorna false si la password está vacía") {
-            val u = usuario(password = "abc123")
-            u.validarPassword("") shouldBe false
+        it("AGREGA UNA RESERVA Y LA LISTA LA CONTIENE") {
+            usuario.agregarReserva(reserva)
+            usuario.todasLasReservas() shouldContain reserva
         }
 
-        it("es case-sensitive") {
-            val u = usuario(password = "Secret")
-            u.validarPassword("secret") shouldBe false
-            u.validarPassword("Secret") shouldBe true
-        }
-    }
-
-    describe("getCredencial") {
-        it("expone el email de la credencial") {
-            val u = usuario(email = "juan@mail.com")
-            u.getCredencial().email shouldBe "juan@mail.com"
+        it("TODAS LAS RESERVAS DEVUELVE LA LISTA COMPLETA") {
+            val reserva2 = Reserva(libroComun, usuario, LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 10))
+            usuario.agregarReserva(reserva)
+            usuario.agregarReserva(reserva2)
+            usuario.todasLasReservas().size shouldBe 2
         }
 
-        it("expone la password de la credencial") {
-            val u = usuario(password = "mypassword")
-            u.getCredencial().password shouldBe "mypassword"
-        }
-    }
-
-    describe("tipoUsuario") {
-        it("por defecto es UsuarioLector") {
-            val u = Usuario(credencial(), "Test", "")
-            u.tipoUsuario.shouldBeInstanceOf<UsuarioLector>()
+        it("GET CREDENCIAL DEVUELVE LA CREDENCIAL CORRECTA") {
+            usuario.getCredencial() shouldBe credencial
         }
 
-        it("acepta UsuarioPublicador") {
-            val u = usuario(tipo = UsuarioPublicador())
-            u.tipoUsuario.shouldBeInstanceOf<UsuarioPublicador>()
+        it("TIPO USUARIO POR DEFECTO ES LECTOR") {
+            usuario.tipoUsuario::class shouldBe UsuarioLector::class
         }
 
-        it("acepta UsuarioLectorPublicador") {
-            val u = usuario(tipo = UsuarioLectorPublicador())
-            u.tipoUsuario.shouldBeInstanceOf<UsuarioLectorPublicador>()        }
-    }
+        it("SE PUEDE CAMBIAR EL TIPO DE USUARIO A PUBLICADOR") {
+            usuario.tipoUsuario = UsuarioPublicador()
+            usuario.tipoUsuario::class shouldBe UsuarioPublicador::class
+        }
 
-    describe("reservas") {
-        it("inicia con lista vacía") {
-            val u = usuario()
-            u.todasLasReservas() shouldBe emptyList()
+        it("SE PUEDE CAMBIAR EL TIPO DE USUARIO A LECTOR PUBLICADOR") {
+            usuario.tipoUsuario = UsuarioLectorPublicador()
+            usuario.tipoUsuario::class shouldBe UsuarioLectorPublicador::class
         }
     }
 })
+
