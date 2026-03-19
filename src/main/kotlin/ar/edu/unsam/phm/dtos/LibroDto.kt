@@ -19,6 +19,7 @@ data class LibroDTO(
     val fechaPublicacion: LocalDate,
     val propietarioId: Int,
     val imagenUrl: String,
+    val estoyReservado: Boolean,
     val alquiladoPorId: Int?,
     val fechaDevolucion: String?,
     val bibliokarma: Int? // Opcional para mostrar el karma que dio/dará

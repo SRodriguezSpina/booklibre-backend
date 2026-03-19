@@ -1,4 +1,12 @@
 package ar.edu.unsam.phm.dtos
+import java.time.LocalDate
+
+data class CrearReservaDTO(
+    val libroId: Int,
+    val usuarioId: Int,
+    val fechaDesde: LocalDate,
+    val fechaHasta: LocalDate
+)
 
 data class ReservaDTO(
     val id: Int,
