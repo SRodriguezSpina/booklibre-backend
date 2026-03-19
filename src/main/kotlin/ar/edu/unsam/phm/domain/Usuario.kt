@@ -1,4 +1,4 @@
-package ar.edu.unsam.phm
+package ar.edu.unsam.phm.domain
 
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.repository.BaseEntity

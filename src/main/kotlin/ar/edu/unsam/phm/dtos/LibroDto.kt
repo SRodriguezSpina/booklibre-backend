@@ -1,7 +1,7 @@
 package ar.edu.unsam.phm.dtos
 
-import ar.edu.unsam.phm.Genero
-import ar.edu.unsam.phm.Idioma
+import ar.edu.unsam.phm.domain.Idioma
+import ar.edu.unsam.phm.domain.Genero
 import java.time.LocalDate
 
 data class LibroDTO(

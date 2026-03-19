@@ -1,8 +1,8 @@
 package ar.edu.unsam.phm.controllers
 
-import ar.edu.unsam.phm.Calificacion
-import ar.edu.unsam.phm.Genero
-import ar.edu.unsam.phm.Idioma
+import ar.edu.unsam.phm.domain.Calificacion
+import ar.edu.unsam.phm.domain.Genero
+import ar.edu.unsam.phm.domain.Idioma
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
