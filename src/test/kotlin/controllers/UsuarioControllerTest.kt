@@ -1,5 +1,6 @@
-package ar.edu.unsam.phm.controllers
+package controllers
 
+import ar.edu.unsam.phm.controllers.UsuarioController
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
@@ -7,27 +8,25 @@ import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.services.UsuarioService
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
+import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 
 @WebMvcTest(UsuarioController::class)
 @DisplayName("Dado un UsuarioController")
 class UsuarioControllerTest {
-    @Autowired lateinit var mockMvc: MockMvc
-    @MockBean lateinit var usuarioService: UsuarioService
+    @Autowired
+    lateinit var mockMvc: MockMvc
+    @MockBean
+    lateinit var usuarioService: UsuarioService
 
     @Test
-    @DisplayName("cuando existe el usuario, GET /usuarios/{id} devuelve 200 y el json del usuario")
+    @DisplayName("cuando existe el usuario, GET /api/usuarios/{id} devuelve 200 y el json del usuario")
     fun getUsuario_ok() {
         val id = 1
         val retorno = UsuarioResponse(
@@ -42,33 +41,33 @@ class UsuarioControllerTest {
             bibliokarmas = 10
         )
 
-        `when`(usuarioService.obtenerUsuario(id)).thenReturn(retorno)
+        Mockito.`when`(usuarioService.obtenerUsuario(id)).thenReturn(retorno)
 
-        mockMvc.perform(get("/usuarios/$id"))
-            .andExpect(status().isOk)
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.id").value(1))
-            .andExpect(jsonPath("$.nombre").value("Juan"))
-            .andExpect(jsonPath("$.tipoUsuario").value("Lector"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/usuarios/$id"))
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.nombre").value("Juan"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.tipoUsuario").value("Lector"))
 
-        verify(usuarioService).obtenerUsuario(id)
+        Mockito.verify(usuarioService).obtenerUsuario(id)
     }
 
     @Test
-    @DisplayName("cuando no existe el usuario, GET /usuarios/{id} devuelve 404")
+    @DisplayName("cuando no existe el usuario, GET /api/usuarios/{id} devuelve 404")
     fun getUsuario_notFound() {
         val id = 999
-        `when`(usuarioService.obtenerUsuario(id))
+        Mockito.`when`(usuarioService.obtenerUsuario(id))
             .thenThrow(NotFoundException("Usuario no encontrado"))
 
-        mockMvc.perform(get("/usuarios/$id"))
-            .andExpect(status().isNotFound)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/usuarios/$id"))
+            .andExpect(MockMvcResultMatchers.status().isNotFound)
 
-        verify(usuarioService).obtenerUsuario(id)
+        Mockito.verify(usuarioService).obtenerUsuario(id)
     }
 
     @Test
-    @DisplayName("cuando actualiza ok, PUT /usuarios/{id} devuelve 200 con el usuario actualizado")
+    @DisplayName("cuando actualiza ok, PUT /api/usuarios/{id} devuelve 200 con el usuario actualizado")
     fun actualizarUsuario_ok() {
         val id = 1
         val request = UsuarioUpdateRequest(
@@ -91,10 +90,10 @@ class UsuarioControllerTest {
             bibliokarmas = 10
         )
 
-        `when`(usuarioService.actualizarUsuario(id, request)).thenReturn(retorno)
+        Mockito.`when`(usuarioService.actualizarUsuario(id, request)).thenReturn(retorno)
 
         mockMvc.perform(
-            put("/usuarios/$id")
+            MockMvcRequestBuilders.put("/api/usuarios/$id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -109,17 +108,17 @@ class UsuarioControllerTest {
                     """.trimIndent()
                 )
         )
-            .andExpect(status().isOk)
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.nombre").value("Juan Actualizado"))
-            .andExpect(jsonPath("$.ciudad").value("Rosario"))
-            .andExpect(jsonPath("$.tipoUsuario").value("Publicador"))
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.nombre").value("Juan Actualizado"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.ciudad").value("Rosario"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.tipoUsuario").value("Publicador"))
 
-        verify(usuarioService).actualizarUsuario(id, request)
+        Mockito.verify(usuarioService).actualizarUsuario(id, request)
     }
 
     @Test
-    @DisplayName("cuando no existe el usuario, PUT /usuarios/{id} devuelve 404")
+    @DisplayName("cuando no existe el usuario, PUT /api/usuarios/{id} devuelve 404")
     fun actualizarUsuario_notFound() {
         val id = 999
         val request = UsuarioUpdateRequest(
@@ -131,11 +130,11 @@ class UsuarioControllerTest {
             tipoUsuario = "LECTOR"
         )
 
-        `when`(usuarioService.actualizarUsuario(id, request))
+        Mockito.`when`(usuarioService.actualizarUsuario(id, request))
             .thenThrow(NotFoundException("Usuario no encontrado"))
 
         mockMvc.perform(
-            put("/usuarios/$id")
+            MockMvcRequestBuilders.put("/api/usuarios/$id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -150,13 +149,13 @@ class UsuarioControllerTest {
                     """.trimIndent()
                 )
         )
-            .andExpect(status().isNotFound)
+            .andExpect(MockMvcResultMatchers.status().isNotFound)
 
-        verify(usuarioService).actualizarUsuario(id, request)
+        Mockito.verify(usuarioService).actualizarUsuario(id, request)
     }
 
     @Test
-    @DisplayName("GET /usuarios/{id}/libros devuelve 200 con lista de libros")
+    @DisplayName("GET /api/usuarios/{id}/libros devuelve 200 con lista de libros")
     fun getLibrosDeUsuario_ok() {
         val id = 1
         val retorno = listOf(
@@ -170,15 +169,14 @@ class UsuarioControllerTest {
             )
         )
 
-        `when`(usuarioService.obtenerLibrosDeUsuario(id)).thenReturn(retorno)
+        Mockito.`when`(usuarioService.obtenerLibrosDeUsuario(id)).thenReturn(retorno)
 
-        mockMvc.perform(get("/usuarios/$id/libros"))
-            .andExpect(status().isOk)
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$[0].id").value(10))
-            .andExpect(jsonPath("$[0].disponible").value(true))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/usuarios/$id/libros"))
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(10))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].disponible").value(true))
 
-        verify(usuarioService).obtenerLibrosDeUsuario(id)
+        Mockito.verify(usuarioService).obtenerLibrosDeUsuario(id)
     }
 }
-
