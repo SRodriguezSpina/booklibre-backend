@@ -49,8 +49,8 @@ class ReservaServiceSpec : DescribeSpec({
             titulo = "1984", autor = "George Orwell",
             descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
             paginas = 300, isbn = "ISBN-001", idioma = Idioma.ESPANOL,
-            editorial = "Debolsillo", fecha = LocalDate.of(1949, 6, 8),
-            estado = EstadoLibro.EXCELENTE, imagenUrl = ""
+            editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
+            estado = EstadoLibro.EXCELENTE, imagenUrl = "", autorImg = "",
         )
 
         val reserva = Reserva(
@@ -59,6 +59,16 @@ class ReservaServiceSpec : DescribeSpec({
             fechaDesde = LocalDate.of(2026, 3, 1),
             fechaHasta = LocalDate.of(2026, 3, 10),
         ).apply { id = 500 }
+
+        val usuarioSinReservas = Usuario(
+            credencial = Credencial("vacio", "123"),
+            nombre = "Sin Reservas",
+            desc = ""
+        ).apply { id = 99 }
+
+        every { usuarioRepository.findById(1) } returns solicitante
+        every { usuarioRepository.findById(3) } returns duenio
+        every { usuarioRepository.findById(99) } returns usuarioSinReservas
 
         it("OBTENER RESERVAS DEVUELVE LOS DTOs DEL USUARIO SOLICITANTE") {
             every { reservaRepository.getReservasDeUsuario(1) } returns listOf(reserva)
@@ -128,8 +138,8 @@ class ReservaServiceSpec : DescribeSpec({
                 titulo = "Dune", autor = "Frank Herbert",
                 descripcion = "Sci-fi", genero = Genero.CIENCIA_FICCION,
                 paginas = 500, isbn = "ISBN-002", idioma = Idioma.ESPANOL,
-                editorial = "Minotauro", fecha = LocalDate.of(1965, 8, 1),
-                estado = EstadoLibro.MUY_BUENO, imagenUrl = ""
+                editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
+                estado = EstadoLibro.MUY_BUENO, imagenUrl = "", autorImg = "",
             )
             val reserva2 = Reserva(
                 libro = libro2,

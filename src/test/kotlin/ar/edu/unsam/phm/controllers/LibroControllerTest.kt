@@ -46,7 +46,9 @@ class LibroControllerTest(
         estado = "EXCELENTE", fechaPublicacion = LocalDate.of(1949, 6, 8),
         propietarioId = 3, imagenUrl = "", alquiladoPorId = null,
         fechaDevolucion = null, bibliokarma = 1550,
-        estoyReservado = false
+        estoyReservado = false,
+        autorImg = "",
+        rating = 0.0
     )
 
     private fun libroHomeDTO() = LibroHomeDTO(
