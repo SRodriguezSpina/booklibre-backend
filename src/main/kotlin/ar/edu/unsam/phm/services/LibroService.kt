@@ -10,6 +10,7 @@ import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.*
 import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.EntityNotFoundException
 import org.springframework.stereotype.Service
 import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.repository.UsuarioRepository
@@ -117,5 +118,28 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
         val libro = libroRepository.getById(idLibro)
         libro.agregarCalificacion(calificacion)
         libroRepository.update(libro)
+    }
+
+    fun eliminarLibro(libroId: Int, usuarioId: Int) {
+        val libro = try {
+            libroRepository.getById(libroId)
+        } catch (_: EntityNotFoundException) {
+            throw NotFoundException("Libro no encontrado")
+        }
+
+        if (libro.duenio.id != usuarioId) {
+            throw UnauthorizedException("No autorizado para eliminar este libro")
+        }
+
+        val hoy = LocalDate.now()
+        val hayReservaActiva = usuarioRepository.lista
+            .flatMap { it.reservas }
+            .any { it.libro.id == libroId && !hoy.isBefore(it.fechaDesde) && !hoy.isAfter(it.fechaHasta) }
+
+        if (hayReservaActiva) {
+            throw ConflictException("El libro tiene una reserva activa y no puede eliminarse")
+        }
+
+        libroRepository.delete(libro)
     }
 }
