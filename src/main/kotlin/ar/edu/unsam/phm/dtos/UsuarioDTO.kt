@@ -27,5 +27,6 @@ data class LibroUsuarioItemDTO(
     val autor: String,
     val genero: String,
     val disponible: Boolean,
-    val fechaAgregado: String?
+    val fechaAgregado: String?,
+    val imagenUrl: String?
 )

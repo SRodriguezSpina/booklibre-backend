@@ -5,6 +5,7 @@ import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.services.LibroService
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -42,6 +43,12 @@ class LibroController(val libroService: LibroService) {
     @PutMapping("/{libroId}")
     fun updateLibro(@PathVariable libroId: Int, @RequestBody dto
     : LibroDTO) = libroService.actualizarLibro(libroId, dto)
+
+    @DeleteMapping("/{libroId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun eliminarLibro(@PathVariable libroId: Int, @RequestParam usuarioId: Int) {
+        libroService.eliminarLibro(libroId, usuarioId)
+    }
 
     @PostMapping("/nuevo")
     fun crearLibro(@RequestParam usuarioId: Int, @RequestBody dto: LibroDTO): LibroDTO {

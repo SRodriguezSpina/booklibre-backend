@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.Reserva
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
+import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
@@ -18,6 +19,8 @@ class ReservaService(
     private val reservaRepository: ReservaRepository
 ) {
     fun obtenerReservas(usuarioId: Int): List<ReservaDTO> {
+        usuarioRepository.findById(usuarioId)
+            ?: throw NotFoundException("Usuario $usuarioId no encontrado")
         val reservas = reservaRepository.getReservasDeUsuario(usuarioId)
         return reservas.map { it.toDTO(usuarioId) }
     }

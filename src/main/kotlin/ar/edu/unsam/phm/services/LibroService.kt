@@ -10,6 +10,7 @@ import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.*
 import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.EntityNotFoundException
 import org.springframework.stereotype.Service
 import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.repository.UsuarioRepository
@@ -20,6 +21,9 @@ import kotlin.math.ceil
 class LibroService(val libroRepository: LibroRepository, private val usuarioRepository: UsuarioRepository) {
     fun search(query: String, generos: String, page: Int, size: Int, usuarioId: Int, paginasMin: Int?, paginasMax: Int?,
                fechaDesde: String?, fechaHasta: String?, isbn: String?, prestadoPor: String?): PagedResponse<LibroHomeDTO> {
+        usuarioRepository.findById(usuarioId)
+            ?: throw NotFoundException("Usuario $usuarioId no encontrado")
+
         val listaGeneros = if (generos.isBlank()) emptyList() else generos.split(",")
 
         val filtrados = libroRepository.getLibros()
@@ -63,7 +67,11 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
         return PagedResponse(content, page, totalPages)
     }
     fun getLibro(id: Int): LibroDTO {
-        val libro = libroRepository.getById(id)
+        val libro  = try {
+            libroRepository.getById(id)
+        } catch (_: EntityNotFoundException) {
+            throw NotFoundException("Libro $id no encontrado")
+        }
         return libro.toDTO()
     }
 
@@ -114,8 +122,37 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
     }
 
     fun agregarCalificacion(idLibro: Int, calificacion: Calificacion) {
-        val libro = libroRepository.getById(idLibro)
-        libro.agregarCalificacion(calificacion)
+        val libro = try {
+            libroRepository.getById(idLibro)
+        } catch (_: EntityNotFoundException) {
+            throw NotFoundException("Libro $idLibro no encontrado")
+        }
+        usuarioRepository.findById(calificacion.usuarioId)
+            ?: throw NotFoundException("Usuario ${calificacion.usuarioId} no encontrado")
+        libro.agregarCalificacion(calificacion) // el BusinessException de duplicado ya está en el dominio
         libroRepository.update(libro)
+    }
+
+    fun eliminarLibro(libroId: Int, usuarioId: Int) {
+        val libro = try {
+            libroRepository.getById(libroId)
+        } catch (_: EntityNotFoundException) {
+            throw NotFoundException("Libro no encontrado")
+        }
+
+        if (libro.duenio.id != usuarioId) {
+            throw UnauthorizedException("No autorizado para eliminar este libro")
+        }
+
+        val hoy = LocalDate.now()
+        val hayReservaActiva = usuarioRepository.lista
+            .flatMap { it.reservas }
+            .any { it.libro.id == libroId && !hoy.isBefore(it.fechaDesde) && !hoy.isAfter(it.fechaHasta) }
+
+        if (hayReservaActiva) {
+            throw ConflictException("El libro tiene una reserva activa y no puede eliminarse")
+        }
+
+        libroRepository.delete(libro)
     }
 }
