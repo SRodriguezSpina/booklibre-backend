@@ -66,6 +66,8 @@ class LibroServiceSpec : DescribeSpec({
         fechaDevolucion = null,
         bibliokarma = null,
         estoyReservado = false,
+        autorImg = "",
+        rating = 0.0,
     )
 
     describe("crearLibro") {
