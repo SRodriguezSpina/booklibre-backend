@@ -28,6 +28,11 @@ open class CommonRepository<T:BaseEntity>{
     fun getById(id: Int): T {
         return lista.find { it.id == id } ?: throw EntityNotFoundException("No se encontró el elemento con ID $id")
     }
+    fun findAll(): List<T> = lista.toList()
+
+    fun search(condicion: (T) -> Boolean): List<T> {
+        return lista.filter(condicion)
+    }
     fun limpiarRepositorio() {
         lista.clear()
         nextId = 1

@@ -66,15 +66,13 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
 
         return PagedResponse(content, page, totalPages)
     }
-    fun getLibro(id: Int, usuarioId: Int): LibroDTO {
-        val libro = try {
+    fun getLibro(id: Int): LibroDTO {
+        val libro  = try {
             libroRepository.getById(id)
         } catch (_: EntityNotFoundException) {
             throw NotFoundException("Libro $id no encontrado")
         }
-        usuarioRepository.findById(usuarioId)
-            ?: throw NotFoundException("Usuario $usuarioId no encontrado")
-        return libro.toDTO(usuarioId)
+        return libro.toDTO()
     }
 
     fun crearLibro(dto: LibroDTO, usuarioId: Int): LibroDTO {
@@ -101,7 +99,7 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
         }
 
         libroRepository.create(libro)
-        return libro.toDTO(usuarioId)
+        return libro.toDTO()
     }
 
     fun actualizarLibro(id : Int, dto: LibroDTO) : LibroDTO{
@@ -120,7 +118,7 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
         libroExistente.imagenUrl = dto.imagenUrl
 
         libroRepository.update(libroExistente)
-        return libroExistente.toDTO(libroExistente.duenio.id)
+        return libroExistente.toDTO()
     }
 
     fun agregarCalificacion(idLibro: Int, calificacion: Calificacion) {

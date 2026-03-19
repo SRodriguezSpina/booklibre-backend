@@ -10,6 +10,7 @@ import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 fun Usuario.toResponse(): UsuarioResponse {
@@ -32,8 +33,9 @@ fun Usuario.toResponse(): UsuarioResponse {
     )
 }
 
-fun Libro.toDTO(usuarioConsultaId: Int): LibroDTO {
+fun Libro.toDTO(): LibroDTO {
     val ultimaReserva = this.duenio.reservas.lastOrNull { it.libro.id == this.id }
+    val hoy = LocalDate.now()
     return LibroDTO(
         id = this.id,
         titulo = this.titulo,
@@ -49,6 +51,7 @@ fun Libro.toDTO(usuarioConsultaId: Int): LibroDTO {
         fechaPublicacion = this.fechaPublicacion,
         propietarioId = this.duenio.id,
         imagenUrl = this.imagenUrl,
+        estoyReservado = ultimaReserva?.sePisaCon(hoy, hoy) ?: false,
         alquiladoPorId = ultimaReserva?.usuario?.id,
         fechaDevolucion = ultimaReserva?.fechaHasta?.format(DateTimeFormatter.ISO_DATE),
         bibliokarma = ultimaReserva?.let {

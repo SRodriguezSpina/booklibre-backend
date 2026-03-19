@@ -29,8 +29,7 @@ class LibroController(val libroService: LibroService) {
     ): PagedResponse<LibroHomeDTO> = libroService.search(query, generos, page, size, usuarioId, paginasMin, paginasMax, fechaDesde, fechaHasta, isbn, prestadoPor)
 
     @GetMapping("/{libroId}")
-    fun getLibro(@PathVariable libroId: Int, @RequestParam usuarioId: Int
-    ): LibroDTO = libroService.getLibro(libroId, usuarioId)
+    fun getLibro(@PathVariable libroId: Int): LibroDTO = libroService.getLibro(libroId)
 
     @PostMapping("/{libroId}/calificar")
     fun agregarCalificacion(

@@ -8,4 +8,7 @@ class Reserva (
     val fechaDesde: LocalDate,
     val fechaHasta: LocalDate,
 ) : BaseEntity() {
+    fun sePisaCon(otraFechaDesde: LocalDate, otraFechaHasta: LocalDate): Boolean {
+        return this.fechaDesde <= otraFechaHasta && this.fechaHasta >= otraFechaDesde
+    }
 }
