@@ -1,7 +1,15 @@
 package ar.edu.unsam.phm.services
 
-import ar.edu.unsam.phm.*
+import ar.edu.unsam.phm.Calificacion
+import ar.edu.unsam.phm.Credencial
+import ar.edu.unsam.phm.EstadoLibro
+import ar.edu.unsam.phm.Genero
+import ar.edu.unsam.phm.Idioma
+import ar.edu.unsam.phm.LibroComun
+import ar.edu.unsam.phm.Reserva
+import ar.edu.unsam.phm.Usuario
 import ar.edu.unsam.phm.repository.ReservaRepository
+import ar.edu.unsam.phm.repository.UsuarioRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -18,7 +26,8 @@ class ReservaServiceSpec : DescribeSpec({
     describe("Dado un ReservaService") {
 
         val reservaRepository = mockk<ReservaRepository>()
-        val reservaService = ReservaService(reservaRepository)
+        val usuarioRepository = mockk<UsuarioRepository>()
+        val reservaService = ReservaService(reservaRepository, usuarioRepository)
 
         val duenio = Usuario(
             credencial = Credencial("ana", "pass"),

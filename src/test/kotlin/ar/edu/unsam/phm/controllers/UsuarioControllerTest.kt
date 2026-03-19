@@ -1,6 +1,5 @@
-package controllers
+package ar.edu.unsam.phm.controllers
 
-import ar.edu.unsam.phm.controllers.UsuarioController
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
@@ -165,7 +164,8 @@ class UsuarioControllerTest {
                 autor = "Autor",
                 genero = "NOVELA",
                 disponible = true,
-                fechaAgregado = null
+                fechaAgregado = null,
+                imagenUrl = ""
             )
         )
 
