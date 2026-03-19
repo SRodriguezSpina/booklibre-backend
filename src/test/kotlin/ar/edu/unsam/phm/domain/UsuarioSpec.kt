@@ -1,5 +1,15 @@
-package ar.edu.unsam.phm
+package ar.edu.unsam.phm.domain
 
+import ar.edu.unsam.phm.Credencial
+import ar.edu.unsam.phm.EstadoLibro
+import ar.edu.unsam.phm.Genero
+import ar.edu.unsam.phm.Idioma
+import ar.edu.unsam.phm.LibroComun
+import ar.edu.unsam.phm.Reserva
+import ar.edu.unsam.phm.Usuario
+import ar.edu.unsam.phm.UsuarioLector
+import ar.edu.unsam.phm.UsuarioLectorPublicador
+import ar.edu.unsam.phm.UsuarioPublicador
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe

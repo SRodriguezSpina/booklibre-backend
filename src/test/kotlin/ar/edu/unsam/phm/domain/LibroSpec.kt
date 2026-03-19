@@ -1,3 +1,5 @@
+package ar.edu.unsam.phm.domain
+
 import ar.edu.unsam.phm.Calificacion
 import ar.edu.unsam.phm.Credencial
 import ar.edu.unsam.phm.EstadoLibro
