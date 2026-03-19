@@ -8,6 +8,7 @@ import ar.edu.unsam.phm.Idioma
 import ar.edu.unsam.phm.LibroComun
 import ar.edu.unsam.phm.Reserva
 import ar.edu.unsam.phm.Usuario
+import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import io.kotest.core.spec.IsolationMode
@@ -24,10 +25,10 @@ class ReservaServiceSpec : DescribeSpec({
     isolationMode = IsolationMode.InstancePerTest
 
     describe("Dado un ReservaService") {
-
+        val libroRepository = mockk<LibroRepository>()
         val reservaRepository = mockk<ReservaRepository>()
         val usuarioRepository = mockk<UsuarioRepository>()
-        val reservaService = ReservaService(reservaRepository, usuarioRepository)
+        val reservaService = ReservaService(libroRepository, usuarioRepository, reservaRepository)
 
         val duenio = Usuario(
             credencial = Credencial("ana", "pass"),

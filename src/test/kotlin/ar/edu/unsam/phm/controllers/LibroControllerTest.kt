@@ -45,7 +45,8 @@ class LibroControllerTest(
         isbn = "ISBN-001", idioma = Idioma.ESPANOL, editorial = "Debolsillo",
         estado = "EXCELENTE", fechaPublicacion = LocalDate.of(1949, 6, 8),
         propietarioId = 3, imagenUrl = "", alquiladoPorId = null,
-        fechaDevolucion = null, bibliokarma = 1550
+        fechaDevolucion = null, bibliokarma = 1550,
+        estoyReservado = false
     )
 
     private fun libroHomeDTO() = LibroHomeDTO(
@@ -108,7 +109,7 @@ class LibroControllerTest(
     @Test
     @DisplayName("cuando se consulta un libro existente, devuelve 200 con el DTO")
     fun getLibro_ok() {
-        whenever(libroService.getLibro(1, 1)).thenReturn(libroDTO())
+        whenever(libroService.getLibro(1)).thenReturn(libroDTO())
 
         mockMvc.perform(get("/api/libros/1").param("usuarioId", "1"))
             .andExpect(status().isOk)
@@ -116,18 +117,18 @@ class LibroControllerTest(
             .andExpect(jsonPath("$.autor").value("George Orwell"))
             .andExpect(jsonPath("$.bibliokarma").value(1550))
 
-        verify(libroService).getLibro(1, 1)
+        verify(libroService).getLibro(1)
     }
 
     @Test
     @DisplayName("cuando se consulta un libro inexistente, devuelve 404 Not Found")
     fun getLibro_inexistente() {
-        whenever(libroService.getLibro(999, 1)).thenThrow(NotFoundException("Libro no encontrado"))
+        whenever(libroService.getLibro(999)).thenThrow(NotFoundException("Libro no encontrado"))
 
         mockMvc.perform(get("/api/libros/999").param("usuarioId", "1"))
             .andExpect(status().isNotFound)
 
-        verify(libroService).getLibro(999, 1)
+        verify(libroService).getLibro(999)
     }
 
     @Test
