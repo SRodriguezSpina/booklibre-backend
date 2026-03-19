@@ -25,9 +25,6 @@ class AuthService (private val usuarioRepository : UsuarioRepository) {
 
     fun register(request: RegisterRequest): AuthResponseUsuario {
         if (usuarioRepository.lista.any { it.getCredencial().email == request.email })
-            throw ConflictException("El nombre de usuario ya está en uso")
-
-        if (usuarioRepository.lista.any { it.getCredencial().email == request.email })
             throw ConflictException("El email ya está registrado")
 
         val nuevo = Usuario(
