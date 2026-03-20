@@ -60,22 +60,22 @@ class AppBootstrap(
         )
 
         librosDeAna.forEachIndexed { i, data ->
-            val libro = LibroComun(
-                ana,
-                1000 + i,
-                titulo = data.titulo,
-                autor = data.autor,
-                autorImg = data.autorImg,
+            val data = LibroData(
+                duenio = ana,
+                titulo = datos.titulo,
+                autor = datos.autor,
+                autorImg = datos.autorImg,
                 descripcion = "Descripción",
                 genero = Genero.LITERATURA_CLASICA,
-                paginas = 300,
+                cantidadPaginas = 300,
                 isbn = "ISBN-$i",
                 idioma = Idioma.ESPANOL,
                 editorial = "Editorial",
                 fechaPublicacion = LocalDate.now(),
                 estado = EstadoLibro.EXCELENTE,
-                imagenUrl = data.portadaImg
+                imagenUrl = datos.portadaImg,
             )
+            val libro = LibroComun(data)
             libroRepository.create(libro)
 
             val (fDesde, fHasta) = when (i) {
@@ -99,22 +99,22 @@ class AppBootstrap(
         )
 
         librosDeCarlos.forEachIndexed { i, data ->
-            val libro = LibroComun(
-                carlos,
-                1100 + i,
-                titulo = data.titulo,
-                autor = data.autor,
-                autorImg = data.autorImg,
+            val data = LibroData(
+                duenio = carlos,
+                titulo = datos.titulo,
+                autor = datos.autor,
+                autorImg = datos.autorImg,
                 descripcion = "Descripción",
                 genero = Genero.LITERATURA_CLASICA,
-                paginas = 400,
+                cantidadPaginas = 400,
                 isbn = "ISBN-C$i",
                 idioma = Idioma.ESPANOL,
                 editorial = "Editorial",
                 fechaPublicacion = LocalDate.now(),
                 estado = EstadoLibro.MUY_BUENO,
-                imagenUrl = data.portadaImg
+                imagenUrl = datos.portadaImg,
             )
+            val libro = LibroComun(data)
             libroRepository.create(libro)
 
             val (fDesde, fHasta) = when (i) {
@@ -141,22 +141,22 @@ class AppBootstrap(
         val prestatarios = listOf(emilia, carlos, ana, emilia, carlos, emilia, ana)
 
         misLibros.forEachIndexed { i, data ->
-            val libro = LibroComun(
-                juan,
-                2000 + i,
-                titulo = data.titulo,
-                autor = data.autor,
-                autorImg = data.autorImg,
+            val data = LibroData(
+                duenio = juan,
+                titulo = datos.titulo,
+                autor = datos.autor,
+                autorImg = datos.autorImg,
                 descripcion = "Descripción",
                 genero = Genero.CIENCIA_FICCION,
-                paginas = 350,
+                cantidadPaginas = 350,
                 isbn = "ISBN-J$i",
                 idioma = Idioma.ESPANOL,
                 editorial = "Editorial",
                 fechaPublicacion = LocalDate.now(),
                 estado = EstadoLibro.EXCELENTE,
-                imagenUrl = data.portadaImg
+                imagenUrl = datos.portadaImg,
             )
+            val libro = LibroComun(data)
             libroRepository.create(libro)
 
             val prestatario = prestatarios[i]
@@ -177,22 +177,22 @@ class AppBootstrap(
     }
 
     fun crearLibrosAdicionales() {
-        val libro5 = LibroColeccionable(
-            ana,
-            3005,
+        val data = LibroData(
+            duenio = ana,
             titulo = "El Señor de los Anillos",
             autor = "J.R.R. Tolkien",
             autorImg = "https://upload.wikimedia.org/wikipedia/commons/d/d4/J._R._R._Tolkien%2C_1940s.jpg",
             descripcion = "Fantasía",
             genero = Genero.CIENCIA_FICCION,
-            paginas = 1200,
+            cantidadPaginas = 1200,
             isbn = "ISBN-3005",
             idioma = Idioma.ESPANOL,
             editorial = "Minotauro",
             fechaPublicacion = LocalDate.now(),
             estado = EstadoLibro.EXCELENTE,
-            imagenUrl = "https://m.media-amazon.com/images/I/91R196S8S8L.jpg"
+            imagenUrl = "https://m.media-amazon.com/images/I/91R196S8S8L.jpg",
         )
+        val libro5 = LibroColeccionable(data)
         libroRepository.create(libro5)
     }
 }
