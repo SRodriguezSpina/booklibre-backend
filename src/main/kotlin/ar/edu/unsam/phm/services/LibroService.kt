@@ -81,18 +81,18 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
 
         val libro = when (dto.tipo) {
             "Comun" -> LibroComun(
-                duenio, 0, dto.titulo, dto.autor, dto.descripcion,
-                dto.autorImg, dto.genero, dto.paginas, dto.isbn, dto.idioma,
+                duenio, 0, dto.titulo, dto.autor, dto.autorImg,
+                dto.descripcion, dto.genero, dto.paginas, dto.isbn, dto.idioma,
                 dto.editorial, dto.fechaPublicacion, EstadoLibro.valueOf(dto.estado), dto.imagenUrl
             )
             "ConDedicatoria" -> LibroConDedicatoria(
-                duenio, 0, dto.titulo, dto.autor, dto.descripcion,
-                dto.autorImg, dto.genero, dto.paginas, dto.isbn, dto.idioma,
+                duenio, 0, dto.titulo, dto.autor, dto.autorImg,
+                dto.descripcion, dto.genero, dto.paginas, dto.isbn, dto.idioma,
                 dto.editorial, dto.fechaPublicacion, EstadoLibro.valueOf(dto.estado), dto.imagenUrl
             )
             "Coleccionable" -> LibroColeccionable(
-                duenio, 0, dto.titulo, dto.autor, dto.descripcion,
-                dto.autorImg, dto.genero, dto.paginas, dto.isbn, dto.idioma,
+                duenio, 0, dto.titulo, dto.autor, dto.autorImg,
+                dto.descripcion, dto.genero, dto.paginas, dto.isbn, dto.idioma,
                 dto.editorial, dto.fechaPublicacion, EstadoLibro.valueOf(dto.estado), dto.imagenUrl
             )
             else -> throw BusinessException("Tipo de libro inválido: ${dto.tipo}")
