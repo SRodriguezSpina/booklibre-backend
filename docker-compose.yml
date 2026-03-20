@@ -1,0 +1,40 @@
+services:
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: booklibre-backend
+    restart: unless-stopped
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8080:8080"
+    networks:
+      - booklibre-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ../frontend-2026-grupo-12
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    container_name: booklibre-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - booklibre-net
+
+networks:
+  booklibre-net:
+    driver: bridge
