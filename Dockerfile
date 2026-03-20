@@ -1,9 +1,9 @@
-# ── Stage 1: build ──────────────────────────────────────────────────────────
+# Levanto una imagen con gradle y jdk21
 FROM gradle:8.7-jdk21 AS build
 
 WORKDIR /app
 
-# Cache dependencies before copying source
+# Genero dependencias desde gradle
 COPY build.gradle.kts settings.gradle.kts ./
 COPY gradle ./gradle
 RUN gradle dependencies --no-daemon || true
@@ -11,12 +11,12 @@ RUN gradle dependencies --no-daemon || true
 COPY src ./src
 RUN gradle bootJar --no-daemon -x test
 
-# ── Stage 2: run ─────────────────────────────────────────────────────────────
+# Run
 FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-# Non-root user for security
+# Usuario
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring
 
