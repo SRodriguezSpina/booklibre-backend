@@ -7,21 +7,19 @@ import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
 
 data class LibroData(
-    val id: Int,
+    val duenio: Usuario,
     val titulo: String,
-    val tipo: String,
-    val descripcion: String,
-    val genero: Genero,
     val autor: String,
     val autorImg: String,
-    val paginas: Int,
+    val descripcion: String,
+    val genero: Genero,
+    val cantidadPaginas: Int,
     val isbn: String,
     val idioma: Idioma,
     val editorial: String,
-    val estado: String,
     val fechaPublicacion: LocalDate,
-    val propietarioId: Int,
-    val imagenUrl: String
+    val estado: EstadoLibro,
+    val imagenUrl: String,
 )
 
 abstract class Libro(data: LibroData): BaseEntity() {

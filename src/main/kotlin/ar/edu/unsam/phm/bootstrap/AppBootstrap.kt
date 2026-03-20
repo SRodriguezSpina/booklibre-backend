@@ -59,7 +59,7 @@ class AppBootstrap(
             DatosLibro("El nombre de la rosa", "Umberto Eco", "https://upload.wikimedia.org/wikipedia/commons/c/c2/Umberto_Eco_1984.jpg", "https://libroschorcha.wordpress.com/wp-content/uploads/2018/02/el-nombre-de-la-rosa-umberto-eco.jpg"),
         )
 
-        librosDeAna.forEachIndexed { i, data ->
+        librosDeAna.forEachIndexed { i, datos ->
             val data = LibroData(
                 duenio = ana,
                 titulo = datos.titulo,
@@ -98,7 +98,7 @@ class AppBootstrap(
             DatosLibro("Crimen y Castigo", "Fiódor Dostoyevski", "https://upload.wikimedia.org/wikipedia/commons/7/78/Vasily_Perov_-_%D0%9F%D0%BE%D1%80%D1%82%D1%80%D0%B5%D1%82_%D0%A4.%D0%9C.%D0%94%D0%BE%D1%81%D1%82%D0%BE%D0%B5%D0%B2%D1%81%D0%BA%D0%BE%D0%B3%D0%BE_-_Google_Art_Project.jpg", "https://www.edicontinente.com.ar/image/titulos/9788417477639.jpg"),
         )
 
-        librosDeCarlos.forEachIndexed { i, data ->
+        librosDeCarlos.forEachIndexed { i, datos ->
             val data = LibroData(
                 duenio = carlos,
                 titulo = datos.titulo,
@@ -140,7 +140,7 @@ class AppBootstrap(
 
         val prestatarios = listOf(emilia, carlos, ana, emilia, carlos, emilia, ana)
 
-        misLibros.forEachIndexed { i, data ->
+        misLibros.forEachIndexed { i, datos ->
             val data = LibroData(
                 duenio = juan,
                 titulo = datos.titulo,

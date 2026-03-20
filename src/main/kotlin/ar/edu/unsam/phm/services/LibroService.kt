@@ -4,6 +4,7 @@ import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.LibroColeccionable
 import ar.edu.unsam.phm.domain.LibroComun
 import ar.edu.unsam.phm.domain.LibroConDedicatoria
+import ar.edu.unsam.phm.domain.LibroData
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
