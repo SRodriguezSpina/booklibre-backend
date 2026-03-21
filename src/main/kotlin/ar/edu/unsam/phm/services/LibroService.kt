@@ -4,6 +4,7 @@ import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.LibroColeccionable
 import ar.edu.unsam.phm.domain.LibroComun
 import ar.edu.unsam.phm.domain.LibroConDedicatoria
+import ar.edu.unsam.phm.domain.LibroData
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
@@ -79,25 +80,28 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
         val duenio = usuarioRepository.findById(usuarioId)
             ?: throw NotFoundException("Usuario no encontrado")
 
+        val data = LibroData(
+            duenio = duenio,
+            titulo = dto.titulo,
+            autor = dto.autor,
+            autorImg = dto.autorImg,
+            descripcion = dto.descripcion,
+            genero = dto.genero,
+            cantidadPaginas = dto.paginas,
+            isbn = dto.isbn,
+            idioma = dto.idioma,
+            editorial = dto.editorial,
+            fechaPublicacion = dto.fechaPublicacion,
+            estado = EstadoLibro.valueOf(dto.estado),
+            imagenUrl = dto.imagenUrl,
+        )
+
         val libro = when (dto.tipo) {
-            "Comun" -> LibroComun(
-                duenio, 0, dto.titulo, dto.autor, dto.autorImg,
-                dto.descripcion, dto.genero, dto.paginas, dto.isbn, dto.idioma,
-                dto.editorial, dto.fechaPublicacion, EstadoLibro.valueOf(dto.estado), dto.imagenUrl
-            )
-            "ConDedicatoria" -> LibroConDedicatoria(
-                duenio, 0, dto.titulo, dto.autor, dto.autorImg,
-                dto.descripcion, dto.genero, dto.paginas, dto.isbn, dto.idioma,
-                dto.editorial, dto.fechaPublicacion, EstadoLibro.valueOf(dto.estado), dto.imagenUrl
-            )
-            "Coleccionable" -> LibroColeccionable(
-                duenio, 0, dto.titulo, dto.autor, dto.autorImg,
-                dto.descripcion, dto.genero, dto.paginas, dto.isbn, dto.idioma,
-                dto.editorial, dto.fechaPublicacion, EstadoLibro.valueOf(dto.estado), dto.imagenUrl
-            )
+            "Comun" -> LibroComun(data)
+            "ConDedicatoria" -> LibroConDedicatoria(data)
+            "Coleccionable" -> LibroColeccionable(data)
             else -> throw BusinessException("Tipo de libro inválido: ${dto.tipo}")
         }
-
         libroRepository.create(libro)
         return libro.toDTO()
     }

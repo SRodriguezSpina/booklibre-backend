@@ -6,22 +6,38 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
 
-abstract class Libro(
+data class LibroData(
     val duenio: Usuario,
-    var titulo: String,
-    var autor: String,
-    var autorImg: String,
-    var descripcion: String,
-    var genero: Genero,
-    var cantidadPaginas: Int,
-    var isbn: String,
-    var idioma: Idioma,
-    var editorial: String,
-    var fechaPublicacion: LocalDate,
-    var estado: EstadoLibro,
-    var imagenUrl: String,
-    var calificaciones: MutableList<Calificacion> = mutableListOf(),
-): BaseEntity() {
+    val titulo: String,
+    val autor: String,
+    val autorImg: String,
+    val descripcion: String,
+    val genero: Genero,
+    val cantidadPaginas: Int,
+    val isbn: String,
+    val idioma: Idioma,
+    val editorial: String,
+    val fechaPublicacion: LocalDate,
+    val estado: EstadoLibro,
+    val imagenUrl: String,
+)
+
+abstract class Libro(data: LibroData): BaseEntity() {
+    val duenio = data.duenio
+    var titulo = data.titulo
+    var autor = data.autor
+    var autorImg = data.autorImg
+    var descripcion = data.descripcion
+    var genero = data.genero
+    var cantidadPaginas = data.cantidadPaginas
+    var isbn = data.isbn
+    var idioma = data.idioma
+    var editorial = data.editorial
+    var fechaPublicacion = data.fechaPublicacion
+    var estado = data.estado
+    var imagenUrl = data.imagenUrl
+    var calificaciones: MutableList<Calificacion> = mutableListOf()
+
     fun calcularBiblioKarmaTotal(usuario: Usuario, desde: LocalDate, hasta: LocalDate): Int {
         if (!hasta.isAfter(desde)) throw BusinessException("La fecha de hasta debe ser posterior a la fecha de desde")
         val diasReserva = ChronoUnit.DAYS.between(desde, hasta).toInt() + 1
@@ -41,28 +57,19 @@ abstract class Libro(
     }
     abstract fun plusBiblioKarma(usuario: Usuario): Int
 }
-class LibroComun(
-    duenio: Usuario, id: Int, titulo: String, autor: String, autorImg: String, descripcion: String, genero: Genero,
-    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fechaPublicacion: LocalDate, estado: EstadoLibro, imagenUrl: String
-) : Libro(duenio, titulo, autor,autorImg, descripcion,  genero, paginas, isbn, idioma, editorial, fechaPublicacion, estado, imagenUrl) {
+class LibroComun(data: LibroData) : Libro(data) {
     override fun plusBiblioKarma(usuario: Usuario): Int {
         if (cantidadPaginas <= 0) throw BusinessException("La cantidad de páginas debe ser mayor a 0")
         val multiplicador = if (usuario.bibliokarmas < 1000) 5 else 2
         return cantidadPaginas * multiplicador
     }
 }
-class LibroConDedicatoria(
-    duenio: Usuario, id: Int, titulo: String, autor: String, autorImg: String, descripcion: String, genero: Genero,
-    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fechaPublicacion: LocalDate, estado: EstadoLibro, imagenUrl: String
-) : Libro(duenio, titulo, autor,autorImg, descripcion,  genero, paginas, isbn, idioma, editorial, fechaPublicacion, estado, imagenUrl) {
+class LibroConDedicatoria(data: LibroData) : Libro(data) {
     override fun plusBiblioKarma(usuario: Usuario): Int {
         return 200 + (10 * duenio.reservas.size)
     }
 }
-class LibroColeccionable(
-    duenio: Usuario, id: Int, titulo: String, autor: String, autorImg: String, descripcion: String, genero: Genero,
-    paginas: Int, isbn: String, idioma: Idioma, editorial: String, fechaPublicacion: LocalDate, estado: EstadoLibro, imagenUrl: String
-) : Libro(duenio, titulo, autor,autorImg, descripcion,  genero, paginas, isbn, idioma, editorial, fechaPublicacion, estado, imagenUrl) {
+class LibroColeccionable(data: LibroData) : Libro(data) {
     override fun plusBiblioKarma(usuario: Usuario): Int {
         if (usuario.bibliokarmas < 0) throw BusinessException("El usuario no puede tener bibliokarmas negativos")
         if (cantidadPaginas <= 0) throw BusinessException("La cantidad de páginas debe ser mayor a 0")
