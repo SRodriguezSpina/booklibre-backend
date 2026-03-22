@@ -29,7 +29,8 @@ fun Usuario.toResponse(): UsuarioResponse {
         celular = celular,
         ciudad = ciudad,
         tipoUsuario = tipoStr,
-        bibliokarmas = bibliokarmas
+        bibliokarmas = bibliokarmas,
+        imagenUrl = imagenUrl,
     )
 }
 

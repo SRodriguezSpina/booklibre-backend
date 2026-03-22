@@ -9,7 +9,8 @@ data class UsuarioResponse(
     val celular: String,
     val ciudad: String,
     val tipoUsuario: String,
-    val bibliokarmas: Int
+    val bibliokarmas: Int,
+    val imagenUrl: String? = null,
 )
 
 data class UsuarioUpdateRequest(
@@ -18,7 +19,8 @@ data class UsuarioUpdateRequest(
     val email: String,
     val celular: String,
     val ciudad: String,
-    val tipoUsuario: String
+    val tipoUsuario: String,
+    val imagenUrl: String? = null,
 )
 
 data class LibroUsuarioItemDTO(
