@@ -35,14 +35,16 @@ class UsuarioService(
         validarDuplicados(id, emailNormalizado, celularNormalizado)
         val tipoUsuario = parseTipoUsuario(request.tipoUsuario)
         val actualizado = Usuario(
-            Credencial(emailNormalizado, existente.getCredencial().password),
-            request.nombre,
-            request.desc,
-            celularNormalizado,
-            request.ciudad,
-            tipoUsuario,
-            existente.bibliokarmas,
-            existente.fechaRegistro
+            credencial = Credencial(emailNormalizado, existente.getCredencial().password),
+            nombre = request.nombre,
+            desc = request.desc,
+            celular = celularNormalizado,
+            ciudad = request.ciudad,
+            tipoUsuario = tipoUsuario,
+            bibliokarmas = existente.bibliokarmas,
+            imagenUrl = request.imagenUrl ?: existente.imagenUrl,
+            fechaRegistro = existente.fechaRegistro,
+            reservas = existente.reservas.toMutableList(),
         )
         actualizado.id = existente.id
         usuarioRepository.update(actualizado)
