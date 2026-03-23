@@ -4,6 +4,11 @@ import ar.edu.unsam.phm.domain.Idioma
 import ar.edu.unsam.phm.domain.Genero
 import java.time.LocalDate
 
+data class RangoReservaDTO(
+    val fechaDesde: String,
+    val fechaHasta: String
+)
+
 data class LibroDTO(
     val id: Int,
     val titulo: String,
@@ -24,20 +29,17 @@ data class LibroDTO(
     val rating: Double,
     val cantidadReservas: Int,
     val alquiladoPorId: Int?,
-    val fechaDesde: String?,
-    val fechaHasta: String?,
-    val bibliokarma: Int?
+    val bibliokarma: Int?,
+    val reservas: List<RangoReservaDTO>
 )
 
 data class LibroHomeDTO(
     val id: Int,
     val imagenUrl: String,
-    //
     val genero: Genero,
     val titulo: String,
     val autor: String,
     val calificacion: Double,
-    //
     val isbn: String,
     val idioma: Idioma,
     val tipo: String,

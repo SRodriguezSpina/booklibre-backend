@@ -63,11 +63,12 @@ class LibroServiceSpec : DescribeSpec({
         propietarioId = duenio.id,
         imagenUrl = "https://example.com/cover.jpg",
         alquiladoPorId = null,
-        fechaDevolucion = null,
         bibliokarma = null,
         estoyReservado = false,
         autorImg = "",
         rating = 0.0,
+        reservas = emptyList(),
+        cantidadReservas = 0
     )
 
     describe("crearLibro") {

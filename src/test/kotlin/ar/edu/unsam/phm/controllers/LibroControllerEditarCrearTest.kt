@@ -58,11 +58,12 @@ class LibroControllerEditarCrearTest(
         propietarioId = propietarioId,
         imagenUrl = "https://example.com/cover.jpg",
         alquiladoPorId = null,
-        fechaDevolucion = null,
         bibliokarma = null,
         estoyReservado = false,
         autorImg = "https://example.com/cover.jpg",
-        rating = 0.0
+        rating = 0.0,
+        cantidadReservas = 0,
+        reservas = emptyList()
     )
 
     private fun toJson(dto: LibroDTO) = mapper.writeValueAsString(dto)

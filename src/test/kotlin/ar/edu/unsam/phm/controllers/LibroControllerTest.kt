@@ -33,8 +33,6 @@ class LibroControllerTest(
 ) {
     @MockBean lateinit var libroService: LibroService
 
-    // ── helpers ──────────────────────────────────────────────────────────────
-
     private fun libroDTO(
         id: Int = 1,
         titulo: String = "1984",
@@ -45,10 +43,12 @@ class LibroControllerTest(
         isbn = "ISBN-001", idioma = Idioma.ESPANOL, editorial = "Debolsillo",
         estado = "EXCELENTE", fechaPublicacion = LocalDate.of(1949, 6, 8),
         propietarioId = 3, imagenUrl = "", alquiladoPorId = null,
-        fechaDevolucion = null, bibliokarma = 1550,
+        bibliokarma = 1550,
         estoyReservado = false,
         autorImg = "",
-        rating = 0.0
+        rating = 0.0,
+        reservas = emptyList(),
+        cantidadReservas = 0
     )
 
     private fun libroHomeDTO() = LibroHomeDTO(
@@ -57,8 +57,6 @@ class LibroControllerTest(
         isbn = "ISBN-001", idioma = Idioma.ESPANOL, tipo = "LibroComun",
         bibliokarma = 1550, estado = "EXCELENTE", duenio = "Ana García"
     )
-
-    // ── GET /api/libros/home ─────────────────────────────────────────────────
 
     @Test
     @DisplayName("cuando se buscan libros con parámetros mínimos, devuelve 200 con la respuesta paginada")
@@ -106,8 +104,6 @@ class LibroControllerTest(
             .andExpect(status().isOk)
     }
 
-    // ── GET /api/libros/{libroId} ────────────────────────────────────────────
-
     @Test
     @DisplayName("cuando se consulta un libro existente, devuelve 200 con el DTO")
     fun getLibro_ok() {
@@ -139,8 +135,6 @@ class LibroControllerTest(
         mockMvc.perform(get("/api/libros/abc").param("usuarioId", "1"))
             .andExpect(status().isBadRequest)
     }
-
-    // ── POST /api/libros/{libroId}/calificar ─────────────────────────────────
 
     @Test
     @DisplayName("cuando se califica un libro correctamente, devuelve 200 OK")
@@ -191,8 +185,6 @@ class LibroControllerTest(
         ).andExpect(status().isBadRequest)
     }
 
-    // ── PUT /api/libros/{libroId} ────────────────────────────────────────────
-
     @Test
     @DisplayName("cuando se actualiza un libro existente, devuelve 200 con el DTO actualizado")
     fun updateLibro_ok() {
@@ -206,7 +198,8 @@ class LibroControllerTest(
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.titulo").value("1984 - Edición revisada"))
 
-        verify(libroService).actualizarLibro(eq(1), any())    }
+        verify(libroService).actualizarLibro(eq(1), any())
+    }
 
     @Test
     @DisplayName("cuando se actualiza un libro inexistente, devuelve 404 Not Found")
@@ -219,8 +212,6 @@ class LibroControllerTest(
                 .content(objectMapper.writeValueAsString(dto))
         ).andExpect(status().isNotFound)
     }
-
-    // ── POST /api/libros/nuevo ───────────────────────────────────────────────
 
     @Test
     @DisplayName("cuando se crea un libro con datos válidos, devuelve 200 con el DTO creado")
