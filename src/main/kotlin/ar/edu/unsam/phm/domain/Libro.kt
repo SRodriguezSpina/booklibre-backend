@@ -66,7 +66,8 @@ class LibroComun(data: LibroData) : Libro(data) {
 }
 class LibroConDedicatoria(data: LibroData) : Libro(data) {
     override fun plusBiblioKarma(usuario: Usuario): Int {
-        return 200 + (10 * duenio.reservas.size)
+        val cantidadReservasDelLibro = duenio.reservas.count { it.libro.id == this.id }
+        return 200 + (10 * cantidadReservasDelLibro)
     }
 }
 class LibroColeccionable(data: LibroData) : Libro(data) {

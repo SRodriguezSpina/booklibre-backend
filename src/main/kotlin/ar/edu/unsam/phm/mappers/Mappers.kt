@@ -8,6 +8,7 @@ import ar.edu.unsam.phm.domain.UsuarioLectorPublicador
 import ar.edu.unsam.phm.domain.UsuarioPublicador
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
+import ar.edu.unsam.phm.dtos.RangoReservaDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import java.time.LocalDate
@@ -39,7 +40,16 @@ fun Libro.toDTO(): LibroDTO {
 
     val reservaPrincipal = this.duenio.reservas.find {
         it.libro.id == this.id && it.sePisaCon(hoy, hoy)
-    } ?: this.duenio.reservas.lastOrNull { it.libro.id == this.id }
+    }
+
+    val todosLosRangos = this.duenio.reservas
+        .filter { it.libro.id == this.id && !it.fechaHasta.isBefore(hoy) }
+        .map {
+            RangoReservaDTO(
+                fechaDesde = it.fechaDesde.format(DateTimeFormatter.ISO_DATE),
+                fechaHasta = it.fechaHasta.format(DateTimeFormatter.ISO_DATE)
+            )
+        }
 
     return LibroDTO(
         id = this.id,
@@ -58,13 +68,12 @@ fun Libro.toDTO(): LibroDTO {
         propietarioId = this.duenio.id,
         imagenUrl = this.imagenUrl,
         rating = this.getCalificacion(),
-
-        estoyReservado = reservaPrincipal?.sePisaCon(hoy, hoy) ?: false,
-        alquiladoPorId = reservaPrincipal?.usuario?.id, // Acá sale el ID de quien lo alquiló
-        fechaDevolucion = reservaPrincipal?.fechaHasta?.format(DateTimeFormatter.ISO_DATE),
-        bibliokarma = reservaPrincipal?.let {
-            this.calcularBiblioKarmaTotal(it.usuario, it.fechaDesde, it.fechaHasta)
-        }
+        cantidadReservas = this.duenio.reservas.count { it.libro.id == this.id },
+        estoyReservado = reservaPrincipal != null,
+        alquiladoPorId = reservaPrincipal?.usuario?.id,
+        bibliokarma = null,
+        reservas = todosLosRangos
+        // ← fechaDesde y fechaHasta eliminados
     )
 }
 
@@ -94,7 +103,7 @@ fun Libro.toHomeDTO(): LibroHomeDTO {
         genero = this.genero,
         titulo = this.titulo,
         autor = this.autor,
-        calificacion = this.getCalificacion(), // terminar de agregar
+        calificacion = this.getCalificacion(),
         isbn = this.isbn,
         idioma = this.idioma,
         tipo = this.javaClass.simpleName.replace("Libro", ""),

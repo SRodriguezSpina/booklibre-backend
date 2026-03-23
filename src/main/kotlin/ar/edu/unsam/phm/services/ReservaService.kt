@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
+import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.repository.LibroRepository
@@ -26,33 +27,24 @@ class ReservaService(
     }
     fun crearReserva(dto: CrearReservaDTO): Reserva {
         val libro = libroRepository.getById(dto.libroId)
-        val estaOcupado = reservaRepository.existeSuperposicion(libro.id, dto.fechaDesde, dto.fechaHasta)
 
-        if (estaOcupado) {
-            throw ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
+        if (reservaRepository.existeSuperposicion(libro.id, dto.fechaDesde, dto.fechaHasta)) {
+            throw ConflictException(
                 "Lo sentimos, este libro ya se encuentra reservado para las fechas seleccionadas."
             )
         }
 
         val usuarioSolicitante = usuarioRepository.getById(dto.usuarioId)
-        val nuevaReserva = Reserva(
-            libro = libro,
-            usuario = usuarioSolicitante,
-            fechaDesde = dto.fechaDesde,
-            fechaHasta = dto.fechaHasta
+
+        val reservaGuardada = reservaRepository.create(
+            Reserva(libro = libro, usuario = usuarioSolicitante, fechaDesde = dto.fechaDesde, fechaHasta = dto.fechaHasta)
         )
 
-        val reservaGuardada = reservaRepository.create(nuevaReserva)
+        reservaGuardada.confirmar()
 
-        usuarioSolicitante.agregarReserva(reservaGuardada)
         usuarioRepository.update(usuarioSolicitante)
-
-        // 3. TERCERO, se la agregamos al dueño del libro (¡CLAVE para el Mapper toDTO!)
-        val duenio = libro.duenio
-        if (duenio.id != usuarioSolicitante.id) { // Por si alguien se alquila su propio libro
-            duenio.agregarReserva(reservaGuardada)
-            usuarioRepository.update(duenio)
+        if (libro.duenio.id != usuarioSolicitante.id) {
+            usuarioRepository.update(libro.duenio)
         }
 
         return reservaGuardada
