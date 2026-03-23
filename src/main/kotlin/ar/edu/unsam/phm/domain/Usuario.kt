@@ -15,6 +15,7 @@ class Usuario(
     var ciudad: String = "",
     var tipoUsuario: TipoUsuario = UsuarioLector(),
     var bibliokarmas: Int = 0,
+    var imagenUrl: String? = null,
     var fechaRegistro: LocalDate = LocalDate.now(),
     val reservas: MutableList<Reserva> = mutableListOf(),
 ) : BaseEntity() {

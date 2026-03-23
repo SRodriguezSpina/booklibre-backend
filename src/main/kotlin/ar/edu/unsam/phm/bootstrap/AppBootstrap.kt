@@ -23,18 +23,49 @@ class AppBootstrap(
 ): InitializingBean {
 
     val juan = Usuario(
-        Credencial("juan@mail.com", "123"),
-        "Juan Pérez",
-        "Lector intrépido",
-        "11556677",
-        "San Martín",
-        UsuarioLector(),
-        500,
+        credencial = Credencial("juan@mail.com", "123"),
+        nombre = "Juan Pérez",
+        desc = "Lector intrépido",
+        celular = "11556677",
+        ciudad = "San Martín",
+        tipoUsuario = UsuarioLector(),
+        bibliokarmas = 500,
+        imagenUrl = "https://randomuser.me/api/portraits/men/1.jpg",
         fechaRegistro = LocalDate.of(2020, 9, 15)
     )
-    val emilia = Usuario(Credencial("emilia@example.com", "123"), "Emilia Romero", "Lectora Ávida", "11223344", "CABA", UsuarioLectorPublicador(), 2345, fechaRegistro = LocalDate.of(2021, 6, 1))
-    val ana = Usuario(Credencial("ana@example.com", "123"), "Ana García", "Publicadora", "11889900", "Quilmes", UsuarioPublicador(), 1200, fechaRegistro = LocalDate.of(2022, 2, 10))
-    val carlos = Usuario(Credencial("carlos@example.com", "123"), "Carlos Ruiz", "Fan de los clásicos", "11334455", "Lanús", UsuarioLector(), 150, fechaRegistro = LocalDate.of(2019, 12, 30))
+    val emilia = Usuario(
+        credencial = Credencial("emilia@example.com", "123"),
+        nombre = "Emilia Romero",
+        desc = "Lectora Ávida",
+        celular = "11223344",
+        ciudad = "CABA",
+        tipoUsuario = UsuarioLectorPublicador(),
+        bibliokarmas = 2345,
+        imagenUrl = "https://randomuser.me/api/portraits/women/2.jpg",
+        fechaRegistro = LocalDate.of(2021, 6, 1)
+    )
+    val ana = Usuario(
+        credencial = Credencial("ana@example.com", "123"),
+        nombre = "Ana García",
+        desc = "Publicadora",
+        celular = "11889900",
+        ciudad = "Quilmes",
+        tipoUsuario = UsuarioPublicador(),
+        bibliokarmas = 1200,
+        imagenUrl = "https://randomuser.me/api/portraits/women/3.jpg",
+        fechaRegistro = LocalDate.of(2022, 2, 10)
+    )
+    val carlos = Usuario(
+        credencial = Credencial("carlos@example.com", "123"),
+        nombre = "Carlos Ruiz",
+        desc = "Fan de los clásicos",
+        celular = "11334455",
+        ciudad = "Lanús",
+        tipoUsuario = UsuarioLector(),
+        bibliokarmas = 150,
+        imagenUrl = "https://randomuser.me/api/portraits/men/4.jpg",
+        fechaRegistro = LocalDate.of(2019, 12, 30)
+    )
 
     override fun afterPropertiesSet() {
         usuarioRepository.lista.clear()
