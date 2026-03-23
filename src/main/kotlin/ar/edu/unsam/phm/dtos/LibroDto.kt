@@ -22,9 +22,11 @@ data class LibroDTO(
     val imagenUrl: String,
     val estoyReservado: Boolean,
     val rating: Double,
+    val cantidadReservas: Int,
     val alquiladoPorId: Int?,
-    val fechaDevolucion: String?,
-    val bibliokarma: Int? // Opcional para mostrar el karma que dio/dará
+    val fechaDesde: String?,
+    val fechaHasta: String?,
+    val bibliokarma: Int?
 )
 
 data class LibroHomeDTO(

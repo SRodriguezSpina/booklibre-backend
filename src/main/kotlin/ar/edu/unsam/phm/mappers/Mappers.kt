@@ -36,6 +36,7 @@ fun Usuario.toResponse(): UsuarioResponse {
 fun Libro.toDTO(): LibroDTO {
     val hoy = LocalDate.now()
 
+    // Buscamos la reserva activa hoy, o caemos en la última registrada
     val reservaPrincipal = this.duenio.reservas.find {
         it.libro.id == this.id && it.sePisaCon(hoy, hoy)
     } ?: this.duenio.reservas.lastOrNull { it.libro.id == this.id }
@@ -57,13 +58,14 @@ fun Libro.toDTO(): LibroDTO {
         propietarioId = this.duenio.id,
         imagenUrl = this.imagenUrl,
         rating = this.getCalificacion(),
+        cantidadReservas = this.duenio.reservas.count { it.libro.id == this.id },
 
+        // Datos de la reserva principal
         estoyReservado = reservaPrincipal?.sePisaCon(hoy, hoy) ?: false,
-        alquiladoPorId = reservaPrincipal?.usuario?.id, // Acá sale el ID de quien lo alquiló
-        fechaDevolucion = reservaPrincipal?.fechaHasta?.format(DateTimeFormatter.ISO_DATE),
-        bibliokarma = reservaPrincipal?.let {
-            this.calcularBiblioKarmaTotal(it.usuario, it.fechaDesde, it.fechaHasta)
-        }
+        alquiladoPorId = reservaPrincipal?.usuario?.id,
+        fechaDesde = reservaPrincipal?.fechaDesde?.format(DateTimeFormatter.ISO_DATE),
+        fechaHasta = reservaPrincipal?.fechaHasta?.format(DateTimeFormatter.ISO_DATE),
+        bibliokarma = null
     )
 }
 
