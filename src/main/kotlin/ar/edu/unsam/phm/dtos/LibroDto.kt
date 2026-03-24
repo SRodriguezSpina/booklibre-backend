@@ -29,6 +29,7 @@ data class LibroDTO(
     val editorial: String,
     val estado: String,
     val fechaPublicacion: LocalDate,
+    val fechaAgregado: LocalDate = LocalDate.now(),
     val propietarioId: Int,
     val imagenUrl: String,
     val estoyReservado: Boolean,
