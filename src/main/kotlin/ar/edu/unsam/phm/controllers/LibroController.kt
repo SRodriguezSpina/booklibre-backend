@@ -25,8 +25,11 @@ class LibroController(val libroService: LibroService) {
         @RequestParam(required = false) fechaDesde: String?,
         @RequestParam(required = false) fechaHasta: String?,
         @RequestParam(required = false) isbn: String?,
-        @RequestParam(required = false) prestadoPor: String?
-    ): PagedResponse<LibroHomeDTO> = libroService.search(query, generos, page, size, usuarioId, paginasMin, paginasMax, fechaDesde, fechaHasta, isbn, prestadoPor)
+        @RequestParam(required = false) prestadoPor: String?,
+        @RequestParam(defaultValue = "titulo") sortBy: String?,
+    ): PagedResponse<LibroHomeDTO> = libroService.search(
+        query, generos, page, size, usuarioId, paginasMin, paginasMax,
+        fechaDesde, fechaHasta, isbn, prestadoPor, sortBy)
 
     @GetMapping("/{libroId}")
     fun getLibro(@PathVariable libroId: Int): LibroDTO = libroService.getLibro(libroId)
