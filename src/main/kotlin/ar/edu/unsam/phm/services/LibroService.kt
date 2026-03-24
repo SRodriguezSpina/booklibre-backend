@@ -101,6 +101,7 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
             fechaPublicacion = dto.fechaPublicacion,
             estado = EstadoLibro.valueOf(dto.estado),
             imagenUrl = dto.imagenUrl,
+            fechaAgregado = LocalDate.now(),
         )
 
         val libro = when (dto.tipo) {

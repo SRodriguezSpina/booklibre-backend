@@ -105,6 +105,7 @@ class AppBootstrap(
                 fechaPublicacion = LocalDate.now(),
                 estado = EstadoLibro.EXCELENTE,
                 imagenUrl = datos.portadaImg,
+                fechaAgregado = LocalDate.of(2024, 3, 1).plusDays(i.toLong()),
             )
             val libro = LibroComun(data)
             libroRepository.create(libro)
@@ -144,6 +145,7 @@ class AppBootstrap(
                 fechaPublicacion = LocalDate.now(),
                 estado = EstadoLibro.MUY_BUENO,
                 imagenUrl = datos.portadaImg,
+                fechaAgregado = LocalDate.of(2024, 9, 10).plusDays(i.toLong()),
             )
             val libro = LibroComun(data)
             libroRepository.create(libro)
@@ -186,6 +188,7 @@ class AppBootstrap(
                 fechaPublicacion = LocalDate.now(),
                 estado = EstadoLibro.EXCELENTE,
                 imagenUrl = datos.portadaImg,
+                fechaAgregado = LocalDate.of(2025, 1, 5).plusDays(i.toLong()),
             )
             val libro = LibroComun(data)
             libroRepository.create(libro)
@@ -222,6 +225,7 @@ class AppBootstrap(
             fechaPublicacion = LocalDate.now(),
             estado = EstadoLibro.EXCELENTE,
             imagenUrl = "https://m.media-amazon.com/images/I/91R196S8S8L.jpg",
+            fechaAgregado = LocalDate.of(2025, 2, 20),
         )
         val libro5 = LibroColeccionable(data)
         libroRepository.create(libro5)

@@ -20,6 +20,7 @@ data class LibroData(
     val fechaPublicacion: LocalDate,
     val estado: EstadoLibro,
     val imagenUrl: String,
+    val fechaAgregado: LocalDate = LocalDate.now(),
 )
 
 abstract class Libro(data: LibroData): BaseEntity() {
@@ -34,6 +35,7 @@ abstract class Libro(data: LibroData): BaseEntity() {
     var idioma = data.idioma
     var editorial = data.editorial
     var fechaPublicacion = data.fechaPublicacion
+    var fechaAgregado = data.fechaAgregado
     var estado = data.estado
     var imagenUrl = data.imagenUrl
     var calificaciones: MutableList<Calificacion> = mutableListOf()
