@@ -22,7 +22,7 @@ import kotlin.math.ceil
 class LibroService(val libroRepository: LibroRepository, private val usuarioRepository: UsuarioRepository) {
     fun search(query: String, generos: String, page: Int, size: Int, usuarioId: Int, paginasMin: Int?, paginasMax: Int?,
                fechaDesde: String?, fechaHasta: String?, isbn: String?, prestadoPor: String?, sortBy: String?): PagedResponse<LibroHomeDTO> {
-        usuarioRepository.findById(usuarioId)
+       val usuario = usuarioRepository.findById(usuarioId)
             ?: throw NotFoundException("Usuario $usuarioId no encontrado")
 
         val listaGeneros = if (generos.isBlank()) emptyList() else generos.split(",")
@@ -67,7 +67,7 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
                     else -> libro.titulo.lowercase()
                 }
             }
-            .map { it.toHomeDTO() }
+            .map { it.toHomeDTO(usuario) }
 
         val totalPages = ceil(filtrados.size.toDouble() / size).toInt()
         val content = filtrados.drop(page * size).take(size)
