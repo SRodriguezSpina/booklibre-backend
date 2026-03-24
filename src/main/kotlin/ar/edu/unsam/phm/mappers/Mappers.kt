@@ -9,6 +9,7 @@ import ar.edu.unsam.phm.domain.UsuarioPublicador
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.RangoReservaDTO
+import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import java.time.LocalDate
@@ -72,8 +73,10 @@ fun Libro.toDTO(): LibroDTO {
         estoyReservado = reservaPrincipal != null,
         alquiladoPorId = reservaPrincipal?.usuario?.id,
         bibliokarma = null,
-        reservas = todosLosRangos
-        // ← fechaDesde y fechaHasta eliminados
+        reservas = todosLosRangos,
+        ultimasCalificaciones = this.calificaciones
+            .takeLast(2).reversed()
+            .map { CalificacionDTO(it.usuarioId, it.valor, it.comentario) }
     )
 }
 

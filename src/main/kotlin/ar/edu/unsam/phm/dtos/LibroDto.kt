@@ -9,6 +9,12 @@ data class RangoReservaDTO(
     val fechaHasta: String
 )
 
+data class CalificacionDTO(
+    val usuarioId: Int,
+    val valor: Int,
+    val comentario: String
+)
+
 data class LibroDTO(
     val id: Int,
     val titulo: String,
@@ -30,7 +36,8 @@ data class LibroDTO(
     val cantidadReservas: Int,
     val alquiladoPorId: Int?,
     val bibliokarma: Int?,
-    val reservas: List<RangoReservaDTO>
+    val reservas: List<RangoReservaDTO>,
+    val ultimasCalificaciones: List<CalificacionDTO>
 )
 
 data class LibroHomeDTO(
