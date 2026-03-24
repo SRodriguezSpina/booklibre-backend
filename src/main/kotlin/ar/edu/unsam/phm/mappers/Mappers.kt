@@ -65,6 +65,7 @@ fun Libro.toDTO(): LibroDTO {
         editorial = this.editorial,
         estado = this.estado.name,
         fechaPublicacion = this.fechaPublicacion,
+        fechaAgregado = this.fechaAgregado,
         propietarioId = this.duenio.id,
         imagenUrl = this.imagenUrl,
         rating = this.getCalificacion(),

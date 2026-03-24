@@ -12,6 +12,7 @@ import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import org.springframework.stereotype.Service
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Service
 class UsuarioService(
@@ -98,7 +99,7 @@ class UsuarioService(
                     autor = libro.autor,
                     genero = libro.genero.name,
                     disponible = disponible,
-                    fechaAgregado = null,
+                    fechaAgregado = libro.fechaAgregado.format(DateTimeFormatter.ISO_DATE),
                     imagenUrl = libro.imagenUrl
                 )
             }
