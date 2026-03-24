@@ -21,7 +21,7 @@ import kotlin.math.ceil
 @Service
 class LibroService(val libroRepository: LibroRepository, private val usuarioRepository: UsuarioRepository) {
     fun search(query: String, generos: String, page: Int, size: Int, usuarioId: Int, paginasMin: Int?, paginasMax: Int?,
-               fechaDesde: String?, fechaHasta: String?, isbn: String?, prestadoPor: String?): PagedResponse<LibroHomeDTO> {
+               fechaDesde: String?, fechaHasta: String?, isbn: String?, prestadoPor: String?, sortBy: String?): PagedResponse<LibroHomeDTO> {
         usuarioRepository.findById(usuarioId)
             ?: throw NotFoundException("Usuario $usuarioId no encontrado")
 
@@ -59,6 +59,13 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
 
                 matchQuery && matchGenero && matchPaginasMin && matchPaginasMax &&
                         matchIsbn && matchPrestadoPor && matchFechas
+            }
+            .sortedBy { libro ->    // Al final y que me lo lleve ordenado al front
+                when (sortBy) {
+                    "autor" -> libro.autor.lowercase()
+                    "duenio" -> libro.duenio.nombre.lowercase()
+                    else -> libro.titulo.lowercase()
+                }
             }
             .map { it.toHomeDTO() }
 
