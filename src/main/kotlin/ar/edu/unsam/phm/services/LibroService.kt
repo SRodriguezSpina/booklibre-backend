@@ -82,7 +82,14 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
         }
         return libro.toDTO()
     }
-
+    fun getRating(libroId: Int): Double {
+        val libro = try {
+            libroRepository.getById(libroId)
+        } catch (_: EntityNotFoundException) {
+            throw NotFoundException("Libro $libroId no encontrado")
+        }
+        return libro.getCalificacion()
+    }
     fun crearLibro(dto: LibroDTO, usuarioId: Int): LibroDTO {
         val duenio = usuarioRepository.findById(usuarioId)
             ?: throw NotFoundException("Usuario no encontrado")
