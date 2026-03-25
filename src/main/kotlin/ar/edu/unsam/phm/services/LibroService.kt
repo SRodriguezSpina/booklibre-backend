@@ -20,15 +20,26 @@ import kotlin.math.ceil
 
 @Service
 class LibroService(val libroRepository: LibroRepository, private val usuarioRepository: UsuarioRepository) {
-    fun search(query: String, generos: String, page: Int, size: Int, usuarioId: Int, paginasMin: Int?, paginasMax: Int?,
+    fun search(query: String, generos: String, page: Int, size: Int, usuarioId: Int?, paginasMin: Int?, paginasMax: Int?,
                fechaDesde: String?, fechaHasta: String?, isbn: String?, prestadoPor: String?, sortBy: String?): PagedResponse<LibroHomeDTO> {
-       val usuario = usuarioRepository.findById(usuarioId)
-            ?: throw NotFoundException("Usuario $usuarioId no encontrado")
+        //validaciones antes
+        if (paginasMin != null && paginasMax != null && paginasMin >= paginasMax) {
+            throw BusinessException("El mínimo de páginas debe ser menor al máximo")
+        }
+        if (fechaDesde != null && fechaHasta != null) {
+            val desde = LocalDate.parse(fechaDesde)
+            val hasta = LocalDate.parse(fechaHasta)
+            if (!desde.isBefore(hasta)) {
+                throw BusinessException("La fecha de inicio debe ser anterior a la fecha final")
+            }
+        }
+
+        val usuario = if(usuarioId != null) usuarioRepository.findById(usuarioId) else null
 
         val listaGeneros = if (generos.isBlank()) emptyList() else generos.split(",")
 
         val filtrados = libroRepository.getLibros()
-            .filter { it.duenio.id != usuarioId } //para excluir los libros que son de el
+            .filter { usuario == null || it.duenio.id != usuarioId } //para excluir los libros que son de el
             .filter { libro ->
                 val matchQuery = query.isBlank() ||
                         libro.titulo.contains(query, ignoreCase = true) ||

@@ -19,7 +19,7 @@ class LibroController(val libroService: LibroService) {
         @RequestParam(defaultValue = "") generos: String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "6") size: Int,    //podría sacar el default..
-        @RequestParam usuarioId: Int,
+        @RequestParam(required = false) usuarioId: Int?,
         @RequestParam(required = false) paginasMin: Int?,
         @RequestParam(required = false) paginasMax: Int?,
         @RequestParam(required = false) fechaDesde: String?,
