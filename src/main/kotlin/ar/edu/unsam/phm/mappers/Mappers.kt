@@ -100,7 +100,7 @@ fun Reserva.toDTO(usuarioConsultaId: Int): ReservaDTO {
     )
 }
 
-fun Libro.toHomeDTO(): LibroHomeDTO {
+fun Libro.toHomeDTO(usuario: Usuario): LibroHomeDTO {
     return LibroHomeDTO(
         id = this.id,
         imagenUrl = this.imagenUrl,
@@ -111,7 +111,7 @@ fun Libro.toHomeDTO(): LibroHomeDTO {
         isbn = this.isbn,
         idioma = this.idioma,
         tipo = this.javaClass.simpleName.replace("Libro", ""),
-        bibliokarma = 0,
+        bibliokarma = this.plusBiblioKarma(usuario),
         estado = this.estado.name,
         duenio = this.duenio.nombre,
     )
