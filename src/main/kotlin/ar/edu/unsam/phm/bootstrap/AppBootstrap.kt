@@ -167,7 +167,7 @@ class AppBootstrap(
             DatosLibro("El Principito", "Antoine de Saint-Exupéry", "https://upload.wikimedia.org/wikipedia/commons/0/07/Antoine_de_Saint-Exup%C3%A9ry.jpg", "https://tienda.planetadelibros.com.ar/cdn/shop/products/portada_el-principito_antoine-de-saint-exupery_201507152131.jpg?v=1684356025"),
             DatosLibro("Sapiens", "Yuval Noah Harari", "https://upload.wikimedia.org/wikipedia/commons/0/07/Yuval_Noah_Harari_at_the_WEF_Annual_Meeting_2020.jpg", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyAJxSA62_Z8k-pqxGp8x3Zp1bWoAtBjkZow&s"),
             DatosLibro("El alquimista", "Paulo Coelho", "https://upload.wikimedia.org/wikipedia/commons/6/6d/Paulo_Coelho_en_2007.jpg", "https://m.media-amazon.com/images/I/71aFt4+OTOL.jpg"),
-            DatosLibro("Dune", "Frank Herbert", "https://upload.wikimedia.org/wikipedia/commons/5/5e/Frank_Herbert_-_1984.jpg", "https://pics.filmaffinity.com/Dune_Parte_Dos-802143593-large.jpg"),
+            DatosLibro("Dune", "Frank Herbert", "https://upload.wikimedia.org/wikipedia/commons/5/5e/Frank_Herbert_-_1984.jpg", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrP4Ohql-5Cf2oMJNHvnj5V-ZVm3Q8rpNj0OJXuGa2dOgPMIVMchKJCRSDEJnbUsJ7mHh1C3xE3wfDDncifQkAiSixNji3-L2yN8laRAU&s=10"),
             DatosLibro("Fundación", "Isaac Asimov", "https://upload.wikimedia.org/wikipedia/commons/3/34/Isaac.Asimov01.jpg", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9t9VngDwUP_IlIKXTYUAJkRC11dlsBX7ncw&s"),
         )
 
