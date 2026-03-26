@@ -5,6 +5,7 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.collections.shouldContain
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class UsuarioSpec : DescribeSpec({
     isolationMode = IsolationMode.InstancePerTest
@@ -29,13 +30,14 @@ class UsuarioSpec : DescribeSpec({
             desc = "Publicadora",
         )
 
-        val libroComun = LibroComun(
-            duenio = duenio, id = 1,
+        val libroComun = LibroComun(LibroData(
+            duenio = duenio,
             titulo = "Clean Code", autor = "Robert C. Martin",
             descripcion = "Buenas prácticas", genero = Genero.DISENO,
-            paginas = 464, isbn = "ISBN-001", idioma = Idioma.INGLES,
+            cantidadPaginas = 464, isbn = "ISBN-001", idioma = Idioma.INGLES,
             editorial = "Prentice Hall", fechaPublicacion = LocalDate.of(2008, 8, 1),
-            estado = EstadoLibro.EXCELENTE, imagenUrl = "",
+            estado = EstadoLibro.EXCELENTE, imagenUrl = "", fechaAgregado = LocalDate.of(2019, 12, 1),
+        )
         )
 
         val reserva = Reserva(

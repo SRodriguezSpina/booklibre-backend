@@ -48,7 +48,9 @@ class LibroControllerTest(
         rating = 0.0,
         cantidadReservas = 0,
         ultimasCalificaciones = emptyList(),
-        reservas = emptyList()
+        reservas = emptyList(),
+        fechaAgregado = TODO(),
+        cantidadCalificaciones = TODO()
     )
 
     private fun libroHomeDTO() = LibroHomeDTO(
@@ -247,7 +249,7 @@ class LibroControllerTest(
     @DisplayName("cuando se actualiza un libro existente, devuelve 200 con el DTO actualizado")
     fun updateLibro_ok() {
         val dto = libroDTO(titulo = "1984 - Edición revisada")
-        whenever(libroService.actualizarLibro(eq(1), any())).thenReturn(dto)
+        whenever(libroService.actualizarLibro(eq(1), any(), libroDTO().propietarioId)).thenReturn(dto)
         mockMvc.perform(
             put("/api/libros/1")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -256,14 +258,14 @@ class LibroControllerTest(
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.titulo").value("1984 - Edición revisada"))
 
-        verify(libroService).actualizarLibro(eq(1), any())
+        verify(libroService).actualizarLibro(eq(1), any(), libroDTO().propietarioId)
     }
 
     @Test
     @DisplayName("cuando se actualiza un libro inexistente, devuelve 404 Not Found")
     fun updateLibro_inexistente() {
         val dto = libroDTO()
-        whenever(libroService.actualizarLibro(eq(999), any())).thenThrow(NotFoundException("Libro no encontrado"))
+        whenever(libroService.actualizarLibro(eq(999), any(), libroDTO().propietarioId)).thenThrow(NotFoundException("Libro no encontrado"))
         mockMvc.perform(
             put("/api/libros/999")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -28,13 +28,14 @@ class LibroSpec : DescribeSpec({
         // ── LibroComun ────────────────────────────────────────────────────────
         describe("LibroComun") {
 
-            val libro = LibroComun(
-                duenio = duenio, id = 1,
+            val libro = LibroComun(LibroData(
+                duenio = duenio,
                 titulo = "1984", autor = "George Orwell",
                 descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
-                paginas = 300, isbn = "ISBN-001", idioma = Idioma.ESPANOL,
+                cantidadPaginas = 300, isbn = "ISBN-001", idioma = Idioma.ESPANOL,
                 editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
-                estado = EstadoLibro.EXCELENTE, imagenUrl = "",
+                estado = EstadoLibro.EXCELENTE, imagenUrl = "", LocalDate.of(2020, 6, 8)
+            )
             )
 
             it("PLUS BIBLIOKARMA CON USUARIO CON MENOS DE 1000 KARMA USA MULTIPLICADOR 5") {
@@ -56,14 +57,14 @@ class LibroSpec : DescribeSpec({
         // ── LibroConDedicatoria ───────────────────────────────────────────────
         describe("LibroConDedicatoria") {
 
-            val libro = LibroConDedicatoria(
-                duenio = duenio, id = 2,
+            val libro = LibroConDedicatoria(LibroData(
+                duenio = duenio,
                 titulo = "El Principito", autor = "Saint-Exupéry",
                 descripcion = "Clásico", genero = Genero.LITERATURA_CLASICA,
-                paginas = 100, isbn = "ISBN-002", idioma = Idioma.ESPANOL,
+                cantidadPaginas = 100, isbn = "ISBN-002", idioma = Idioma.ESPANOL,
                 editorial = "Salamandra", fechaPublicacion = LocalDate.of(1943, 4, 6),
-                estado = EstadoLibro.MUY_BUENO, imagenUrl = "",
-            )
+                estado = EstadoLibro.MUY_BUENO, imagenUrl = "", LocalDate.of(2020, 6, 8)
+            ))
 
             it("PLUS BIBLIOKARMA SIN RESERVAS DEL DUENIO ES 200") {
                 // 200 + (10 * 0 reservas) = 200
@@ -86,14 +87,14 @@ class LibroSpec : DescribeSpec({
         // ── LibroColeccionable ────────────────────────────────────────────────
         describe("LibroColeccionable") {
 
-            val libro = LibroColeccionable(
-                duenio = duenio, id = 3,
+            val libro = LibroColeccionable(LibroData(
+                duenio = duenio,
                 titulo = "Dune", autor = "Frank Herbert",
                 descripcion = "Sci-fi épico", genero = Genero.CIENCIA_FICCION,
-                paginas = 500, isbn = "ISBN-003", idioma = Idioma.ESPANOL,
+                cantidadPaginas = 500, isbn = "ISBN-003", idioma = Idioma.ESPANOL,
                 editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
-                estado = EstadoLibro.EXCELENTE, imagenUrl = "",
-            )
+                estado = EstadoLibro.EXCELENTE, imagenUrl = "", LocalDate.of(2020, 6, 8)
+            ))
 
             it("PLUS BIBLIOKARMA ES CEIL(KARMA/5) + PAGINAS") {
                 // ceil(2000/5) + 500 = 400 + 500 = 900
@@ -114,14 +115,14 @@ class LibroSpec : DescribeSpec({
         // ── Calificaciones ────────────────────────────────────────────────────
         describe("Calificaciones") {
 
-            val libro = LibroComun(
-                duenio = duenio, id = 4,
+            val libro = LibroComun(LibroData(
+                duenio = duenio,
                 titulo = "Sapiens", autor = "Yuval Harari",
                 descripcion = "Historia", genero = Genero.LITERATURA_CLASICA,
-                paginas = 400, isbn = "ISBN-004", idioma = Idioma.ESPANOL,
+                cantidadPaginas = 400, isbn = "ISBN-004", idioma = Idioma.ESPANOL,
                 editorial = "Debate", fechaPublicacion = LocalDate.of(2011, 1, 1),
-                estado = EstadoLibro.EXCELENTE, imagenUrl = "",
-            )
+                estado = EstadoLibro.EXCELENTE, imagenUrl = "", LocalDate.of(2020, 6, 8)
+            ))
 
             it("CALIFICACION INICIAL ES 0.0 CUANDO NO HAY CALIFICACIONES") {
                 libro.getCalificacion() shouldBe 0.0
