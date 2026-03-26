@@ -140,17 +140,22 @@ class LibroControllerTest(
     }
 
     @Test
-    @DisplayName("cuando se califica un libro correctamente, devuelve 200 OK")
+    @DisplayName("cuando se califica un libro correctamente, devuelve 200 OK y el nuevo rating")
     fun agregarCalificacion_ok() {
         val calificacion = Calificacion(usuarioId = 1, valor = 5, comentario = "Excelente")
+
+        whenever(libroService.getRating(1)).thenReturn(5.0)
 
         mockMvc.perform(
             post("/api/libros/1/calificar")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(calificacion))
-        ).andExpect(status().isOk)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.rating").value(5.0))
 
         verify(libroService).agregarCalificacion(1, calificacion)
+        verify(libroService).getRating(1)
     }
 
     @Test

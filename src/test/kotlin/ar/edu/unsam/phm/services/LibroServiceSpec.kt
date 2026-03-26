@@ -3,7 +3,9 @@ package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.domain.*
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
+import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
+import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import io.kotest.assertions.throwables.shouldThrow
@@ -70,8 +72,10 @@ class LibroServiceSpec : DescribeSpec({
         cantidadReservas = 0,
         ultimasCalificaciones = emptyList(),
         reservas = emptyList(),
+        cantidadReservas = 0,
         fechaAgregado = LocalDate.now(),
-        cantidadCalificaciones = 0
+        cantidadCalificaciones = 0,
+        ultimasCalificaciones = emptyList()
     )
 
     describe("crearLibro") {
@@ -626,6 +630,39 @@ class LibroServiceSpec : DescribeSpec({
 
             io.kotest.assertions.throwables.shouldThrow<ar.edu.unsam.phm.exceptions.ConflictException> {
                 service.eliminarLibro(libroCreado.id, duenio.id)
+            }
+        }
+    }
+    describe("agregarCalificacion y getRating") {
+        it("agrega una calificación y actualiza el rating correctamente") {
+            val (libroRepo, usuarioRepo) = buildRepos()
+            val service = buildService(libroRepo, usuarioRepo)
+            val libroCreado = service.crearLibro(libroDTOBase(), duenio.id)
+
+            service.agregarCalificacion(
+                libroCreado.id,
+                Calificacion(usuarioId = otroUsuario.id, valor = 5, comentario = "Genial")
+            )
+
+            service.getRating(libroCreado.id) shouldBe 5.0
+        }
+
+        it("lanza NotFoundException si el libro no existe al calificar") {
+            val (libroRepo, usuarioRepo) = buildRepos()
+            val service = buildService(libroRepo, usuarioRepo)
+
+            shouldThrow<NotFoundException> {
+                service.agregarCalificacion(999, Calificacion(usuarioId = otroUsuario.id, valor = 5))
+            }
+        }
+
+        it("lanza NotFoundException si el usuario calificador no existe") {
+            val (libroRepo, usuarioRepo) = buildRepos()
+            val service = buildService(libroRepo, usuarioRepo)
+            val libroCreado = service.crearLibro(libroDTOBase(), duenio.id)
+
+            shouldThrow<NotFoundException> {
+                service.agregarCalificacion(libroCreado.id, Calificacion(usuarioId = 999, valor = 5))
             }
         }
     }

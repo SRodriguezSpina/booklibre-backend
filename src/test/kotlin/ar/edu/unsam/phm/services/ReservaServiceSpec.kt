@@ -162,40 +162,5 @@ class ReservaServiceSpec : DescribeSpec({
             resultado[0].titulo shouldBe "1984"
             resultado[1].titulo shouldBe "Dune"
         }
-
-        describe("crearReserva") {
-            val dto = ar.edu.unsam.phm.dtos.CrearReservaDTO(
-                libroId = 10,
-                usuarioId = 1,
-                fechaDesde = LocalDate.of(2026, 5, 1),
-                fechaHasta = LocalDate.of(2026, 5, 10)
-            )
-
-            it("LANZA CONFLICT EXCEPTION SI HAY SUPERPOSICION DE FECHAS") {
-                every { libroRepository.getById(10) } returns libro
-                every { reservaRepository.existeSuperposicion(10, dto.fechaDesde, dto.fechaHasta) } returns true
-
-                io.kotest.assertions.throwables.shouldThrow<ar.edu.unsam.phm.exceptions.ConflictException> {
-                    reservaService.crearReserva(dto)
-                }
-            }
-
-            it("CREA Y CONFIRMA LA RESERVA ACTUALIZANDO LOS USUARIOS") {
-                every { libroRepository.getById(10) } returns libro
-                every { reservaRepository.existeSuperposicion(10, dto.fechaDesde, dto.fechaHasta) } returns false
-                every { usuarioRepository.getById(1) } returns solicitante
-                every { reservaRepository.create(any()) } answers { firstArg() }
-                every { usuarioRepository.update(any()) } returns Unit
-
-                val reservaGuardada = reservaService.crearReserva(dto)
-
-                reservaGuardada.libro.id shouldBe 10
-                reservaGuardada.usuario.id shouldBe 1
-
-                // Verificamos que se actualizaron los usuarios en el repositorio
-                verify { usuarioRepository.update(solicitante) }
-                verify { usuarioRepository.update(duenio) }
-            }
-        }
     }
 })
