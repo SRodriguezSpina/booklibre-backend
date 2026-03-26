@@ -5,6 +5,7 @@ import ar.edu.unsam.phm.domain.LibroColeccionable
 import ar.edu.unsam.phm.domain.LibroComun
 import ar.edu.unsam.phm.domain.LibroConDedicatoria
 import ar.edu.unsam.phm.domain.LibroData
+import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
@@ -14,6 +15,7 @@ import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.EntityNotFoundException
 import org.springframework.stereotype.Service
 import ar.edu.unsam.phm.mappers.toDTO
+import ar.edu.unsam.phm.mappers.toDetalleDTOs
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import java.time.LocalDate
 import kotlin.math.ceil
@@ -108,6 +110,14 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
             throw NotFoundException("Libro $libroId no encontrado")
         }
         return libro.getCalificacion()
+    }
+    fun getCalificaciones(libroId: Int): List<CalificacionDTO> {
+        val libro = try {
+            libroRepository.getById(libroId)
+        } catch (_: EntityNotFoundException) {
+            throw NotFoundException("Libro $libroId no encontrado")
+        }
+        return libro.calificaciones.toDetalleDTOs(nombreUsuarioResenia(libro.calificaciones))
     }
     fun crearLibro(dto: LibroDTO, usuarioId: Int): LibroDTO {
         val duenio = usuarioRepository.findById(usuarioId)

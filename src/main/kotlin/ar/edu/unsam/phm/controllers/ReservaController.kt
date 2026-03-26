@@ -13,7 +13,7 @@ class ReservaController(val reservaService: ReservaService) {
     fun getReservas(@PathVariable usuarioId: Int): List<ReservaDTO> = reservaService.obtenerReservas(usuarioId)
 
     @PostMapping
-    fun crearReserva(@RequestBody body: CrearReservaDTO) { // Podés hacer que devuelva un ReservaDTO si querés
+    fun crearReserva(@RequestBody body: CrearReservaDTO) {
         reservaService.crearReserva(body)
     }
 }
