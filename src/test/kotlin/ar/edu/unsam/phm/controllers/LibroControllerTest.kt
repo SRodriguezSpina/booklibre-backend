@@ -45,7 +45,6 @@ class LibroControllerTest(
         propietarioId = 3, imagenUrl = "", alquiladoPorId = null,
         bibliokarma = 1550,
         estoyReservado = false,
-        autorImg = "",
         rating = 0.0,
         reservas = emptyList(),
         cantidadReservas = 0,
@@ -65,7 +64,7 @@ class LibroControllerTest(
     @DisplayName("cuando se buscan libros con parámetros mínimos, devuelve 200 con la respuesta paginada")
     fun search_ok() {
         val paged = PagedResponse(content = listOf(libroHomeDTO()), totalPages = 1, page = 0)
-        whenever(libroService.search("1984", "", 0, 6, 1, null, null, null, null, null, null, "titulo")).thenReturn(paged)
+        whenever(libroService.search("1984", "", 0, 6, 1, null, null, null, null, null, null, null)).thenReturn(paged)
 
         mockMvc.perform(
             get("/api/libros/home")
@@ -75,14 +74,14 @@ class LibroControllerTest(
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.content[0].titulo").value("1984"))
 
-        verify(libroService).search("1984", "", 0, 6, 1, null, null, null, null, null, null, "titulo")
+        verify(libroService).search("1984", "", 0, 6, 1, null, null, null, null, null, null, null)
     }
 
     @Test
     @DisplayName("cuando se buscan libros con filtros opcionales, los pasa correctamente al service")
     fun search_conFiltros() {
         val paged = PagedResponse(content = emptyList<LibroHomeDTO>(), totalPages = 0, page = 0)
-        whenever(libroService.search("", "", 0, 6, 1, 100, 500, "2026-01-01", "2026-12-31", null, null, "titulo")).thenReturn(paged)
+        whenever(libroService.search("", "", 0, 6, 1, 100, 500, "2026-01-01", "2026-12-31", null, null, null)).thenReturn(paged)
 
         mockMvc.perform(
             get("/api/libros/home")

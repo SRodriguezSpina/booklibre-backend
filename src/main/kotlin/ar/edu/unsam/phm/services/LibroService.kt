@@ -127,7 +127,6 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
             duenio = duenio,
             titulo = dto.titulo,
             autor = dto.autor,
-            autorImg = dto.autorImg,
             descripcion = dto.descripcion,
             genero = dto.genero,
             cantidadPaginas = dto.paginas,
@@ -150,8 +149,16 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
         return libro.toDTO()
     }
 
-    fun actualizarLibro(id : Int, dto: LibroDTO) : LibroDTO{
-        val libroExistente = libroRepository.getById(id)
+    fun actualizarLibro(id: Int, dto: LibroDTO, usuarioId: Int): LibroDTO {
+        val libroExistente = try {
+        libroRepository.getById(id)
+        } catch (_: EntityNotFoundException) {
+            throw NotFoundException("Libro $id no encontrado")
+        }
+
+        if (libroExistente.duenio.id != usuarioId) {
+            throw UnauthorizedException("No autorizado para editar este libro")
+        }
 
         libroExistente.titulo = dto.titulo
         libroExistente.autor = dto.autor

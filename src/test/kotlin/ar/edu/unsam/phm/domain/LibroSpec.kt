@@ -35,7 +35,7 @@ class LibroSpec : DescribeSpec({
                     descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
                     cantidadPaginas = 300, isbn = "ISBN-001", idioma = Idioma.ESPANOL,
                     editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
-                    estado = EstadoLibro.EXCELENTE, imagenUrl = "", autorImg = "",
+                    estado = EstadoLibro.EXCELENTE, imagenUrl = "",
                 )
             )
 
@@ -65,7 +65,7 @@ class LibroSpec : DescribeSpec({
                     descripcion = "Clásico", genero = Genero.LITERATURA_CLASICA,
                     cantidadPaginas = 100, isbn = "ISBN-002", idioma = Idioma.ESPANOL,
                     editorial = "Salamandra", fechaPublicacion = LocalDate.of(1943, 4, 6),
-                    estado = EstadoLibro.MUY_BUENO, imagenUrl = "", autorImg = "",
+                    estado = EstadoLibro.MUY_BUENO, imagenUrl = "",
                 )
             )
 
@@ -97,7 +97,7 @@ class LibroSpec : DescribeSpec({
                     descripcion = "Sci-fi épico", genero = Genero.CIENCIA_FICCION,
                     cantidadPaginas = 500, isbn = "ISBN-003", idioma = Idioma.ESPANOL,
                     editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
-                    estado = EstadoLibro.EXCELENTE, imagenUrl = "", autorImg = "",
+                    estado = EstadoLibro.EXCELENTE, imagenUrl = "",
                 )
             )
 
@@ -127,7 +127,7 @@ class LibroSpec : DescribeSpec({
                     descripcion = "Historia", genero = Genero.LITERATURA_CLASICA,
                     cantidadPaginas = 400, isbn = "ISBN-004", idioma = Idioma.ESPANOL,
                     editorial = "Debate", fechaPublicacion = LocalDate.of(2011, 1, 1),
-                    estado = EstadoLibro.EXCELENTE, imagenUrl = "", autorImg = "",
+                    estado = EstadoLibro.EXCELENTE, imagenUrl = "",
                 )
             )
 
