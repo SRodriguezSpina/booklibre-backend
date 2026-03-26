@@ -5,6 +5,7 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.collections.shouldContain
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class UsuarioSpec : DescribeSpec({
     isolationMode = IsolationMode.InstancePerTest
