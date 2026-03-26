@@ -37,7 +37,7 @@ class LibroSpec : DescribeSpec({
                     editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
                     estado = EstadoLibro.EXCELENTE, imagenUrl = "",
                 )
-            )
+            ).apply { id = 1 }
 
             it("PLUS BIBLIOKARMA CON USUARIO CON MENOS DE 1000 KARMA USA MULTIPLICADOR 5") {
                 // 300 páginas * 5 = 1500
@@ -67,7 +67,7 @@ class LibroSpec : DescribeSpec({
                     editorial = "Salamandra", fechaPublicacion = LocalDate.of(1943, 4, 6),
                     estado = EstadoLibro.MUY_BUENO, imagenUrl = "",
                 )
-            )
+            ).apply { id = 2 }
 
             it("PLUS BIBLIOKARMA SIN RESERVAS DEL DUENIO ES 200") {
                 // 200 + (10 * 0 reservas) = 200
@@ -99,7 +99,7 @@ class LibroSpec : DescribeSpec({
                     editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
                     estado = EstadoLibro.EXCELENTE, imagenUrl = "",
                 )
-            )
+            ).apply { id = 3 }
 
             it("PLUS BIBLIOKARMA ES CEIL(KARMA/5) + PAGINAS") {
                 // ceil(2000/5) + 500 = 400 + 500 = 900
@@ -129,7 +129,7 @@ class LibroSpec : DescribeSpec({
                     editorial = "Debate", fechaPublicacion = LocalDate.of(2011, 1, 1),
                     estado = EstadoLibro.EXCELENTE, imagenUrl = "",
                 )
-            )
+            ).apply { id = 4 }
 
             it("CALIFICACION INICIAL ES 0.0 CUANDO NO HAY CALIFICACIONES") {
                 libro.getCalificacion() shouldBe 0.0
