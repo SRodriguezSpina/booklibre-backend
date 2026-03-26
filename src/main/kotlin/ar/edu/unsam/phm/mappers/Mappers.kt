@@ -96,9 +96,7 @@ fun Reserva.toDTO(usuarioConsultaId: Int): ReservaDTO {
         fechaDesde = fechaDesde.format(DateTimeFormatter.ISO_DATE),
         fechaHasta = fechaHasta.format(DateTimeFormatter.ISO_DATE),
         rating = this.libro.getCalificacion(),
-        bibliokarma = let {
-            this.libro.calcularBiblioKarmaTotal(it.usuario, it.fechaDesde, it.fechaHasta)
-        }
+        bibliokarma = libro.calcularBiblioKarmaTotal(usuario, fechaDesde, fechaHasta)
     )
 }
 

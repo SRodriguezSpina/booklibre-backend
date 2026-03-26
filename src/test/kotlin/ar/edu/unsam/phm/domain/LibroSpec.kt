@@ -40,18 +40,48 @@ class LibroSpec : DescribeSpec({
             ).apply { id = 1 }
 
             it("PLUS BIBLIOKARMA CON USUARIO CON MENOS DE 1000 KARMA USA MULTIPLICADOR 5") {
-                // 300 páginas * 5 = 1500
                 libro.plusBiblioKarma(usuarioPobre) shouldBe 1500
             }
 
             it("PLUS BIBLIOKARMA CON USUARIO CON MAS DE 1000 KARMA USA MULTIPLICADOR 2") {
-                // 300 páginas * 2 = 600
                 libro.plusBiblioKarma(usuarioRico) shouldBe 600
             }
 
             it("CALCULA BIBLIOKARMA TOTAL CORRECTAMENTE") {
-                // (5 * 10 días) + plusBiblioKarma(usuarioPobre=1500) = 50 + 1500 = 1550
                 libro.calcularBiblioKarmaTotal(usuarioPobre, desde, hasta) shouldBe 1550
+            }
+
+            describe("calcularBiblioKarmaTotal — validaciones") {
+                it("LANZA BusinessException CUANDO HASTA ES IGUAL A DESDE") {
+                    val mismaFecha = LocalDate.of(2026, 3, 1)
+                    assertThrows<BusinessException> {
+                        libro.calcularBiblioKarmaTotal(usuarioPobre, mismaFecha, mismaFecha)
+                    }
+                }
+
+                it("LANZA BusinessException CUANDO HASTA ES ANTERIOR A DESDE") {
+                    assertThrows<BusinessException> {
+                        libro.calcularBiblioKarmaTotal(
+                            usuarioPobre,
+                            LocalDate.of(2026, 3, 10),
+                            LocalDate.of(2026, 3, 1)
+                        )
+                    }
+                }
+            }
+
+            describe("LibroComun — validaciones") {
+                it("LANZA BusinessException SI LA CANTIDAD DE PAGINAS ES 0") {
+                    val libroSinPaginas = LibroComun(LibroData(
+                        duenio = duenio, titulo = "Test", autor = "Test",
+                        descripcion = "", genero = Genero.DRAMA, cantidadPaginas = 0,
+                        isbn = "X", idioma = Idioma.ESPANOL, editorial = "",
+                        fechaPublicacion = LocalDate.now(), estado = EstadoLibro.BUENO, imagenUrl = ""
+                    ))
+                    assertThrows<BusinessException> {
+                        libroSinPaginas.plusBiblioKarma(usuarioPobre)
+                    }
+                }
             }
         }
 
@@ -70,19 +100,16 @@ class LibroSpec : DescribeSpec({
             ).apply { id = 2 }
 
             it("PLUS BIBLIOKARMA SIN RESERVAS DEL DUENIO ES 200") {
-                // 200 + (10 * 0 reservas) = 200
                 libro.plusBiblioKarma(usuarioPobre) shouldBe 200
             }
 
             it("PLUS BIBLIOKARMA AUMENTA SEGUN RESERVAS DEL DUENIO") {
                 val reservaFake = Reserva(libro, duenio, desde, hasta)
                 duenio.agregarReserva(reservaFake)
-                // 200 + (10 * 2) = 220
                 libro.plusBiblioKarma(usuarioPobre) shouldBe 210
             }
 
             it("CALCULA BIBLIOKARMA TOTAL CON DUENIO SIN RESERVAS") {
-                // (5 * 10) + 200 = 250
                 libro.calcularBiblioKarmaTotal(usuarioPobre, desde, hasta) shouldBe 250
             }
         }
@@ -114,6 +141,17 @@ class LibroSpec : DescribeSpec({
             it("CALCULA BIBLIOKARMA TOTAL CORRECTAMENTE") {
                 // (5 * 10) + 900 = 950
                 libro.calcularBiblioKarmaTotal(usuarioRico, desde, hasta) shouldBe 950
+            }
+
+            describe("LibroColeccionable — validaciones") {
+                it("LANZA BusinessException SI EL USUARIO TIENE BIBLIOKARMAS NEGATIVOS") {
+                    val usuarioKarmaNegativo = Usuario(
+                        Credencial("x", "x"), "X", "", bibliokarmas = -1
+                    )
+                    assertThrows<BusinessException> {
+                        libro.plusBiblioKarma(usuarioKarmaNegativo)
+                    }
+                }
             }
         }
 
@@ -159,6 +197,27 @@ class LibroSpec : DescribeSpec({
                     libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 1))
                 }
                 libro.getCalificacion() shouldBe 5.0
+            }
+
+            describe("Calificaciones — casos borde") {
+                it("AGREGAR CALIFICACION CON VALOR MENOR A 1 LANZA BusinessException") {
+                    assertThrows<BusinessException> {
+                        libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 0))
+                    }
+                }
+
+                it("AGREGAR CALIFICACION CON VALOR MAYOR A 5 LANZA BusinessException") {
+                    assertThrows<BusinessException> {
+                        libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 6))
+                    }
+                }
+
+                it("GETCLASIFICACION REDONDEA A 1 DECIMAL CORRECTAMENTE") {
+                    libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 4))
+                    libro.agregarCalificacion(Calificacion(usuarioId = 2, valor = 3))
+                    libro.agregarCalificacion(Calificacion(usuarioId = 3, valor = 5))
+                    libro.getCalificacion() shouldBe 4.0
+                }
             }
         }
     }

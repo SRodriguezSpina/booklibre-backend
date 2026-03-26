@@ -6,6 +6,7 @@ import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
+import ar.edu.unsam.phm.repository.EntityNotFoundException
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import io.kotest.assertions.throwables.shouldThrow
@@ -70,12 +71,10 @@ class LibroServiceSpec : DescribeSpec({
         estoyReservado = false,
         rating = 0.0,
         cantidadReservas = 0,
-        ultimasCalificaciones = emptyList(),
         reservas = emptyList(),
-        cantidadReservas = 0,
         fechaAgregado = LocalDate.now(),
         cantidadCalificaciones = 0,
-        ultimasCalificaciones = emptyList()
+        ultimasCalificaciones = emptyList(),
     )
 
     describe("crearLibro") {
@@ -258,114 +257,116 @@ class LibroServiceSpec : DescribeSpec({
     }
 
     describe("actualizarLibro") {
-
-        fun crearLibroEnRepo(libroRepo: LibroRepository, usuarioRepo: UsuarioRepository): Int {
-            val service = buildService(libroRepo, usuarioRepo)
-            val creado = service.crearLibro(libroDTOBase(), duenio.id)
-            return creado.id
-        }
-
-        it("actualiza el título del libro existente") {
-            val (libroRepo, usuarioRepo) = buildRepos()
-            val id = crearLibroEnRepo(libroRepo, usuarioRepo)
-            val service = buildService(libroRepo, usuarioRepo)
-
-            service.actualizarLibro(id, libroDTOBase(titulo = "Clean Code 2nd Edition") , any())
-
-            libroRepo.getById(id).titulo shouldBe "Clean Code 2nd Edition"
-        }
-
-        it("actualiza el autor del libro existente") {
-            val (libroRepo, usuarioRepo) = buildRepos()
-            val id = crearLibroEnRepo(libroRepo, usuarioRepo)
-            val service = buildService(libroRepo, usuarioRepo)
-
-            service.actualizarLibro(id, libroDTOBase(autor = "Uncle Bob"), any())
-
-            libroRepo.getById(id).autor shouldBe "Uncle Bob"
-        }
-
-        it("actualiza la cantidad de páginas del libro existente") {
-            val (libroRepo, usuarioRepo) = buildRepos()
-            val id = crearLibroEnRepo(libroRepo, usuarioRepo)
-            val service = buildService(libroRepo, usuarioRepo)
-
-            service.actualizarLibro(id, libroDTOBase(paginas = 999), any())
-
-            libroRepo.getById(id).cantidadPaginas shouldBe 999
-        }
-
-        it("actualiza el estado del libro existente") {
-            val (libroRepo, usuarioRepo) = buildRepos()
-            val id = crearLibroEnRepo(libroRepo, usuarioRepo)
-            val service = buildService(libroRepo, usuarioRepo)
-
-            service.actualizarLibro(id, libroDTOBase(estado = "REGULAR"), any())
-
-            libroRepo.getById(id).estado shouldBe EstadoLibro.REGULAR
-        }
-
-        it("devuelve el DTO con los valores actualizados") {
-            val (libroRepo, usuarioRepo) = buildRepos()
-            val id = crearLibroEnRepo(libroRepo, usuarioRepo)
-            val service = buildService(libroRepo, usuarioRepo)
-
-            val resultado = service.actualizarLibro(id, libroDTOBase(titulo = "Nuevo Título"), any())
-
-            resultado.titulo shouldBe "Nuevo Título"
-        }
-
-        it("no cambia el propietario al actualizar") {
-            val (libroRepo, usuarioRepo) = buildRepos()
-            val id = crearLibroEnRepo(libroRepo, usuarioRepo)
-            val service = buildService(libroRepo, usuarioRepo)
-
-            service.actualizarLibro(id, libroDTOBase(), any())
-
-            libroRepo.getById(id).duenio.id shouldBe duenio.id
-        }
-
-        it("actualizar con múltiples campos modificados los refleja todos") {
-            val (libroRepo, usuarioRepo) = buildRepos()
-            val id = crearLibroEnRepo(libroRepo, usuarioRepo)
-            val service = buildService(libroRepo, usuarioRepo)
-
-            service.actualizarLibro(
-                id,
-                libroDTOBase(
-                    titulo = "The Pragmatic Programmer",
-                    autor = "Andrew Hunt",
-                    paginas = 352,
-                    estado = "BUENO"
-                )
-                , any()
-            )
-
-            val libro = libroRepo.getById(id)
-            libro.titulo shouldBe "The Pragmatic Programmer"
-            libro.autor shouldBe "Andrew Hunt"
-            libro.cantidadPaginas shouldBe 352
-            libro.estado shouldBe EstadoLibro.BUENO
-        }
-
-        it("lanza excepción si se intenta actualizar un libro inexistente") {
-            val (libroRepo, usuarioRepo) = buildRepos()
-            val service = buildService(libroRepo, usuarioRepo)
-
-            shouldThrow<Exception> {
-                service.actualizarLibro(9999, libroDTOBase(), any())
+        describe("actualizarLibro") {
+            fun crearLibroEnRepo(libroRepo: LibroRepository, usuarioRepo: UsuarioRepository): Int {
+                val service = buildService(libroRepo, usuarioRepo)
+                val creado = service.crearLibro(libroDTOBase(), duenio.id)
+                return creado.id
             }
-        }
 
-        it("actualizar no modifica otros libros del repositorio") {
-            val (libroRepo, usuarioRepo) = buildRepos()
-            val service = buildService(libroRepo, usuarioRepo)
-            val idA = service.crearLibro(libroDTOBase(titulo = "Libro A"), duenio.id).id
-            val idB = service.crearLibro(libroDTOBase(titulo = "Libro B"), duenio.id).id
+            it("actualiza el título del libro existente") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val id = crearLibroEnRepo(libroRepo, usuarioRepo)
+                val service = buildService(libroRepo, usuarioRepo)
 
-            service.actualizarLibro(idA, libroDTOBase(titulo = "Libro A Actualizado"), any())
+                // Reemplazamos any() por duenio.id
+                service.actualizarLibro(id, libroDTOBase(titulo = "Clean Code 2nd Edition") , duenio.id)
 
-            libroRepo.getById(idB).titulo shouldBe "Libro B"
+                libroRepo.getById(id).titulo shouldBe "Clean Code 2nd Edition"
+            }
+
+            it("actualiza el autor del libro existente") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val id = crearLibroEnRepo(libroRepo, usuarioRepo)
+                val service = buildService(libroRepo, usuarioRepo)
+
+                service.actualizarLibro(id, libroDTOBase(autor = "Uncle Bob"), duenio.id)
+
+                libroRepo.getById(id).autor shouldBe "Uncle Bob"
+            }
+
+            it("actualiza la cantidad de páginas del libro existente") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val id = crearLibroEnRepo(libroRepo, usuarioRepo)
+                val service = buildService(libroRepo, usuarioRepo)
+
+                service.actualizarLibro(id, libroDTOBase(paginas = 999), duenio.id)
+
+                libroRepo.getById(id).cantidadPaginas shouldBe 999
+            }
+
+            it("actualiza el estado del libro existente") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val id = crearLibroEnRepo(libroRepo, usuarioRepo)
+                val service = buildService(libroRepo, usuarioRepo)
+
+                service.actualizarLibro(id, libroDTOBase(estado = "REGULAR"), duenio.id)
+
+                libroRepo.getById(id).estado shouldBe EstadoLibro.REGULAR
+            }
+
+            it("devuelve el DTO con los valores actualizados") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val id = crearLibroEnRepo(libroRepo, usuarioRepo)
+                val service = buildService(libroRepo, usuarioRepo)
+
+                val resultado = service.actualizarLibro(id, libroDTOBase(titulo = "Nuevo Título"), duenio.id)
+
+                resultado.titulo shouldBe "Nuevo Título"
+            }
+
+            it("no cambia el propietario al actualizar") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val id = crearLibroEnRepo(libroRepo, usuarioRepo)
+                val service = buildService(libroRepo, usuarioRepo)
+
+                service.actualizarLibro(id, libroDTOBase(), duenio.id)
+
+                libroRepo.getById(id).duenio.id shouldBe duenio.id
+            }
+
+            it("actualizar con múltiples campos modificados los refleja todos") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val id = crearLibroEnRepo(libroRepo, usuarioRepo)
+                val service = buildService(libroRepo, usuarioRepo)
+
+                service.actualizarLibro(
+                    id,
+                    libroDTOBase(
+                        titulo = "The Pragmatic Programmer",
+                        autor = "Andrew Hunt",
+                        paginas = 352,
+                        estado = "BUENO"
+                    )
+                    , duenio.id
+                )
+
+                val libro = libroRepo.getById(id)
+                libro.titulo shouldBe "The Pragmatic Programmer"
+                libro.autor shouldBe "Andrew Hunt"
+                libro.cantidadPaginas shouldBe 352
+                libro.estado shouldBe EstadoLibro.BUENO
+            }
+
+            it("lanza excepción si se intenta actualizar un libro inexistente") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+
+                shouldThrow<Exception> {
+                    service.actualizarLibro(9999, libroDTOBase(), duenio.id)
+                }
+            }
+
+            it("actualizar no modifica otros libros del repositorio") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+                val idA = service.crearLibro(libroDTOBase(titulo = "Libro A"), duenio.id).id
+                val idB = service.crearLibro(libroDTOBase(titulo = "Libro B"), duenio.id).id
+
+                service.actualizarLibro(idA, libroDTOBase(titulo = "Libro A Actualizado"), duenio.id)
+
+                libroRepo.getById(idB).titulo shouldBe "Libro B"
+            }
         }
     }
 
@@ -598,7 +599,7 @@ class LibroServiceSpec : DescribeSpec({
 
             service.eliminarLibro(libroCreado.id, duenio.id)
 
-            io.kotest.assertions.throwables.shouldThrow<ar.edu.unsam.phm.repository.EntityNotFoundException> {
+            shouldThrow<EntityNotFoundException> {
                 libroRepo.getById(libroCreado.id)
             }
         }
@@ -608,7 +609,7 @@ class LibroServiceSpec : DescribeSpec({
             val service = buildService(libroRepo, usuarioRepo)
             val libroCreado = service.crearLibro(libroDTOBase(), duenio.id)
 
-            io.kotest.assertions.throwables.shouldThrow<ar.edu.unsam.phm.exceptions.UnauthorizedException> {
+            shouldThrow<UnauthorizedException> {
                 service.eliminarLibro(libroCreado.id, otroUsuario.id)
             }
         }
@@ -620,15 +621,15 @@ class LibroServiceSpec : DescribeSpec({
 
             // Forzamos una reserva activa en el dueño simulando la lógica real
             val libroDominio = libroRepo.getById(libroCreado.id)
-            val reserva = ar.edu.unsam.phm.domain.Reserva(
+            val reserva = Reserva(
                 libro = libroDominio,
                 usuario = otroUsuario,
-                fechaDesde = java.time.LocalDate.now().minusDays(1),
-                fechaHasta = java.time.LocalDate.now().plusDays(5)
+                fechaDesde = LocalDate.now().minusDays(1),
+                fechaHasta = LocalDate.now().plusDays(5)
             )
             duenio.agregarReserva(reserva)
 
-            io.kotest.assertions.throwables.shouldThrow<ar.edu.unsam.phm.exceptions.ConflictException> {
+            shouldThrow<ConflictException> {
                 service.eliminarLibro(libroCreado.id, duenio.id)
             }
         }
