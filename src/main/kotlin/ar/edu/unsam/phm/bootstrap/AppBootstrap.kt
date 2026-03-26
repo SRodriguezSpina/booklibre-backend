@@ -8,19 +8,14 @@ import org.springframework.beans.factory.InitializingBean
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
-data class DatosLibro(
-    val titulo: String,
-    val autor: String,
-    val autorImg: String,
-    val portadaImg: String
-)
-
 @Service
 class AppBootstrap(
     val libroRepository: LibroRepository,
     val usuarioRepository: UsuarioRepository,
     val reservaRepository: ReservaRepository,
-): InitializingBean {
+) : InitializingBean {
+
+    // ── Usuarios ──────────────────────────────────────────────────────────────
 
     val juan = Usuario(
         credencial = Credencial("juan@mail.com", "123"),
@@ -74,160 +69,323 @@ class AppBootstrap(
 
         listOf(juan, emilia, ana, carlos).forEach { usuarioRepository.create(it) }
 
-        configurarEscenarioJuan()
-        crearLibrosAdicionales()
+        val librosComunes       = crearLibrosComunes()
+        val librosConDedicatoria = crearLibrosConDedicatoria()
+        val librosColeccionables = crearLibrosColeccionables()
+
+        crearReservas(librosComunes, librosConDedicatoria, librosColeccionables)
+        agregarCalificaciones(librosComunes, librosConDedicatoria, librosColeccionables)
     }
 
-    fun configurarEscenarioJuan() {
+    // ── Libros Comunes (dueño: juan y carlos) ─────────────────────────────────
 
-        // ── LIBROS DE ANA prestados A JUAN (prestados-a-mi) ──────────────────
-        val librosDeAna = listOf(
-            DatosLibro("Harry Potter y la Piedra Filosofal", "J.K. Rowling", "https://upload.wikimedia.org/wikipedia/commons/5/5d/J._K._Rowling_2010.jpg", "https://images.cdn3.buscalibre.com/fit-in/360x360/d7/e7/d7e777ce24f10eabdaae28d65ab70bd3.jpg"),
-            DatosLibro("El Código Da Vinci", "Dan Brown", "https://upload.wikimedia.org/wikipedia/commons/8/8b/Dan_Brown_book_signing.jpg", "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSB8x01gOOsdG1D2IS0r3AquN2pGMtMnWLpFKPkF8pZZQ953Pbo1lHkAqxX1R_SWzHqmWeOC5Mcg7fbuJt_iLP76jzwWNtpbzPW3xMNlRZN"),
-            DatosLibro("Crónica de una muerte anunciada", "Gabriel García Márquez", "https://upload.wikimedia.org/wikipedia/commons/0/0f/Gabriel_Garcia_Marquez.jpg", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVTCjrjj-XTtQPa0m4C8zNQtyvHz1HeB4zsQ&s"),
-            DatosLibro("Rayuela", "Julio Cortázar", "https://upload.wikimedia.org/wikipedia/commons/1/13/Julio_Cort%C3%A1zar_%281967%29.jpg", "https://descargarlibrosenpdf.wordpress.com/wp-content/uploads/2017/05/rayuela-cortazar.jpg"),
-            DatosLibro("Ficciones", "Jorge Luis Borges", "https://upload.wikimedia.org/wikipedia/commons/c/c1/Jorge_Luis_Borges_1951%2C_by_Grete_Stern.jpg", "https://images.cdn1.buscalibre.com/fit-in/360x360/e4/a9/e4a975b4dce219d0b130b4d8915b8b88.jpg"),
-            DatosLibro("El nombre de la rosa", "Umberto Eco", "https://upload.wikimedia.org/wikipedia/commons/c/c2/Umberto_Eco_1984.jpg", "https://libroschorcha.wordpress.com/wp-content/uploads/2018/02/el-nombre-de-la-rosa-umberto-eco.jpg"),
+    private fun crearLibrosComunes(): List<Libro> {
+        val datos = listOf(
+            LibroData(duenio = juan, titulo = "1984", autor = "George Orwell",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/7/7e/George_Orwell_press_photo.jpg",
+                descripcion = "Una distopía sobre el totalitarismo y la vigilancia del Estado.",
+                genero = Genero.CIENCIA_FICCION, cantidadPaginas = 328, isbn = "978-0451524935",
+                idioma = Idioma.ESPANOL, editorial = "Debolsillo",
+                fechaPublicacion = LocalDate.of(1949, 6, 8), estado = EstadoLibro.EXCELENTE,
+                imagenUrl = "https://contentv2.tap-commerce.com/cover/large/9789875669284_1.jpg",
+                fechaAgregado = LocalDate.of(2025, 1, 5)),
+            LibroData(duenio = juan, titulo = "Clean Code", autor = "Robert C. Martin",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/e/ee/Robert_Cecil_Martin.png",
+                descripcion = "Guía práctica para escribir código limpio y mantenible.",
+                genero = Genero.DISENO, cantidadPaginas = 464, isbn = "978-0132350884",
+                idioma = Idioma.INGLES, editorial = "Prentice Hall",
+                fechaPublicacion = LocalDate.of(2008, 8, 1), estado = EstadoLibro.MUY_BUENO,
+                imagenUrl = "https://m.media-amazon.com/images/I/51E2055ZGUL._AC_UF1000,1000_QL80_.jpg",
+                fechaAgregado = LocalDate.of(2025, 1, 6)),
+            LibroData(duenio = juan, titulo = "El Principito", autor = "Antoine de Saint-Exupéry",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/0/07/Antoine_de_Saint-Exup%C3%A9ry.jpg",
+                descripcion = "Un clásico de la literatura universal sobre la infancia y la amistad.",
+                genero = Genero.DRAMA, cantidadPaginas = 96, isbn = "978-0156012195",
+                idioma = Idioma.ESPANOL, editorial = "Salamandra",
+                fechaPublicacion = LocalDate.of(1943, 4, 6), estado = EstadoLibro.BUENO,
+                imagenUrl = "https://tienda.planetadelibros.com.ar/cdn/shop/products/portada_el-principito_antoine-de-saint-exupery_201507152131.jpg",
+                fechaAgregado = LocalDate.of(2025, 1, 7)),
+            LibroData(duenio = juan, titulo = "Sapiens", autor = "Yuval Noah Harari",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/0/07/Yuval_Noah_Harari_at_the_WEF_Annual_Meeting_2020.jpg",
+                descripcion = "Un recorrido por la historia de la humanidad desde los orígenes.",
+                genero = Genero.AUTOAYUDA, cantidadPaginas = 443, isbn = "978-0062316097",
+                idioma = Idioma.ESPANOL, editorial = "Debate",
+                fechaPublicacion = LocalDate.of(2011, 1, 1), estado = EstadoLibro.EXCELENTE,
+                imagenUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyAJxSA62_Z8k-pqxGp8x3Zp1bWoAtBjkZow&s",
+                fechaAgregado = LocalDate.of(2025, 1, 8)),
+            LibroData(duenio = carlos, titulo = "Don Quijote de la Mancha", autor = "Miguel de Cervantes",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/0/09/Cervantes_J%C3%A1uregui.jpg",
+                descripcion = "La obra cumbre de la literatura española sobre el caballero de La Mancha.",
+                genero = Genero.LITERATURA_CLASICA, cantidadPaginas = 1023, isbn = "978-8467027983",
+                idioma = Idioma.ESPANOL, editorial = "Espasa",
+                fechaPublicacion = LocalDate.of(1605, 1, 16), estado = EstadoLibro.BUENO,
+                imagenUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcMRZdGl9oMFn7_O4oyErwUXK9yrN3OcSe0w&s",
+                fechaAgregado = LocalDate.of(2024, 9, 10)),
+            LibroData(duenio = carlos, titulo = "Crimen y Castigo", autor = "Fiódor Dostoyevski",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/7/78/Vasily_Perov_-_%D0%9F%D0%BE%D1%80%D1%82%D1%80%D0%B5%D1%82_%D0%A4.%D0%9C.%D0%94%D0%BE%D1%81%D1%82%D0%BE%D0%B2%D1%81%D0%BA%D0%BE%D0%B3%D0%BE_-_Google_Art_Project.jpg",
+                descripcion = "Un estudiante comete un crimen y lidia con las consecuencias psicológicas.",
+                genero = Genero.DRAMA, cantidadPaginas = 671, isbn = "978-8420674469",
+                idioma = Idioma.ESPANOL, editorial = "Alianza",
+                fechaPublicacion = LocalDate.of(1866, 1, 1), estado = EstadoLibro.MUY_BUENO,
+                imagenUrl = "https://www.edicontinente.com.ar/image/titulos/9788417477639.jpg",
+                fechaAgregado = LocalDate.of(2024, 9, 11)),
+            LibroData(duenio = carlos, titulo = "Dune", autor = "Frank Herbert",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/5/5e/Frank_Herbert_-_1984.jpg",
+                descripcion = "La épica historia de Paul Atreides en el planeta desértico Arrakis.",
+                genero = Genero.CIENCIA_FICCION, cantidadPaginas = 688, isbn = "978-0441013593",
+                idioma = Idioma.ESPANOL, editorial = "Minotauro",
+                fechaPublicacion = LocalDate.of(1965, 8, 1), estado = EstadoLibro.EXCELENTE,
+                imagenUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrP4Ohql-5Cf2oMJNHvnj5V-ZVm3Q8rpNj0OJXuGa2dOgPMIVMchKJCRSDEJnbUsJ7mHh1C3xE3wfDDncifQkAiSixNji3-L2yN8laRAU",
+                fechaAgregado = LocalDate.of(2024, 9, 12)),
+            LibroData(duenio = carlos, titulo = "El alquimista", autor = "Paulo Coelho",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/6/6d/Paulo_Coelho_en_2007.jpg",
+                descripcion = "Un pastor andaluz viaja en busca de su tesoro personal.",
+                genero = Genero.AUTOAYUDA, cantidadPaginas = 208, isbn = "978-0062315007",
+                idioma = Idioma.ESPANOL, editorial = "Planeta",
+                fechaPublicacion = LocalDate.of(1988, 1, 1), estado = EstadoLibro.BUENO,
+                imagenUrl = "https://m.media-amazon.com/images/I/71aFt4+OTOL.jpg",
+                fechaAgregado = LocalDate.of(2024, 9, 13)),
         )
-
-        librosDeAna.forEachIndexed { i, datos ->
-            val data = LibroData(
-                duenio = ana,
-                titulo = datos.titulo,
-                autor = datos.autor,
-                autorImg = datos.autorImg,
-                descripcion = "Descripción",
-                genero = Genero.LITERATURA_CLASICA,
-                cantidadPaginas = 300,
-                isbn = "ISBN-$i",
-                idioma = Idioma.ESPANOL,
-                editorial = "Editorial",
-                fechaPublicacion = LocalDate.now(),
-                estado = EstadoLibro.EXCELENTE,
-                imagenUrl = datos.portadaImg,
-                fechaAgregado = LocalDate.of(2024, 3, 1).plusDays(i.toLong()),
-            )
-            val libro = LibroComun(data)
-            libroRepository.create(libro)
-
-            val (fDesde, fHasta) = when (i) {
-                0 -> LocalDate.of(2026, 3, 1)  to LocalDate.of(2026, 3, 10)
-                1 -> LocalDate.of(2026, 3, 10) to LocalDate.of(2026, 3, 16)
-                2 -> LocalDate.of(2026, 3, 15) to LocalDate.of(2026, 3, 25)
-                3 -> LocalDate.of(2026, 2, 1)  to LocalDate.of(2026, 2, 15)
-                4 -> LocalDate.of(2026, 3, 17) to LocalDate.of(2026, 4, 1)
-                else -> LocalDate.of(2026, 3, 18) to LocalDate.of(2026, 4, 10)
-            }
-            val reserva = Reserva(libro, juan, fDesde, fHasta).apply { id = 500 + i }
-            juan.agregarReserva(reserva)
-            ana.agregarReserva(reserva)
-            reservaRepository.create(reserva)
-        }
-
-        // ── LIBROS DE CARLOS prestados A JUAN (prestados-a-mi) ───────────────
-        val librosDeCarlos = listOf(
-            DatosLibro("Don Quijote de la Mancha", "Miguel de Cervantes", "https://upload.wikimedia.org/wikipedia/commons/0/09/Cervantes_J%C3%A1uregui.jpg", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcMRZdGl9oMFn7_O4oyErwUXK9yrN3OcSe0w&s"),
-            DatosLibro("Crimen y Castigo", "Fiódor Dostoyevski", "https://upload.wikimedia.org/wikipedia/commons/7/78/Vasily_Perov_-_%D0%9F%D0%BE%D1%80%D1%82%D1%80%D0%B5%D1%82_%D0%A4.%D0%9C.%D0%94%D0%BE%D1%81%D1%82%D0%BE%D0%B5%D0%B2%D1%81%D0%BA%D0%BE%D0%B3%D0%BE_-_Google_Art_Project.jpg", "https://www.edicontinente.com.ar/image/titulos/9788417477639.jpg"),
-        )
-
-        librosDeCarlos.forEachIndexed { i, datos ->
-            val data = LibroData(
-                duenio = carlos,
-                titulo = datos.titulo,
-                autor = datos.autor,
-                autorImg = datos.autorImg,
-                descripcion = "Descripción",
-                genero = Genero.LITERATURA_CLASICA,
-                cantidadPaginas = 400,
-                isbn = "ISBN-C$i",
-                idioma = Idioma.ESPANOL,
-                editorial = "Editorial",
-                fechaPublicacion = LocalDate.now(),
-                estado = EstadoLibro.MUY_BUENO,
-                imagenUrl = datos.portadaImg,
-                fechaAgregado = LocalDate.of(2024, 9, 10).plusDays(i.toLong()),
-            )
-            val libro = LibroComun(data)
-            libroRepository.create(libro)
-
-            val (fDesde, fHasta) = when (i) {
-                0 -> LocalDate.of(2026, 2, 10) to LocalDate.of(2026, 2, 28)
-                else -> LocalDate.of(2026, 3, 18) to LocalDate.of(2026, 4, 5)
-            }
-            val reserva = Reserva(libro, juan, fDesde, fHasta).apply { id = 520 + i }
-            juan.agregarReserva(reserva)
-            carlos.agregarReserva(reserva)
-            reservaRepository.create(reserva)
-        }
-
-        // ── LIBROS DE JUAN prestados a EMILIA / CARLOS / ANA (mis-prestamos) ─
-        val misLibros = listOf(
-            DatosLibro("1984", "George Orwell", "https://upload.wikimedia.org/wikipedia/commons/7/7e/George_Orwell_press_photo.jpg", "https://contentv2.tap-commerce.com/cover/large/9789875669284_1.jpg"),
-            DatosLibro("Clean Code", "Robert C. Martin", "https://upload.wikimedia.org/wikipedia/commons/e/ee/Robert_Cecil_Martin.png", "https://m.media-amazon.com/images/I/51E2055ZGUL._AC_UF1000,1000_QL80_.jpg"),
-            DatosLibro("El Principito", "Antoine de Saint-Exupéry", "https://upload.wikimedia.org/wikipedia/commons/0/07/Antoine_de_Saint-Exup%C3%A9ry.jpg", "https://tienda.planetadelibros.com.ar/cdn/shop/products/portada_el-principito_antoine-de-saint-exupery_201507152131.jpg?v=1684356025"),
-            DatosLibro("Sapiens", "Yuval Noah Harari", "https://upload.wikimedia.org/wikipedia/commons/0/07/Yuval_Noah_Harari_at_the_WEF_Annual_Meeting_2020.jpg", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyAJxSA62_Z8k-pqxGp8x3Zp1bWoAtBjkZow&s"),
-            DatosLibro("El alquimista", "Paulo Coelho", "https://upload.wikimedia.org/wikipedia/commons/6/6d/Paulo_Coelho_en_2007.jpg", "https://m.media-amazon.com/images/I/71aFt4+OTOL.jpg"),
-            DatosLibro("Dune", "Frank Herbert", "https://upload.wikimedia.org/wikipedia/commons/5/5e/Frank_Herbert_-_1984.jpg", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrP4Ohql-5Cf2oMJNHvnj5V-ZVm3Q8rpNj0OJXuGa2dOgPMIVMchKJCRSDEJnbUsJ7mHh1C3xE3wfDDncifQkAiSixNji3-L2yN8laRAU&s=10"),
-            DatosLibro("Fundación", "Isaac Asimov", "https://upload.wikimedia.org/wikipedia/commons/3/34/Isaac.Asimov01.jpg", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9t9VngDwUP_IlIKXTYUAJkRC11dlsBX7ncw&s"),
-        )
-
-        val prestatarios = listOf(emilia, carlos, ana, emilia, carlos, emilia, ana)
-
-        misLibros.forEachIndexed { i, datos ->
-            val data = LibroData(
-                duenio = juan,
-                titulo = datos.titulo,
-                autor = datos.autor,
-                autorImg = datos.autorImg,
-                descripcion = "Descripción",
-                genero = Genero.CIENCIA_FICCION,
-                cantidadPaginas = 350,
-                isbn = "ISBN-J$i",
-                idioma = Idioma.ESPANOL,
-                editorial = "Editorial",
-                fechaPublicacion = LocalDate.now(),
-                estado = EstadoLibro.EXCELENTE,
-                imagenUrl = datos.portadaImg,
-                fechaAgregado = LocalDate.of(2025, 1, 5).plusDays(i.toLong()),
-            )
-            val libro = LibroComun(data)
-            libroRepository.create(libro)
-
-            val prestatario = prestatarios[i]
-            val (fDesde, fHasta) = when (i) {
-                0 -> LocalDate.of(2026, 3, 10) to LocalDate.of(2026, 3, 30)
-                1 -> LocalDate.of(2026, 3, 10) to LocalDate.of(2026, 3, 30)
-                2 -> LocalDate.of(2026, 2, 1)  to LocalDate.of(2026, 2, 20)
-                3 -> LocalDate.of(2026, 3, 15) to LocalDate.of(2026, 3, 20)
-                4 -> LocalDate.of(2026, 1, 5)  to LocalDate.of(2026, 1, 20)
-                5 -> LocalDate.of(2026, 3, 17) to LocalDate.of(2026, 4, 15)
-                else -> LocalDate.of(2026, 3, 18) to LocalDate.of(2026, 4, 20)
-            }
-            val reserva = Reserva(libro, prestatario, fDesde, fHasta).apply { id = 600 + i }
-            juan.agregarReserva(reserva)
-            prestatario.agregarReserva(reserva)
-            reservaRepository.create(reserva)
-        }
+        return datos.map { libroRepository.create(LibroComun(it)) }
     }
 
-    fun crearLibrosAdicionales() {
-        val data = LibroData(
-            duenio = ana,
-            titulo = "El Señor de los Anillos",
-            autor = "J.R.R. Tolkien",
-            autorImg = "https://upload.wikimedia.org/wikipedia/commons/d/d4/J._R._R._Tolkien%2C_1940s.jpg",
-            descripcion = "Fantasía",
-            genero = Genero.CIENCIA_FICCION,
-            cantidadPaginas = 1200,
-            isbn = "ISBN-3005",
-            idioma = Idioma.ESPANOL,
-            editorial = "Minotauro",
-            fechaPublicacion = LocalDate.now(),
-            estado = EstadoLibro.EXCELENTE,
-            imagenUrl = "https://m.media-amazon.com/images/I/91R196S8S8L.jpg",
-            fechaAgregado = LocalDate.of(2025, 2, 20),
+    // ── Libros Con Dedicatoria (dueño: ana y emilia) ──────────────────────────
+
+    private fun crearLibrosConDedicatoria(): List<Libro> {
+        val datos = listOf(
+            LibroData(duenio = ana, titulo = "Harry Potter y la Piedra Filosofal", autor = "J.K. Rowling",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/5/5d/J._K._Rowling_2010.jpg",
+                descripcion = "Un joven descubre que es un mago y asiste a la escuela Hogwarts.",
+                genero = Genero.LITERATURA_CLASICA, cantidadPaginas = 309, isbn = "978-8478884452",
+                idioma = Idioma.ESPANOL, editorial = "Salamandra",
+                fechaPublicacion = LocalDate.of(1997, 6, 26), estado = EstadoLibro.EXCELENTE,
+                imagenUrl = "https://images.cdn3.buscalibre.com/fit-in/360x360/d7/e7/d7e777ce24f10eabdaae28d65ab70bd3.jpg",
+                fechaAgregado = LocalDate.of(2024, 3, 1)),
+            LibroData(duenio = ana, titulo = "El Código Da Vinci", autor = "Dan Brown",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/8/8b/Dan_Brown_book_signing.jpg",
+                descripcion = "Un criptólogo descifra una serie de enigmas escondidos en obras de Da Vinci.",
+                genero = Genero.DRAMA, cantidadPaginas = 489, isbn = "978-8408174189",
+                idioma = Idioma.ESPANOL, editorial = "Planeta",
+                fechaPublicacion = LocalDate.of(2003, 3, 18), estado = EstadoLibro.MUY_BUENO,
+                imagenUrl = "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSB8x01gOOsdG1D2IS0r3AquN2pGMtMnWLpFKPkF8pZZQ953Pbo1lHkAqxX1R_SWzHqmWeOC5Mcg7fbuJt_iLP76jzwWNtpbzPW3xMNlRZN",
+                fechaAgregado = LocalDate.of(2024, 3, 2)),
+            LibroData(duenio = ana, titulo = "Crónica de una muerte anunciada", autor = "Gabriel García Márquez",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/0/0f/Gabriel_Garcia_Marquez.jpg",
+                descripcion = "El relato del asesinato de Santiago Nasar en un pueblo del Caribe.",
+                genero = Genero.LITERATURA_CLASICA, cantidadPaginas = 120, isbn = "978-8497592437",
+                idioma = Idioma.ESPANOL, editorial = "Diana",
+                fechaPublicacion = LocalDate.of(1981, 1, 1), estado = EstadoLibro.BUENO,
+                imagenUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVTCjrjj-XTtQPa0m4C8zNQtyvHz1HeB4zsQ&s",
+                fechaAgregado = LocalDate.of(2024, 3, 3)),
+            LibroData(duenio = ana, titulo = "Rayuela", autor = "Julio Cortázar",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/1/13/Julio_Cort%C3%A1zar_%281967%29.jpg",
+                descripcion = "Una novela experimental que puede leerse en múltiples órdenes.",
+                genero = Genero.LITERATURA_CLASICA, cantidadPaginas = 600, isbn = "978-8420471822",
+                idioma = Idioma.ESPANOL, editorial = "Alfaguara",
+                fechaPublicacion = LocalDate.of(1963, 1, 1), estado = EstadoLibro.MUY_BUENO,
+                imagenUrl = "https://descargarlibrosenpdf.wordpress.com/wp-content/uploads/2017/05/rayuela-cortazar.jpg",
+                fechaAgregado = LocalDate.of(2024, 3, 4)),
+            LibroData(duenio = emilia, titulo = "Ficciones", autor = "Jorge Luis Borges",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/c/c1/Jorge_Luis_Borges_1951%2C_by_Grete_Stern.jpg",
+                descripcion = "Una colección de cuentos que mezclan lo fantástico con lo filosófico.",
+                genero = Genero.LITERATURA_CLASICA, cantidadPaginas = 224, isbn = "978-8420633138",
+                idioma = Idioma.ESPANOL, editorial = "Alianza",
+                fechaPublicacion = LocalDate.of(1944, 1, 1), estado = EstadoLibro.EXCELENTE,
+                imagenUrl = "https://images.cdn1.buscalibre.com/fit-in/360x360/e4/a9/e4a975b4dce219d0b130b4d8915b8b88.jpg",
+                fechaAgregado = LocalDate.of(2024, 6, 1)),
+            LibroData(duenio = emilia, titulo = "El nombre de la rosa", autor = "Umberto Eco",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/c/c2/Umberto_Eco_1984.jpg",
+                descripcion = "Un monje investiga una serie de muertes misteriosas en una abadía medieval.",
+                genero = Genero.DRAMA, cantidadPaginas = 500, isbn = "978-8408081869",
+                idioma = Idioma.ESPANOL, editorial = "Lumen",
+                fechaPublicacion = LocalDate.of(1980, 1, 1), estado = EstadoLibro.BUENO,
+                imagenUrl = "https://libroschorcha.wordpress.com/wp-content/uploads/2018/02/el-nombre-de-la-rosa-umberto-eco.jpg",
+                fechaAgregado = LocalDate.of(2024, 6, 2)),
+            LibroData(duenio = emilia, titulo = "Fundación", autor = "Isaac Asimov",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/3/34/Isaac.Asimov01.jpg",
+                descripcion = "Un matemático prevé la caída del Imperio Galáctico y planea preservar el conocimiento.",
+                genero = Genero.CIENCIA_FICCION, cantidadPaginas = 244, isbn = "978-8435018029",
+                idioma = Idioma.ESPANOL, editorial = "Minotauro",
+                fechaPublicacion = LocalDate.of(1951, 1, 1), estado = EstadoLibro.MUY_BUENO,
+                imagenUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9t9VngDwUP_IlIKXTYUAJkRC11dlsBX7ncw&s",
+                fechaAgregado = LocalDate.of(2024, 6, 3)),
+            LibroData(duenio = emilia, titulo = "Orgullo y Prejuicio", autor = "Jane Austen",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/c/cc/CassandraAusten-JaneAusten%28c.1810%29_hires.jpg",
+                descripcion = "La historia de amor entre Elizabeth Bennet y el señor Darcy en la Inglaterra del siglo XIX.",
+                genero = Genero.ROMANCE, cantidadPaginas = 432, isbn = "978-8491050421",
+                idioma = Idioma.ESPANOL, editorial = "Austral",
+                fechaPublicacion = LocalDate.of(1813, 1, 28), estado = EstadoLibro.EXCELENTE,
+                imagenUrl = "https://m.media-amazon.com/images/I/71Q1tPupKjL.jpg",
+                fechaAgregado = LocalDate.of(2024, 6, 4)),
         )
-        val libro5 = LibroColeccionable(data)
-        libroRepository.create(libro5)
+        return datos.map { libroRepository.create(LibroConDedicatoria(it)) }
+    }
+
+    // ── Libros Coleccionables (dueño: ana y juan) ─────────────────────────────
+
+    private fun crearLibrosColeccionables(): List<Libro> {
+        val datos = listOf(
+            LibroData(duenio = ana, titulo = "El Señor de los Anillos", autor = "J.R.R. Tolkien",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/d/d4/J._R._R._Tolkien%2C_1940s.jpg",
+                descripcion = "La épica lucha entre el bien y el mal en la Tierra Media.",
+                genero = Genero.CIENCIA_FICCION, cantidadPaginas = 1200, isbn = "ISBN-3005",
+                idioma = Idioma.ESPANOL, editorial = "Minotauro",
+                fechaPublicacion = LocalDate.of(1954, 7, 29), estado = EstadoLibro.EXCELENTE,
+                imagenUrl = "https://m.media-amazon.com/images/I/91R196S8S8L.jpg",
+                fechaAgregado = LocalDate.of(2025, 2, 20)),
+            LibroData(duenio = ana, titulo = "Guerra y Paz", autor = "León Tolstói",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/c/c6/L.N.Tolstoy_Prokudin-Gorsky.jpg",
+                descripcion = "La monumental novela sobre la invasión napoleónica de Rusia.",
+                genero = Genero.LITERATURA_CLASICA, cantidadPaginas = 1440, isbn = "978-8420651835",
+                idioma = Idioma.ESPANOL, editorial = "Alianza",
+                fechaPublicacion = LocalDate.of(1869, 1, 1), estado = EstadoLibro.MUY_BUENO,
+                imagenUrl = "https://m.media-amazon.com/images/I/91uJPBQuFpL.jpg",
+                fechaAgregado = LocalDate.of(2025, 2, 21)),
+            LibroData(duenio = ana, titulo = "Los Miserables", autor = "Victor Hugo",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/e/e6/Victor_Hugo_by_Étienne_Carjat_1876_-_full.jpg",
+                descripcion = "La historia de Jean Valjean y su redención en la Francia del siglo XIX.",
+                genero = Genero.DRAMA, cantidadPaginas = 1900, isbn = "978-8420651842",
+                idioma = Idioma.FRANCES, editorial = "Alianza",
+                fechaPublicacion = LocalDate.of(1862, 1, 1), estado = EstadoLibro.BUENO,
+                imagenUrl = "https://m.media-amazon.com/images/I/81rj6BGHLNL.jpg",
+                fechaAgregado = LocalDate.of(2025, 2, 22)),
+            LibroData(duenio = ana, titulo = "En busca del tiempo perdido", autor = "Marcel Proust",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/0/00/Marcel_Proust_1900.jpg",
+                descripcion = "Una exploración de la memoria, el tiempo y la identidad en la alta sociedad francesa.",
+                genero = Genero.LITERATURA_CLASICA, cantidadPaginas = 4215, isbn = "978-8420652009",
+                idioma = Idioma.FRANCES, editorial = "Alianza",
+                fechaPublicacion = LocalDate.of(1913, 11, 14), estado = EstadoLibro.EXCELENTE,
+                imagenUrl = "https://m.media-amazon.com/images/I/71z+zJkXe8L.jpg",
+                fechaAgregado = LocalDate.of(2025, 2, 23)),
+            LibroData(duenio = juan, titulo = "El Quijote Ilustrado", autor = "Miguel de Cervantes",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/0/09/Cervantes_J%C3%A1uregui.jpg",
+                descripcion = "Edición de colección con ilustraciones originales del siglo XVII.",
+                genero = Genero.LITERATURA_CLASICA, cantidadPaginas = 1200, isbn = "978-8467035001",
+                idioma = Idioma.ESPANOL, editorial = "Espasa Edición Especial",
+                fechaPublicacion = LocalDate.of(1605, 1, 16), estado = EstadoLibro.EXCELENTE,
+                imagenUrl = "https://m.media-amazon.com/images/I/81i7CWDfI2L.jpg",
+                fechaAgregado = LocalDate.of(2025, 3, 1)),
+            LibroData(duenio = juan, titulo = "Cien años de soledad", autor = "Gabriel García Márquez",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/0/0f/Gabriel_Garcia_Marquez.jpg",
+                descripcion = "La saga de la familia Buendía en el mítico pueblo de Macondo.",
+                genero = Genero.LITERATURA_CLASICA, cantidadPaginas = 471, isbn = "978-0307474728",
+                idioma = Idioma.ESPANOL, editorial = "RAE Edición Conmemorativa",
+                fechaPublicacion = LocalDate.of(1967, 5, 30), estado = EstadoLibro.EXCELENTE,
+                imagenUrl = "https://m.media-amazon.com/images/I/91vDiGNuSYL.jpg",
+                fechaAgregado = LocalDate.of(2025, 3, 2)),
+            LibroData(duenio = juan, titulo = "Ulises", autor = "James Joyce",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/a/ae/James_Joyce_by_Alex_Ehrenzweig%2C_1915_square.jpg",
+                descripcion = "Un día en la vida de Leopold Bloom en Dublín, obra clave del modernismo.",
+                genero = Genero.LITERATURA_CLASICA, cantidadPaginas = 933, isbn = "978-8420651866",
+                idioma = Idioma.INGLES, editorial = "Alianza Edición Numerada",
+                fechaPublicacion = LocalDate.of(1922, 2, 2), estado = EstadoLibro.MUY_BUENO,
+                imagenUrl = "https://m.media-amazon.com/images/I/61Ykt-NNjxL.jpg",
+                fechaAgregado = LocalDate.of(2025, 3, 3)),
+            LibroData(duenio = juan, titulo = "Moby Dick", autor = "Herman Melville",
+                autorImg = "https://upload.wikimedia.org/wikipedia/commons/5/54/Herman_Melville_1860.jpg",
+                descripcion = "La obsesiva cacería de la ballena blanca por el capitán Ahab.",
+                genero = Genero.DRAMA, cantidadPaginas = 720, isbn = "978-8420651873",
+                idioma = Idioma.INGLES, editorial = "Alianza Edición Especial",
+                fechaPublicacion = LocalDate.of(1851, 10, 18), estado = EstadoLibro.BUENO,
+                imagenUrl = "https://m.media-amazon.com/images/I/81OthjkJBuL.jpg",
+                fechaAgregado = LocalDate.of(2025, 3, 4)),
+        )
+        return datos.map { libroRepository.create(LibroColeccionable(it)) }
+    }
+
+    // ── Reservas ──────────────────────────────────────────────────────────────
+
+    private fun crearReservas(
+        comunes: List<Libro>,
+        conDedicatoria: List<Libro>,
+        coleccionables: List<Libro>
+    ) {
+        var reservaId = 500
+
+        fun reservar(libro: Libro, solicitante: Usuario, desde: LocalDate, hasta: LocalDate) {
+            val reserva = Reserva(libro, solicitante, desde, hasta).apply { id = reservaId++ }
+            solicitante.agregarReserva(reserva)
+            if (libro.duenio.id != solicitante.id) libro.duenio.agregarReserva(reserva)
+            reservaRepository.create(reserva)
+        }
+
+        // Juan reserva libros de ana y emilia
+        reservar(conDedicatoria[0], juan, LocalDate.of(2026, 3, 1),  LocalDate.of(2026, 3, 10))
+        reservar(conDedicatoria[1], juan, LocalDate.of(2026, 3, 10), LocalDate.of(2026, 3, 16))
+        reservar(conDedicatoria[4], juan, LocalDate.of(2026, 3, 17), LocalDate.of(2026, 4, 1))
+        reservar(coleccionables[0], juan, LocalDate.of(2026, 4, 5),  LocalDate.of(2026, 4, 20))
+
+        // Emilia reserva libros de juan y carlos
+        reservar(comunes[0], emilia, LocalDate.of(2026, 3, 10), LocalDate.of(2026, 3, 30))
+        reservar(comunes[3], emilia, LocalDate.of(2026, 3, 15), LocalDate.of(2026, 3, 20))
+        reservar(coleccionables[4], emilia, LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 15))
+
+        // Ana reserva libros de juan y carlos
+        reservar(comunes[1], ana, LocalDate.of(2026, 3, 10), LocalDate.of(2026, 3, 30))
+        reservar(comunes[6], ana, LocalDate.of(2026, 3, 18), LocalDate.of(2026, 4, 20))
+        reservar(coleccionables[5], ana, LocalDate.of(2026, 2, 1), LocalDate.of(2026, 2, 20))
+
+        // Carlos reserva libros de ana, emilia y juan
+        reservar(conDedicatoria[2], carlos, LocalDate.of(2026, 2, 10), LocalDate.of(2026, 2, 28))
+        reservar(conDedicatoria[5], carlos, LocalDate.of(2026, 3, 18), LocalDate.of(2026, 4, 5))
+        reservar(comunes[2], carlos, LocalDate.of(2026, 1, 5), LocalDate.of(2026, 1, 20))
+        reservar(coleccionables[6], carlos, LocalDate.of(2026, 3, 17), LocalDate.of(2026, 4, 15))
+    }
+
+    // ── Calificaciones ────────────────────────────────────────────────────────
+
+    private fun agregarCalificaciones(
+        comunes: List<Libro>,
+        conDedicatoria: List<Libro>,
+        coleccionables: List<Libro>
+    ) {
+        // 1984 — muchas reseñas
+        comunes[0].apply {
+            agregarCalificacion(Calificacion(emilia.id, 5, "Una obra maestra absoluta. Orwell adelantó décadas lo que vendría."))
+            agregarCalificacion(Calificacion(ana.id,    4, "Impactante y perturbadora. Lectura obligatoria."))
+            agregarCalificacion(Calificacion(carlos.id, 5, "De las mejores que leí. El concepto del doblepensar es genial."))
+        }
+
+        // Clean Code — pocas reseñas
+        comunes[1].apply {
+            agregarCalificacion(Calificacion(emilia.id, 4, "Muy útil para cualquier desarrollador. Cambió cómo escribo código."))
+        }
+
+        // Sapiens — algunas reseñas
+        comunes[3].apply {
+            agregarCalificacion(Calificacion(emilia.id, 5, "Te cambia la perspectiva del mundo. Increíble."))
+            agregarCalificacion(Calificacion(carlos.id, 4, "Muy bien escrito, aunque algunas partes son discutibles."))
+        }
+
+        // Harry Potter — muchas reseñas
+        conDedicatoria[0].apply {
+            agregarCalificacion(Calificacion(juan.id,   5, "Un clásico eterno. La magia de Hogwarts nunca envejece."))
+            agregarCalificacion(Calificacion(emilia.id, 5, "La leí de chica y la sigo amando. Pura nostalgia."))
+            agregarCalificacion(Calificacion(carlos.id, 4, "Entretenidísima. Entiende por qué arrasó en todo el mundo."))
+        }
+
+        // Ficciones de Borges — pocas reseñas
+        conDedicatoria[4].apply {
+            agregarCalificacion(Calificacion(juan.id, 5, "Borges es insuperable. Cada cuento es un universo."))
+        }
+
+        // Rayuela — algunas reseñas
+        conDedicatoria[3].apply {
+            agregarCalificacion(Calificacion(juan.id,   4, "La forma de leerla en saltos es una experiencia única."))
+            agregarCalificacion(Calificacion(carlos.id, 3, "Interesante pero exige mucho del lector. No es para todos."))
+        }
+
+        // El Señor de los Anillos — muchas reseñas
+        coleccionables[0].apply {
+            agregarCalificacion(Calificacion(juan.id,   5, "La fantasía épica por excelencia. Tolkien es un genio."))
+            agregarCalificacion(Calificacion(emilia.id, 5, "Esta edición de colección es una joya. El libro también."))
+            agregarCalificacion(Calificacion(carlos.id, 4, "Largo pero cada página vale la pena."))
+        }
+
+        // Cien años de soledad — algunas reseñas
+        coleccionables[5].apply {
+            agregarCalificacion(Calificacion(emilia.id, 5, "El realismo mágico en su máxima expresión."))
+            agregarCalificacion(Calificacion(ana.id,    4, "Una saga familiar fascinante. García Márquez es único."))
+        }
     }
 }
