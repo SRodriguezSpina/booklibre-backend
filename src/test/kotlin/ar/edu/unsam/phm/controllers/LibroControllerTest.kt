@@ -45,13 +45,12 @@ class LibroControllerTest(
         propietarioId = 3, imagenUrl = "", alquiladoPorId = null,
         bibliokarma = 1550,
         estoyReservado = false,
-        autorImg = "",
         rating = 0.0,
-        reservas = emptyList(),
         cantidadReservas = 0,
+        ultimasCalificaciones = emptyList(),
+        reservas = emptyList(),
         fechaAgregado = LocalDate.now(),
-        cantidadCalificaciones = 0,
-        ultimasCalificaciones = emptyList()
+        cantidadCalificaciones = 0
     )
 
     private fun libroHomeDTO() = LibroHomeDTO(
@@ -105,7 +104,6 @@ class LibroControllerTest(
 
         mockMvc.perform(get("/api/libros/home").param("usuarioId", "1"))
             .andExpect(status().isOk)
-
         verify(libroService).search("", "", 0, 6, 1, null, null, null, null, null, null, "titulo")
     }
 
@@ -199,7 +197,7 @@ class LibroControllerTest(
     @DisplayName("cuando se actualiza un libro existente, devuelve 200 con el DTO actualizado")
     fun updateLibro_ok() {
         val dto = libroDTO(titulo = "1984 - Edición revisada")
-        whenever(libroService.actualizarLibro(eq(1), any())).thenReturn(dto)
+        whenever(libroService.actualizarLibro(eq(1), any(), any())).thenReturn(dto)
         mockMvc.perform(
             put("/api/libros/1")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -208,14 +206,14 @@ class LibroControllerTest(
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.titulo").value("1984 - Edición revisada"))
 
-        verify(libroService).actualizarLibro(eq(1), any())
+        verify(libroService).actualizarLibro(eq(1), any(), any())
     }
 
     @Test
     @DisplayName("cuando se actualiza un libro inexistente, devuelve 404 Not Found")
     fun updateLibro_inexistente() {
         val dto = libroDTO()
-        whenever(libroService.actualizarLibro(eq(999), any())).thenThrow(NotFoundException("Libro no encontrado"))
+        whenever(libroService.actualizarLibro(eq(999), any(), any())).thenThrow(NotFoundException("Libro no encontrado"))
         mockMvc.perform(
             put("/api/libros/999")
                 .contentType(MediaType.APPLICATION_JSON)

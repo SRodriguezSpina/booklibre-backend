@@ -20,32 +20,34 @@ class UsuarioSpec : DescribeSpec({
             ciudad = "San Martín",
             tipoUsuario = UsuarioLector(),
             bibliokarmas = 500,
-            fechaRegistro = LocalDate.of(2020, 9, 15),
+            fechaRegistro = LocalDate.of(2020, 9, 15)
         )
 
         val duenio = Usuario(
             credencial = Credencial("ana", "pass"),
             nombre = "Ana García",
-            desc = "Publicadora",
+            desc = "Publicadora"
         )
 
-        val libroComun = LibroComun(
-            LibroData(
-                duenio = duenio,
-                titulo = "Clean Code", autor = "Robert C. Martin",
-                descripcion = "Buenas prácticas", genero = Genero.DISENO,
-                cantidadPaginas = 464, isbn = "ISBN-001", idioma = Idioma.INGLES,
-                editorial = "Prentice Hall", fechaPublicacion = LocalDate.of(2008, 8, 1),
-                estado = EstadoLibro.EXCELENTE, imagenUrl = "", autorImg = "",
-            )
+        // CORRECCIÓN: Usamos LibroData y cambiamos 'paginas' por 'cantidadPaginas'
+        val dataLibro = LibroData(
+            duenio = duenio,
+            titulo = "Clean Code", autor = "Robert C. Martin",
+            descripcion = "Buenas prácticas", genero = Genero.DISENO,
+            cantidadPaginas = 464, isbn = "ISBN-001", idioma = Idioma.INGLES,
+            editorial = "Prentice Hall", fechaPublicacion = LocalDate.of(2008, 8, 1),
+            estado = EstadoLibro.EXCELENTE, imagenUrl = ""
         )
+
+        // CORRECCIÓN: Asignamos el ID heredado de BaseEntity con apply
+        val libroComun = LibroComun(dataLibro).apply { id = 1 }
 
         val reserva = Reserva(
             libro = libroComun,
             usuario = usuario,
             fechaDesde = LocalDate.of(2026, 3, 1),
-            fechaHasta = LocalDate.of(2026, 3, 10),
-        )
+            fechaHasta = LocalDate.of(2026, 3, 10)
+        ).apply { id = 0 }
 
         it("VALIDA PASSWORD CORRECTA") {
             usuario.validarPassword("1234") shouldBe true
@@ -86,4 +88,3 @@ class UsuarioSpec : DescribeSpec({
         }
     }
 })
-

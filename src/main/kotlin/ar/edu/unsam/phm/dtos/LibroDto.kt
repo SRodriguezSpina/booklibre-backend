@@ -23,7 +23,6 @@ data class LibroDTO(
     val descripcion: String,
     val genero: Genero,
     val autor: String,
-    val autorImg: String,
     val paginas: Int,
     val isbn: String,
     val idioma: Idioma,

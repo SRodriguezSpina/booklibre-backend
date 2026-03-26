@@ -10,12 +10,13 @@ class ReservaSpec : DescribeSpec({
     isolationMode = IsolationMode.InstancePerTest
 
     describe("Compruebo Reserva") {
+        // Asignamos IDs distintos para que la lógica de Reserva sepa que son personas diferentes
         val duenio = Usuario(Credencial("ana", "pass"), "Ana", "").apply { id = 1 }
         val solicitante = Usuario(Credencial("juan", "pass"), "Juan", "").apply { id = 2 }
 
         val libro = LibroComun(
             LibroData(
-                duenio = duenio, titulo = "1984", autor = "Orwell", autorImg = "",
+                duenio = duenio, titulo = "1984", autor = "Orwell",
                 descripcion = "", genero = Genero.DRAMA, cantidadPaginas = 300,
                 isbn = "123", idioma = Idioma.ESPANOL, editorial = "",
                 fechaPublicacion = LocalDate.now(), estado = EstadoLibro.BUENO, imagenUrl = ""
@@ -30,8 +31,11 @@ class ReservaSpec : DescribeSpec({
         ).apply { id = 100 }
 
         it("sePisaCon DEVUELVE TRUE SI LAS FECHAS SE SUPERPONEN") {
+            // Empieza antes y termina en el medio
             reserva.sePisaCon(LocalDate.of(2026, 3, 5), LocalDate.of(2026, 3, 15)) shouldBe true
+            // Empieza en el medio y termina después
             reserva.sePisaCon(LocalDate.of(2026, 3, 15), LocalDate.of(2026, 3, 25)) shouldBe true
+            // Está contenida exactamente dentro
             reserva.sePisaCon(LocalDate.of(2026, 3, 12), LocalDate.of(2026, 3, 18)) shouldBe true
         }
 
@@ -45,6 +49,7 @@ class ReservaSpec : DescribeSpec({
 
             solicitante.todasLasReservas() shouldContain reserva
             duenio.todasLasReservas() shouldContain reserva
+            // 300 páginas * 5 (karma<1000) = 1500 + (11 días * 5) = 1555
             solicitante.bibliokarmas shouldBe 1555
         }
     }

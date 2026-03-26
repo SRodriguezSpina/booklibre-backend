@@ -10,7 +10,6 @@ data class LibroData(
     val duenio: Usuario,
     val titulo: String,
     val autor: String,
-    val autorImg: String,
     val descripcion: String,
     val genero: Genero,
     val cantidadPaginas: Int,
@@ -27,7 +26,6 @@ abstract class Libro(data: LibroData): BaseEntity() {
     val duenio = data.duenio
     var titulo = data.titulo
     var autor = data.autor
-    var autorImg = data.autorImg
     var descripcion = data.descripcion
     var genero = data.genero
     var cantidadPaginas = data.cantidadPaginas

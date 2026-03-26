@@ -4,7 +4,9 @@ import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.services.ReservaService
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.mockk.mockk
 import org.junit.jupiter.api.DisplayName
+import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.kotlin.any
@@ -85,7 +87,6 @@ class ReservaControllerTest(
 
         verify(reservaService).obtenerReservas(999)
     }
-
     @Test
     @DisplayName("cuando se envían datos válidos, POST /api/reservas crea la reserva y devuelve 200")
     fun crearReserva_ok() {
@@ -96,9 +97,8 @@ class ReservaControllerTest(
             fechaHasta = java.time.LocalDate.of(2026, 5, 10)
         )
 
-        val reservaMock = mock(ar.edu.unsam.phm.domain.Reserva::class.java)
-
-        whenever(reservaService.crearReserva(any())).thenReturn(reservaMock)
+        // Mockeamos que el servicio no devuelva errores
+        whenever(reservaService.crearReserva(any())).thenReturn(mockk())
 
         mockMvc.perform(
             post("/api/reservas")
