@@ -63,7 +63,10 @@ class LibroControllerEditarCrearTest(
         autorImg = "https://example.com/cover.jpg",
         rating = 0.0,
         cantidadReservas = 0,
-        reservas = emptyList()
+        reservas = emptyList(),
+        fechaAgregado = LocalDate.now(),
+        cantidadCalificaciones = 0,
+        ultimasCalificaciones = emptyList()
     )
 
     private fun toJson(dto: LibroDTO) = mapper.writeValueAsString(dto)

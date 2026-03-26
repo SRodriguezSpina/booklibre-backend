@@ -30,12 +30,14 @@ class UsuarioSpec : DescribeSpec({
         )
 
         val libroComun = LibroComun(
-            duenio = duenio, id = 1,
-            titulo = "Clean Code", autor = "Robert C. Martin",
-            descripcion = "Buenas prácticas", genero = Genero.DISENO,
-            paginas = 464, isbn = "ISBN-001", idioma = Idioma.INGLES,
-            editorial = "Prentice Hall", fechaPublicacion = LocalDate.of(2008, 8, 1),
-            estado = EstadoLibro.EXCELENTE, imagenUrl = "", autorImg = "",
+            LibroData(
+                duenio = duenio,
+                titulo = "Clean Code", autor = "Robert C. Martin",
+                descripcion = "Buenas prácticas", genero = Genero.DISENO,
+                cantidadPaginas = 464, isbn = "ISBN-001", idioma = Idioma.INGLES,
+                editorial = "Prentice Hall", fechaPublicacion = LocalDate.of(2008, 8, 1),
+                estado = EstadoLibro.EXCELENTE, imagenUrl = "", autorImg = "",
+            )
         )
 
         val reserva = Reserva(
@@ -43,7 +45,7 @@ class UsuarioSpec : DescribeSpec({
             usuario = usuario,
             fechaDesde = LocalDate.of(2026, 3, 1),
             fechaHasta = LocalDate.of(2026, 3, 10),
-        ).apply { id = 0 }
+        )
 
         it("VALIDA PASSWORD CORRECTA") {
             usuario.validarPassword("1234") shouldBe true

@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.DisplayName
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.mockito.kotlin.any
+import org.mockito.Mockito.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -82,5 +84,28 @@ class ReservaControllerTest(
             .andExpect(status().isNotFound)
 
         verify(reservaService).obtenerReservas(999)
+    }
+
+    @Test
+    @DisplayName("cuando se envían datos válidos, POST /api/reservas crea la reserva y devuelve 200")
+    fun crearReserva_ok() {
+        val dto = ar.edu.unsam.phm.dtos.CrearReservaDTO(
+            libroId = 1,
+            usuarioId = 2,
+            fechaDesde = java.time.LocalDate.of(2026, 5, 1),
+            fechaHasta = java.time.LocalDate.of(2026, 5, 10)
+        )
+
+        val reservaMock = mock(ar.edu.unsam.phm.domain.Reserva::class.java)
+
+        whenever(reservaService.crearReserva(any())).thenReturn(reservaMock)
+
+        mockMvc.perform(
+            post("/api/reservas")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto))
+        ).andExpect(status().isOk)
+
+        verify(reservaService).crearReserva(any())
     }
 }

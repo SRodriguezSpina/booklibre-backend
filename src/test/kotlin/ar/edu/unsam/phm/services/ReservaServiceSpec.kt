@@ -1,11 +1,11 @@
-package ar.edu.unsam.phm.services
-
+import ar.edu.unsam.phm.services.ReservaService
 import ar.edu.unsam.phm.domain.Calificacion
 import ar.edu.unsam.phm.domain.Credencial
 import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
 import ar.edu.unsam.phm.domain.LibroComun
+import ar.edu.unsam.phm.domain.LibroData
 import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.repository.LibroRepository
@@ -45,13 +45,15 @@ class ReservaServiceSpec : DescribeSpec({
         ).apply { id = 1 }
 
         val libro = LibroComun(
-            duenio = duenio, id = 10,
-            titulo = "1984", autor = "George Orwell",
-            descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
-            paginas = 300, isbn = "ISBN-001", idioma = Idioma.ESPANOL,
-            editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
-            estado = EstadoLibro.EXCELENTE, imagenUrl = "", autorImg = "",
-        )
+            LibroData(
+                duenio = duenio,
+                titulo = "1984", autor = "George Orwell",
+                descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
+                cantidadPaginas = 300, isbn = "ISBN-001", idioma = Idioma.ESPANOL,
+                editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
+                estado = EstadoLibro.EXCELENTE, imagenUrl = "", autorImg = "",
+            )
+        ).apply { id = 10 }
 
         val reserva = Reserva(
             libro = libro,
@@ -134,13 +136,16 @@ class ReservaServiceSpec : DescribeSpec({
 
         it("OBTENER RESERVAS CON MULTIPLES RESERVAS DEVUELVE TODOS LOS DTOs") {
             val libro2 = LibroComun(
-                duenio = duenio, id = 11,
-                titulo = "Dune", autor = "Frank Herbert",
-                descripcion = "Sci-fi", genero = Genero.CIENCIA_FICCION,
-                paginas = 500, isbn = "ISBN-002", idioma = Idioma.ESPANOL,
-                editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
-                estado = EstadoLibro.MUY_BUENO, imagenUrl = "", autorImg = "",
-            )
+                LibroData(
+                    duenio = duenio,
+                    titulo = "Dune", autor = "Frank Herbert",
+                    descripcion = "Sci-fi", genero = Genero.CIENCIA_FICCION,
+                    cantidadPaginas = 500, isbn = "ISBN-002", idioma = Idioma.ESPANOL,
+                    editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
+                    estado = EstadoLibro.MUY_BUENO, imagenUrl = "", autorImg = "",
+                )
+            ).apply { id = 11 }
+
             val reserva2 = Reserva(
                 libro = libro2,
                 usuario = solicitante,
@@ -155,6 +160,41 @@ class ReservaServiceSpec : DescribeSpec({
             resultado shouldHaveSize 2
             resultado[0].titulo shouldBe "1984"
             resultado[1].titulo shouldBe "Dune"
+        }
+
+        describe("crearReserva") {
+            val dto = ar.edu.unsam.phm.dtos.CrearReservaDTO(
+                libroId = 10,
+                usuarioId = 1,
+                fechaDesde = LocalDate.of(2026, 5, 1),
+                fechaHasta = LocalDate.of(2026, 5, 10)
+            )
+
+            it("LANZA CONFLICT EXCEPTION SI HAY SUPERPOSICION DE FECHAS") {
+                every { libroRepository.getById(10) } returns libro
+                every { reservaRepository.existeSuperposicion(10, dto.fechaDesde, dto.fechaHasta) } returns true
+
+                io.kotest.assertions.throwables.shouldThrow<ar.edu.unsam.phm.exceptions.ConflictException> {
+                    reservaService.crearReserva(dto)
+                }
+            }
+
+            it("CREA Y CONFIRMA LA RESERVA ACTUALIZANDO LOS USUARIOS") {
+                every { libroRepository.getById(10) } returns libro
+                every { reservaRepository.existeSuperposicion(10, dto.fechaDesde, dto.fechaHasta) } returns false
+                every { usuarioRepository.getById(1) } returns solicitante
+                every { reservaRepository.create(any()) } answers { firstArg() }
+                every { usuarioRepository.update(any()) } returns Unit
+
+                val reservaGuardada = reservaService.crearReserva(dto)
+
+                reservaGuardada.libro.id shouldBe 10
+                reservaGuardada.usuario.id shouldBe 1
+
+                // Verificamos que se actualizaron los usuarios en el repositorio
+                verify { usuarioRepository.update(solicitante) }
+                verify { usuarioRepository.update(duenio) }
+            }
         }
     }
 })

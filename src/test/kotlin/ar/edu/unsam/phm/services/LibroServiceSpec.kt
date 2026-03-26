@@ -3,7 +3,9 @@ package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.domain.*
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
+import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
+import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import io.kotest.assertions.throwables.shouldThrow
@@ -68,7 +70,10 @@ class LibroServiceSpec : DescribeSpec({
         autorImg = "",
         rating = 0.0,
         reservas = emptyList(),
-        cantidadReservas = 0
+        cantidadReservas = 0,
+        fechaAgregado = LocalDate.now(),
+        cantidadCalificaciones = 0,
+        ultimasCalificaciones = emptyList()
     )
 
     describe("crearLibro") {
@@ -580,6 +585,79 @@ class LibroServiceSpec : DescribeSpec({
                 val resultado = service.search("", "", 0, 6, null, null, null, null, null, null, null, "titulo")
 
                 resultado.content.first().bibliokarma shouldBe 0
+            }
+        }
+    }
+    describe("eliminarLibro") {
+        it("elimina el libro correctamente si el usuario es dueño y no hay reservas") {
+            val (libroRepo, usuarioRepo) = buildRepos()
+            val service = buildService(libroRepo, usuarioRepo)
+            val libroCreado = service.crearLibro(libroDTOBase(), duenio.id)
+
+            service.eliminarLibro(libroCreado.id, duenio.id)
+
+            io.kotest.assertions.throwables.shouldThrow<ar.edu.unsam.phm.repository.EntityNotFoundException> {
+                libroRepo.getById(libroCreado.id)
+            }
+        }
+        it("lanza UnauthorizedException si quien elimina no es el dueño") {
+            val (libroRepo, usuarioRepo) = buildRepos()
+            val service = buildService(libroRepo, usuarioRepo)
+            val libroCreado = service.crearLibro(libroDTOBase(), duenio.id)
+
+            io.kotest.assertions.throwables.shouldThrow<ar.edu.unsam.phm.exceptions.UnauthorizedException> {
+                service.eliminarLibro(libroCreado.id, otroUsuario.id)
+            }
+        }
+        it("lanza ConflictException si el libro tiene una reserva activa") {
+            val (libroRepo, usuarioRepo) = buildRepos()
+            val service = buildService(libroRepo, usuarioRepo)
+            val libroCreado = service.crearLibro(libroDTOBase(), duenio.id)
+
+            val libroDominio = libroRepo.getById(libroCreado.id)
+            val reserva = ar.edu.unsam.phm.domain.Reserva(
+                libro = libroDominio,
+                usuario = otroUsuario,
+                fechaDesde = java.time.LocalDate.now().minusDays(1),
+                fechaHasta = java.time.LocalDate.now().plusDays(5)
+            )
+            duenio.agregarReserva(reserva)
+
+            io.kotest.assertions.throwables.shouldThrow<ar.edu.unsam.phm.exceptions.ConflictException> {
+                service.eliminarLibro(libroCreado.id, duenio.id)
+            }
+        }
+    }
+    describe("agregarCalificacion y getRating") {
+        it("agrega una calificación y actualiza el rating correctamente") {
+            val (libroRepo, usuarioRepo) = buildRepos()
+            val service = buildService(libroRepo, usuarioRepo)
+            val libroCreado = service.crearLibro(libroDTOBase(), duenio.id)
+
+            service.agregarCalificacion(
+                libroCreado.id,
+                Calificacion(usuarioId = otroUsuario.id, valor = 5, comentario = "Genial")
+            )
+
+            service.getRating(libroCreado.id) shouldBe 5.0
+        }
+
+        it("lanza NotFoundException si el libro no existe al calificar") {
+            val (libroRepo, usuarioRepo) = buildRepos()
+            val service = buildService(libroRepo, usuarioRepo)
+
+            shouldThrow<NotFoundException> {
+                service.agregarCalificacion(999, Calificacion(usuarioId = otroUsuario.id, valor = 5))
+            }
+        }
+
+        it("lanza NotFoundException si el usuario calificador no existe") {
+            val (libroRepo, usuarioRepo) = buildRepos()
+            val service = buildService(libroRepo, usuarioRepo)
+            val libroCreado = service.crearLibro(libroDTOBase(), duenio.id)
+
+            shouldThrow<NotFoundException> {
+                service.agregarCalificacion(libroCreado.id, Calificacion(usuarioId = 999, valor = 5))
             }
         }
     }
