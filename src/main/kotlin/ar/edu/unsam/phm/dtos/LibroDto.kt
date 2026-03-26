@@ -11,6 +11,7 @@ data class RangoReservaDTO(
 
 data class CalificacionDTO(
     val usuarioId: Int,
+    val nombreUsuario: String,
     val valor: Int,
     val comentario: String
 )
@@ -38,6 +39,7 @@ data class LibroDTO(
     val alquiladoPorId: Int?,
     val bibliokarma: Int?,
     val reservas: List<RangoReservaDTO>,
+    val cantidadCalificaciones: Int,
     val ultimasCalificaciones: List<CalificacionDTO>
 )
 
