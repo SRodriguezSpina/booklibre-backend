@@ -59,7 +59,6 @@ fun Libro.toDTO(nombresUsuarios: Map<Int, String> = emptyMap()): LibroDTO {
         descripcion = this.descripcion,
         genero = this.genero,
         autor = this.autor,
-        autorImg = this.autorImg,
         paginas = this.cantidadPaginas,
         isbn = this.isbn,
         idioma = this.idioma,

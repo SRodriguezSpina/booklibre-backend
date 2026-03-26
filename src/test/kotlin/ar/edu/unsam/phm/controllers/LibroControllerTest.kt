@@ -45,10 +45,10 @@ class LibroControllerTest(
         propietarioId = 3, imagenUrl = "", alquiladoPorId = null,
         bibliokarma = 1550,
         estoyReservado = false,
-        autorImg = "",
         rating = 0.0,
-        reservas = emptyList(),
-        cantidadReservas = 0
+        cantidadReservas = 0,
+        ultimasCalificaciones = emptyList(),
+        reservas = emptyList()
     )
 
     private fun libroHomeDTO() = LibroHomeDTO(

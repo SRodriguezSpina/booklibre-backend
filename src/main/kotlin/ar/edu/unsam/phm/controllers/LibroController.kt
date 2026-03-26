@@ -42,8 +42,8 @@ class LibroController(val libroService: LibroService) {
     }
 
     @PutMapping("/{libroId}")
-    fun updateLibro(@PathVariable libroId: Int, @RequestBody dto
-    : LibroDTO) = libroService.actualizarLibro(libroId, dto)
+    fun updateLibro(@PathVariable libroId: Int, @RequestParam usuarioId: Int, @RequestBody dto: LibroDTO
+    ) = libroService.actualizarLibro(libroId, dto, usuarioId)
 
     @DeleteMapping("/{libroId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
