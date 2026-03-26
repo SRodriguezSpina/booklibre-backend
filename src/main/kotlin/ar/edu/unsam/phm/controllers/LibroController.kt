@@ -1,7 +1,6 @@
 package ar.edu.unsam.phm.controllers
 
 import ar.edu.unsam.phm.domain.Calificacion
-import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
@@ -34,9 +33,6 @@ class LibroController(val libroService: LibroService) {
 
     @GetMapping("/{libroId}")
     fun getLibro(@PathVariable libroId: Int): LibroDTO = libroService.getLibro(libroId)
-
-    @GetMapping("/{libroId}/calificaciones")
-    fun getCalificaciones(@PathVariable libroId: Int): List<CalificacionDTO> = libroService.getCalificaciones(libroId)
 
     @PostMapping("/{libroId}/calificar")
     fun agregarCalificacion(@PathVariable libroId: Int, @RequestBody dto: Calificacion): Map<String, Double> {
