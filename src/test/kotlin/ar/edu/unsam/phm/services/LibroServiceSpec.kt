@@ -403,4 +403,184 @@ class LibroServiceSpec : DescribeSpec({
             resultado.estado shouldBe "MALO"
         }
     }
+
+    describe("search"){
+        fun buildLibroComun(
+            duenio: Usuario,
+            titulo: String = "Clean Code",
+            autor: String = "Robert C. Martin",
+            paginas: Int = 300,
+        ) = LibroComun(
+            LibroData(
+                duenio = duenio,
+                titulo = titulo,
+                autor = autor,
+                autorImg = "",
+                descripcion = "",
+                genero = Genero.DISENO,
+                cantidadPaginas = paginas,
+                isbn = "123",
+                idioma = Idioma.ESPANOL,
+                editorial = "",
+                fechaPublicacion = LocalDate.of(2020, 1, 1),
+                estado = EstadoLibro.EXCELENTE,
+                imagenUrl = "",
+            )
+        )
+        describe("Validaciones de entrada"){
+            it("lanza BusinessException si paginasMin >= paginasMax") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+
+                shouldThrow<BusinessException> {
+                    service.search("", "", 0, 6, otroUsuario.id, 300, 100, null, null, null, null, "titulo")
+                }
+            }
+
+            it("lanza BusinessException si paginasMin == paginasMax") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+
+                shouldThrow<BusinessException> {
+                    service.search("", "", 0, 6, otroUsuario.id, 200, 200, null, null, null, null, "titulo")
+                }
+            }
+
+            it("lanza BusinessException si fechaDesde >= fechaHasta") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+
+                shouldThrow<BusinessException> {
+                    service.search("", "", 0, 6, otroUsuario.id, null, null, "2024-12-31", "2024-01-01", null, null, "titulo")
+                }
+            }
+
+            it("lanza BusinessException si fechaDesde == fechaHasta") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+
+                shouldThrow<BusinessException> {
+                    service.search("", "", 0, 6, otroUsuario.id, null, null, "2024-06-01", "2024-06-01", null, null, "titulo")
+                }
+            }
+        }
+
+        describe("exclusión de libros propios") {
+
+            it("no devuelve libros cuyo dueño es el usuario logueado") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "Mi libro"))
+
+                val resultado = service.search("", "", 0, 6, duenio.id, null, null, null, null, null, null, "titulo")
+
+                resultado.content.size shouldBe 0
+            }
+
+            it("devuelve libros de otros usuarios") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "Libro de Ana"))
+
+                val resultado = service.search("", "", 0, 6, otroUsuario.id, null, null, null, null, null, null, "titulo")
+
+                resultado.content.size shouldBe 1
+            }
+        }
+        describe("filtro por query") {
+
+            it("filtra por título") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "Clean Code"))
+                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "Refactoring"))
+
+                val resultado = service.search("Clean", "", 0, 6, otroUsuario.id, null, null, null, null, null, null, "titulo")
+
+                resultado.content.size shouldBe 1
+                resultado.content.first().titulo shouldBe "Clean Code"
+            }
+
+            it("filtra por autor") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+                libroRepo.create(buildLibroComun(duenio = duenio, autor = "Martin Fowler"))
+                libroRepo.create(buildLibroComun(duenio = duenio, autor = "Robert C. Martin"))
+
+                val resultado = service.search("Fowler", "", 0, 6, otroUsuario.id, null, null, null, null, null, null, "titulo")
+
+                resultado.content.size shouldBe 1
+                resultado.content.first().autor shouldBe "Martin Fowler"
+            }
+
+            it("query vacío devuelve todos los libros disponibles") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "Libro A"))
+                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "Libro B"))
+
+                val resultado = service.search("", "", 0, 6, otroUsuario.id, null, null, null, null, null, null, "titulo")
+
+                resultado.content.size shouldBe 2
+            }
+        }
+        describe("ordenamiento") {
+
+            it("ordena por título de forma ascendente") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "Refactoring"))
+                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "Clean Code"))
+                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "The Pragmatic Programmer"))
+
+                val resultado = service.search("", "", 0, 6, otroUsuario.id, null, null, null, null, null, null, "titulo")
+
+                resultado.content.map { it.titulo } shouldBe listOf("Clean Code", "Refactoring", "The Pragmatic Programmer")
+            }
+
+            it("ordena por autor de forma ascendente") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+                libroRepo.create(buildLibroComun(duenio = duenio, autor = "Robert C. Martin"))
+                libroRepo.create(buildLibroComun(duenio = duenio, autor = "Andrew Hunt"))
+                libroRepo.create(buildLibroComun(duenio = duenio, autor = "Martin Fowler"))
+
+                val resultado = service.search("", "", 0, 6, otroUsuario.id, null, null, null, null, null, null, "autor")
+
+                resultado.content.map { it.autor } shouldBe listOf("Andrew Hunt", "Martin Fowler", "Robert C. Martin")
+            }
+
+            it("ordena por dueño de forma ascendente") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+
+                val tercerUsuario = Usuario(
+                    credencial = Credencial("z@mail.com", "pass"),
+                    nombre = "Zoe",
+                    desc = "",
+                    bibliokarmas = 0,
+                )
+                usuarioRepo.create(tercerUsuario)
+
+                libroRepo.create(buildLibroComun(duenio = tercerUsuario))
+                libroRepo.create(buildLibroComun(duenio = duenio))  // Ana García
+
+                val resultado = service.search("", "", 0, 6, otroUsuario.id, null, null, null, null, null, null, "duenio")
+
+                resultado.content.map { it.duenio } shouldBe listOf("Ana García", "Zoe")
+            }
+        }
+        describe("bibliokarma sin usuario logueado") {
+
+            it("devuelve bibliokarma 0 cuando no se pasa usuarioId") {
+                val (libroRepo, usuarioRepo) = buildRepos()
+                val service = buildService(libroRepo, usuarioRepo)
+                libroRepo.create(buildLibroComun(duenio = duenio))
+
+                val resultado = service.search("", "", 0, 6, null, null, null, null, null, null, null, "titulo")
+
+                resultado.content.first().bibliokarma shouldBe 0
+            }
+        }
+    }
 })

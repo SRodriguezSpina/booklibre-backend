@@ -36,7 +36,7 @@ fun Usuario.toResponse(): UsuarioResponse {
     )
 }
 
-fun Libro.toDTO(): LibroDTO {
+fun Libro.toDTO(nombresUsuarios: Map<Int, String> = emptyMap()): LibroDTO {
     val hoy = LocalDate.now()
 
     val reservaPrincipal = this.duenio.reservas.find {
@@ -74,9 +74,17 @@ fun Libro.toDTO(): LibroDTO {
         alquiladoPorId = reservaPrincipal?.usuario?.id,
         bibliokarma = null,
         reservas = todosLosRangos,
+        cantidadCalificaciones = this.calificaciones.size,
         ultimasCalificaciones = this.calificaciones
-            .takeLast(2).reversed()
-            .map { CalificacionDTO(it.usuarioId, it.valor, it.comentario) }
+            .takeLast(2)
+            .map { calificacion ->
+                CalificacionDTO(
+                    usuarioId     = calificacion.usuarioId,
+                    nombreUsuario = nombresUsuarios[calificacion.usuarioId] ?: "Usuario ${calificacion.usuarioId}",
+                    valor         = calificacion.valor,
+                    comentario    = calificacion.comentario
+                )
+            }
     )
 }
 

@@ -62,7 +62,7 @@ class LibroControllerTest(
     @DisplayName("cuando se buscan libros con parámetros mínimos, devuelve 200 con la respuesta paginada")
     fun search_ok() {
         val paged = PagedResponse(content = listOf(libroHomeDTO()), totalPages = 1, page = 0)
-        whenever(libroService.search("1984", "", 0, 6, 1, null, null, null, null, null, null)).thenReturn(paged)
+        whenever(libroService.search("1984", "", 0, 6, 1, null, null, null, null, null, null, null)).thenReturn(paged)
 
         mockMvc.perform(
             get("/api/libros/home")
@@ -72,14 +72,14 @@ class LibroControllerTest(
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.content[0].titulo").value("1984"))
 
-        verify(libroService).search("1984", "", 0, 6, 1, null, null, null, null, null, null)
+        verify(libroService).search("1984", "", 0, 6, 1, null, null, null, null, null, null, null)
     }
 
     @Test
     @DisplayName("cuando se buscan libros con filtros opcionales, los pasa correctamente al service")
     fun search_conFiltros() {
         val paged = PagedResponse(content = emptyList<LibroHomeDTO>(), totalPages = 0, page = 0)
-        whenever(libroService.search("", "", 0, 6, 1, 100, 500, "2026-01-01", "2026-12-31", null, null)).thenReturn(paged)
+        whenever(libroService.search("", "", 0, 6, 1, 100, 500, "2026-01-01", "2026-12-31", null, null, null)).thenReturn(paged)
 
         mockMvc.perform(
             get("/api/libros/home")
@@ -91,14 +91,72 @@ class LibroControllerTest(
         )
             .andExpect(status().isOk)
 
-        verify(libroService).search("", "", 0, 6, 1, 100, 500, "2026-01-01", "2026-12-31", null, null)
+        verify(libroService).search("", "", 0, 6, 1, 100, 500, "2026-01-01", "2026-12-31", null, null, null)
+    }
+
+    @Test
+    @DisplayName("cuando se pasa sortBy, lo delega al service correctamente")
+    fun search_conSortBy() {
+        val paged = PagedResponse(content = listOf(libroHomeDTO()), totalPages = 1, page = 0)
+        whenever(libroService.search("", "", 0, 6, 1, null, null, null, null, null, null, "autor")).thenReturn(paged)
+
+        mockMvc.perform(
+            get("/api/libros/home")
+                .param("usuarioId", "1")
+                .param("sortBy", "autor")
+        )
+            .andExpect(status().isOk)
+
+        verify(libroService).search("", "", 0, 6, 1, null, null, null, null, null, null, "autor")
+    }
+
+    @Test
+    @DisplayName("cuando no se pasa usuarioId, lo delega al service como null")
+    fun search_sinUsuarioId() {
+        val paged = PagedResponse(content = listOf(libroHomeDTO()), totalPages = 1, page = 0)
+        whenever(libroService.search("", "", 0, 6, null, null, null, null, null, null, null, "titulo")).thenReturn(paged)
+
+        mockMvc.perform(get("/api/libros/home"))
+            .andExpect(status().isOk)
+
+        verify(libroService).search("", "", 0, 6, null, null, null, null, null, null, null, "titulo")
+    }
+
+    @Test
+    @DisplayName("cuando paginasMin >= paginasMax, el service lanza BusinessException y devuelve 400")
+    fun search_paginasInvalidas() {
+        whenever(libroService.search("", "", 0, 6, 1, 500, 100, null, null, null, null, "titulo"))
+            .thenThrow(BusinessException("El mínimo de páginas debe ser menor al máximo"))
+
+        mockMvc.perform(
+            get("/api/libros/home")
+                .param("usuarioId", "1")
+                .param("paginasMin", "500")
+                .param("paginasMax", "100")
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    @DisplayName("cuando fechaDesde >= fechaHasta, el service lanza BusinessException y devuelve 400")
+    fun search_fechasInvalidas() {
+        whenever(libroService.search("", "", 0, 6, 1, null, null, "2026-12-31", "2026-01-01", null, null, "titulo"))
+            .thenThrow(BusinessException("La fecha de inicio debe ser anterior a la fecha final"))
+
+        mockMvc.perform(
+            get("/api/libros/home")
+                .param("usuarioId", "1")
+                .param("fechaDesde", "2026-12-31")
+                .param("fechaHasta", "2026-01-01")
+        )
+            .andExpect(status().isBadRequest)
     }
 
     @Test
     @DisplayName("cuando se busca sin resultados, devuelve 200 con lista vacía")
     fun search_sinResultados() {
         val paged = PagedResponse(content = emptyList<LibroHomeDTO>(), totalPages = 0, page = 0)
-        whenever(libroService.search("", "", 0, 6, 1, null, null, null, null, null, null)).thenReturn(paged)
+        whenever(libroService.search("", "", 0, 6, 1, null, null, null, null, null, null, null)).thenReturn(paged)
 
         mockMvc.perform(get("/api/libros/home").param("usuarioId", "1"))
             .andExpect(status().isOk)
