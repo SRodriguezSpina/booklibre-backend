@@ -4,6 +4,7 @@ import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 
 class ReservaSpec : DescribeSpec({
@@ -31,11 +32,8 @@ class ReservaSpec : DescribeSpec({
         ).apply { id = 100 }
 
         it("sePisaCon DEVUELVE TRUE SI LAS FECHAS SE SUPERPONEN") {
-            // Empieza antes y termina en el medio
             reserva.sePisaCon(LocalDate.of(2026, 3, 5), LocalDate.of(2026, 3, 15)) shouldBe true
-            // Empieza en el medio y termina después
             reserva.sePisaCon(LocalDate.of(2026, 3, 15), LocalDate.of(2026, 3, 25)) shouldBe true
-            // Está contenida exactamente dentro
             reserva.sePisaCon(LocalDate.of(2026, 3, 12), LocalDate.of(2026, 3, 18)) shouldBe true
         }
 
@@ -49,8 +47,49 @@ class ReservaSpec : DescribeSpec({
 
             solicitante.todasLasReservas() shouldContain reserva
             duenio.todasLasReservas() shouldContain reserva
-            // 300 páginas * 5 (karma<1000) = 1500 + (11 días * 5) = 1555
             solicitante.bibliokarmas shouldBe 1555
+        }
+        it("sePisaCon DEVUELVE TRUE CUANDO LAS FECHAS SE TOCAN EXACTAMENTE EN EL BORDE INFERIOR") {
+            // reserva: 10 → 20; nueva termina el día 10 → se pisa
+            reserva.sePisaCon(
+                LocalDate.of(2026, 3, 1),
+                LocalDate.of(2026, 3, 10)
+            ) shouldBe true
+        }
+
+        it("sePisaCon DEVUELVE TRUE CUANDO LAS FECHAS SE TOCAN EN EL BORDE SUPERIOR") {
+            // reserva: 10 → 20; nueva empieza el día 20 → se pisa
+            reserva.sePisaCon(
+                LocalDate.of(2026, 3, 20),
+                LocalDate.of(2026, 3, 30)
+            ) shouldBe true
+        }
+
+        it("sePisaCon DEVUELVE FALSE CON UN DIA DE DIFERENCIA ANTES") {
+            reserva.sePisaCon(
+                LocalDate.of(2026, 3, 1),
+                LocalDate.of(2026, 3, 9)
+            ) shouldBe false
+        }
+
+        it("confirmar NO AGREGA LA RESERVA AL DUENIO SI ES EL MISMO USUARIO") {
+            val reservaPropia = Reserva(
+                libro = libro, usuario = duenio,
+                fechaDesde = LocalDate.of(2026, 3, 10),
+                fechaHasta = LocalDate.of(2026, 3, 20)
+            ).apply { id = 200 }
+
+            reservaPropia.confirmar()
+
+            // Aparece una sola vez (como solicitante = dueño)
+            duenio.todasLasReservas().count { it.id == 200 } shouldBe 1
+        }
+
+        it("agregarReserva LANZA BusinessException SI SE INTENTA AGREGAR LA MISMA RESERVA DOS VECES") {
+            solicitante.agregarReserva(reserva)
+            assertThrows<ar.edu.unsam.phm.exceptions.BusinessException> {
+                solicitante.agregarReserva(reserva)
+            }
         }
     }
 })

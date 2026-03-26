@@ -197,6 +197,7 @@ class LibroControllerEditarCrearTest(
 
         mockMvc.perform(
             put("/api/libros/1")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dtoActualizado))
         )
@@ -214,6 +215,7 @@ class LibroControllerEditarCrearTest(
 
         mockMvc.perform(
             put("/api/libros/1")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
         )
@@ -228,6 +230,7 @@ class LibroControllerEditarCrearTest(
 
         mockMvc.perform(
             put("/api/libros/1")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
         )
@@ -242,6 +245,7 @@ class LibroControllerEditarCrearTest(
 
         mockMvc.perform(
             put("/api/libros/1")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
         )
@@ -256,6 +260,7 @@ class LibroControllerEditarCrearTest(
 
         mockMvc.perform(
             put("/api/libros/5")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
         )
@@ -271,6 +276,7 @@ class LibroControllerEditarCrearTest(
 
         mockMvc.perform(
             put("/api/libros/9999")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(libroDTO()))
         )
@@ -282,6 +288,7 @@ class LibroControllerEditarCrearTest(
     fun editarLibro_sinBody() {
         mockMvc.perform(
             put("/api/libros/1")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isBadRequest)
@@ -292,6 +299,7 @@ class LibroControllerEditarCrearTest(
     fun editarLibro_idInvalido() {
         mockMvc.perform(
             put("/api/libros/abc")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(libroDTO()))
         )
@@ -305,6 +313,7 @@ class LibroControllerEditarCrearTest(
 
         mockMvc.perform(
             put("/api/libros/1")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(libroDTO()))
         )

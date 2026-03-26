@@ -13,8 +13,7 @@ import org.springframework.stereotype.Service
 @Service
 class AuthService (private val usuarioRepository : UsuarioRepository) {
     fun login(request: LoginRequest): AuthResponseUsuario {
-        val usuario = usuarioRepository.lista
-            .find { it.getCredencial().email == request.email }
+        val usuario = usuarioRepository.findByEmail(request.email)
             ?: throw UnauthorizedException("Usuario o contraseña incorrectos")
 
         if (!usuario.validarPassword(request.password))

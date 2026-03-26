@@ -200,6 +200,7 @@ class LibroControllerTest(
         whenever(libroService.actualizarLibro(eq(1), any(), any())).thenReturn(dto)
         mockMvc.perform(
             put("/api/libros/1")
+                .param("usuarioId", "1") // <--- ¡AÑADIDO AQUÍ!
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto))
         )
@@ -216,6 +217,7 @@ class LibroControllerTest(
         whenever(libroService.actualizarLibro(eq(999), any(), any())).thenThrow(NotFoundException("Libro no encontrado"))
         mockMvc.perform(
             put("/api/libros/999")
+                .param("usuarioId", "1") // <--- ¡AÑADIDO AQUÍ!
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto))
         ).andExpect(status().isNotFound)
