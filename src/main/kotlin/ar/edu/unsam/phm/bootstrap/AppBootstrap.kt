@@ -11,7 +11,6 @@ import java.time.LocalDate
 data class DatosLibro(
     val titulo: String,
     val autor: String,
-    val autorImg: String,
     val portadaImg: String
 )
 
@@ -82,12 +81,12 @@ class AppBootstrap(
 
         // ── LIBROS DE ANA prestados A JUAN (prestados-a-mi) ──────────────────
         val librosDeAna = listOf(
-            DatosLibro("Harry Potter y la Piedra Filosofal", "J.K. Rowling", "https://upload.wikimedia.org/wikipedia/commons/5/5d/J._K._Rowling_2010.jpg", "https://images.cdn3.buscalibre.com/fit-in/360x360/d7/e7/d7e777ce24f10eabdaae28d65ab70bd3.jpg"),
-            DatosLibro("El Código Da Vinci", "Dan Brown", "https://upload.wikimedia.org/wikipedia/commons/8/8b/Dan_Brown_book_signing.jpg", "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSB8x01gOOsdG1D2IS0r3AquN2pGMtMnWLpFKPkF8pZZQ953Pbo1lHkAqxX1R_SWzHqmWeOC5Mcg7fbuJt_iLP76jzwWNtpbzPW3xMNlRZN"),
-            DatosLibro("Crónica de una muerte anunciada", "Gabriel García Márquez", "https://upload.wikimedia.org/wikipedia/commons/0/0f/Gabriel_Garcia_Marquez.jpg", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVTCjrjj-XTtQPa0m4C8zNQtyvHz1HeB4zsQ&s"),
-            DatosLibro("Rayuela", "Julio Cortázar", "https://upload.wikimedia.org/wikipedia/commons/1/13/Julio_Cort%C3%A1zar_%281967%29.jpg", "https://descargarlibrosenpdf.wordpress.com/wp-content/uploads/2017/05/rayuela-cortazar.jpg"),
-            DatosLibro("Ficciones", "Jorge Luis Borges", "https://upload.wikimedia.org/wikipedia/commons/c/c1/Jorge_Luis_Borges_1951%2C_by_Grete_Stern.jpg", "https://images.cdn1.buscalibre.com/fit-in/360x360/e4/a9/e4a975b4dce219d0b130b4d8915b8b88.jpg"),
-            DatosLibro("El nombre de la rosa", "Umberto Eco", "https://upload.wikimedia.org/wikipedia/commons/c/c2/Umberto_Eco_1984.jpg", "https://libroschorcha.wordpress.com/wp-content/uploads/2018/02/el-nombre-de-la-rosa-umberto-eco.jpg"),
+            DatosLibro("Harry Potter y la Piedra Filosofal", "J.K. Rowling", "https://images.cdn3.buscalibre.com/fit-in/360x360/d7/e7/d7e777ce24f10eabdaae28d65ab70bd3.jpg"),
+            DatosLibro("El Código Da Vinci", "Dan Brown", "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSB8x01gOOsdG1D2IS0r3AquN2pGMtMnWLpFKPkF8pZZQ953Pbo1lHkAqxX1R_SWzHqmWeOC5Mcg7fbuJt_iLP76jzwWNtpbzPW3xMNlRZN"),
+            DatosLibro("Crónica de una muerte anunciada", "Gabriel García Márquez", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVTCjrjj-XTtQPa0m4C8zNQtyvHz1HeB4zsQ&s"),
+            DatosLibro("Rayuela", "Julio Cortázar", "https://descargarlibrosenpdf.wordpress.com/wp-content/uploads/2017/05/rayuela-cortazar.jpg"),
+            DatosLibro("Ficciones", "Jorge Luis Borges", "https://images.cdn1.buscalibre.com/fit-in/360x360/e4/a9/e4a975b4dce219d0b130b4d8915b8b88.jpg"),
+            DatosLibro("El nombre de la rosa", "Umberto Eco", "https://libroschorcha.wordpress.com/wp-content/uploads/2018/02/el-nombre-de-la-rosa-umberto-eco.jpg"),
         )
 
         librosDeAna.forEachIndexed { i, datos ->
@@ -95,7 +94,6 @@ class AppBootstrap(
                 duenio = ana,
                 titulo = datos.titulo,
                 autor = datos.autor,
-                autorImg = datos.autorImg,
                 descripcion = "Descripción",
                 genero = Genero.LITERATURA_CLASICA,
                 cantidadPaginas = 300,
@@ -126,8 +124,8 @@ class AppBootstrap(
 
         // ── LIBROS DE CARLOS prestados A JUAN (prestados-a-mi) ───────────────
         val librosDeCarlos = listOf(
-            DatosLibro("Don Quijote de la Mancha", "Miguel de Cervantes", "https://upload.wikimedia.org/wikipedia/commons/0/09/Cervantes_J%C3%A1uregui.jpg", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcMRZdGl9oMFn7_O4oyErwUXK9yrN3OcSe0w&s"),
-            DatosLibro("Crimen y Castigo", "Fiódor Dostoyevski", "https://upload.wikimedia.org/wikipedia/commons/7/78/Vasily_Perov_-_%D0%9F%D0%BE%D1%80%D1%82%D1%80%D0%B5%D1%82_%D0%A4.%D0%9C.%D0%94%D0%BE%D1%81%D1%82%D0%BE%D0%B5%D0%B2%D1%81%D0%BA%D0%BE%D0%B3%D0%BE_-_Google_Art_Project.jpg", "https://www.edicontinente.com.ar/image/titulos/9788417477639.jpg"),
+            DatosLibro("Don Quijote de la Mancha", "Miguel de Cervantes", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcMRZdGl9oMFn7_O4oyErwUXK9yrN3OcSe0w&s"),
+            DatosLibro("Crimen y Castigo", "Fiódor Dostoyevski", "https://www.edicontinente.com.ar/image/titulos/9788417477639.jpg"),
         )
 
         librosDeCarlos.forEachIndexed { i, datos ->
@@ -135,7 +133,6 @@ class AppBootstrap(
                 duenio = carlos,
                 titulo = datos.titulo,
                 autor = datos.autor,
-                autorImg = datos.autorImg,
                 descripcion = "Descripción",
                 genero = Genero.LITERATURA_CLASICA,
                 cantidadPaginas = 400,
@@ -162,13 +159,13 @@ class AppBootstrap(
 
         // ── LIBROS DE JUAN prestados a EMILIA / CARLOS / ANA (mis-prestamos) ─
         val misLibros = listOf(
-            DatosLibro("1984", "George Orwell", "https://upload.wikimedia.org/wikipedia/commons/7/7e/George_Orwell_press_photo.jpg", "https://contentv2.tap-commerce.com/cover/large/9789875669284_1.jpg"),
-            DatosLibro("Clean Code", "Robert C. Martin", "https://upload.wikimedia.org/wikipedia/commons/e/ee/Robert_Cecil_Martin.png", "https://m.media-amazon.com/images/I/51E2055ZGUL._AC_UF1000,1000_QL80_.jpg"),
-            DatosLibro("El Principito", "Antoine de Saint-Exupéry", "https://upload.wikimedia.org/wikipedia/commons/0/07/Antoine_de_Saint-Exup%C3%A9ry.jpg", "https://tienda.planetadelibros.com.ar/cdn/shop/products/portada_el-principito_antoine-de-saint-exupery_201507152131.jpg?v=1684356025"),
-            DatosLibro("Sapiens", "Yuval Noah Harari", "https://upload.wikimedia.org/wikipedia/commons/0/07/Yuval_Noah_Harari_at_the_WEF_Annual_Meeting_2020.jpg", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyAJxSA62_Z8k-pqxGp8x3Zp1bWoAtBjkZow&s"),
-            DatosLibro("El alquimista", "Paulo Coelho", "https://upload.wikimedia.org/wikipedia/commons/6/6d/Paulo_Coelho_en_2007.jpg", "https://m.media-amazon.com/images/I/71aFt4+OTOL.jpg"),
-            DatosLibro("Dune", "Frank Herbert", "https://upload.wikimedia.org/wikipedia/commons/5/5e/Frank_Herbert_-_1984.jpg", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrP4Ohql-5Cf2oMJNHvnj5V-ZVm3Q8rpNj0OJXuGa2dOgPMIVMchKJCRSDEJnbUsJ7mHh1C3xE3wfDDncifQkAiSixNji3-L2yN8laRAU&s=10"),
-            DatosLibro("Fundación", "Isaac Asimov", "https://upload.wikimedia.org/wikipedia/commons/3/34/Isaac.Asimov01.jpg", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9t9VngDwUP_IlIKXTYUAJkRC11dlsBX7ncw&s"),
+            DatosLibro("1984", "George Orwell", "https://contentv2.tap-commerce.com/cover/large/9789875669284_1.jpg"),
+            DatosLibro("Clean Code", "Robert C. Martin", "https://m.media-amazon.com/images/I/51E2055ZGUL._AC_UF1000,1000_QL80_.jpg"),
+            DatosLibro("El Principito", "Antoine de Saint-Exupéry", "https://tienda.planetadelibros.com.ar/cdn/shop/products/portada_el-principito_antoine-de-saint-exupery_201507152131.jpg?v=1684356025"),
+            DatosLibro("Sapiens", "Yuval Noah Harari", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyAJxSA62_Z8k-pqxGp8x3Zp1bWoAtBjkZow&s"),
+            DatosLibro("El alquimista", "Paulo Coelho", "https://m.media-amazon.com/images/I/71aFt4+OTOL.jpg"),
+            DatosLibro("Dune", "Frank Herbert", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrP4Ohql-5Cf2oMJNHvnj5V-ZVm3Q8rpNj0OJXuGa2dOgPMIVMchKJCRSDEJnbUsJ7mHh1C3xE3wfDDncifQkAiSixNji3-L2yN8laRAU&s=10"),
+            DatosLibro("Fundación", "Isaac Asimov", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9t9VngDwUP_IlIKXTYUAJkRC11dlsBX7ncw&s"),
         )
 
         val prestatarios = listOf(emilia, carlos, ana, emilia, carlos, emilia, ana)
@@ -178,7 +175,6 @@ class AppBootstrap(
                 duenio = juan,
                 titulo = datos.titulo,
                 autor = datos.autor,
-                autorImg = datos.autorImg,
                 descripcion = "Descripción",
                 genero = Genero.CIENCIA_FICCION,
                 cantidadPaginas = 350,
@@ -215,7 +211,6 @@ class AppBootstrap(
             duenio = ana,
             titulo = "El Señor de los Anillos",
             autor = "J.R.R. Tolkien",
-            autorImg = "https://upload.wikimedia.org/wikipedia/commons/d/d4/J._R._R._Tolkien%2C_1940s.jpg",
             descripcion = "Fantasía",
             genero = Genero.CIENCIA_FICCION,
             cantidadPaginas = 1200,

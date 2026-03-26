@@ -109,7 +109,6 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
             duenio = duenio,
             titulo = dto.titulo,
             autor = dto.autor,
-            autorImg = dto.autorImg,
             descripcion = dto.descripcion,
             genero = dto.genero,
             cantidadPaginas = dto.paginas,

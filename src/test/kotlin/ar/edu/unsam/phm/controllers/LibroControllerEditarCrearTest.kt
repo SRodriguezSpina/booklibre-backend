@@ -60,9 +60,9 @@ class LibroControllerEditarCrearTest(
         alquiladoPorId = null,
         bibliokarma = null,
         estoyReservado = false,
-        autorImg = "https://example.com/cover.jpg",
         rating = 0.0,
         cantidadReservas = 0,
+        ultimasCalificaciones = emptyList(),
         reservas = emptyList()
     )
 

@@ -35,7 +35,7 @@ class UsuarioSpec : DescribeSpec({
             descripcion = "Buenas prácticas", genero = Genero.DISENO,
             paginas = 464, isbn = "ISBN-001", idioma = Idioma.INGLES,
             editorial = "Prentice Hall", fechaPublicacion = LocalDate.of(2008, 8, 1),
-            estado = EstadoLibro.EXCELENTE, imagenUrl = "", autorImg = "",
+            estado = EstadoLibro.EXCELENTE, imagenUrl = "",
         )
 
         val reserva = Reserva(

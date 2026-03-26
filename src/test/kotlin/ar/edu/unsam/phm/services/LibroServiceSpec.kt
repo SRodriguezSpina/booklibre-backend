@@ -65,10 +65,10 @@ class LibroServiceSpec : DescribeSpec({
         alquiladoPorId = null,
         bibliokarma = null,
         estoyReservado = false,
-        autorImg = "",
         rating = 0.0,
         reservas = emptyList(),
         cantidadReservas = 0
+        ultimasCalificaciones = emptyList()
     )
 
     describe("crearLibro") {
