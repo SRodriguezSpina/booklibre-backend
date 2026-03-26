@@ -35,7 +35,7 @@ class UsuarioSpec : DescribeSpec({
             duenio = duenio,
             titulo = "Clean Code", autor = "Robert C. Martin",
             descripcion = "Buenas prácticas", genero = Genero.DISENO,
-            cantidadPaginas = 464, isbn = "ISBN-001", idioma = Idioma.INGLES,
+            cantidadPaginas = 464, isbn = "9780000000001", idioma = Idioma.INGLES,
             editorial = "Prentice Hall", fechaPublicacion = LocalDate.of(2008, 8, 1),
             estado = EstadoLibro.EXCELENTE, imagenUrl = ""
         )

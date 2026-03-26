@@ -50,7 +50,7 @@ class ReservaServiceSpec : DescribeSpec({
                 duenio = duenio,
                 titulo = "1984", autor = "George Orwell",
                 descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
-                cantidadPaginas = 300, isbn = "ISBN-001", idioma = Idioma.ESPANOL,
+                cantidadPaginas = 300, isbn = "9780000000001", idioma = Idioma.ESPANOL,
                 editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
                 estado = EstadoLibro.EXCELENTE, imagenUrl = "",
             )
@@ -141,7 +141,7 @@ class ReservaServiceSpec : DescribeSpec({
                     duenio = duenio,
                     titulo = "Dune", autor = "Frank Herbert",
                     descripcion = "Sci-fi", genero = Genero.CIENCIA_FICCION,
-                    cantidadPaginas = 500, isbn = "ISBN-002", idioma = Idioma.ESPANOL,
+                    cantidadPaginas = 500, isbn = "9780000000002", idioma = Idioma.ESPANOL,
                     editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
                     estado = EstadoLibro.MUY_BUENO, imagenUrl = "",
                 )

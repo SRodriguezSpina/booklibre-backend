@@ -24,13 +24,28 @@ data class LibroData(
 )
 
 abstract class Libro(data: LibroData): BaseEntity() {
+    companion object {
+        private val ISBN_REGEX = Regex("^\\d{13}$")
+
+        fun normalizarYValidarIsbn(raw: String): String {
+            val isbn = raw.trim()
+            if (!ISBN_REGEX.matches(isbn)) {
+                throw BusinessException("El ISBN debe contener exactamente 13 caracteres numéricos")
+            }
+            return isbn
+        }
+    }
+
     val duenio = data.duenio
     var titulo = data.titulo
     var autor = data.autor
     var descripcion = data.descripcion
     var genero = data.genero
     var cantidadPaginas = data.cantidadPaginas
-    var isbn = data.isbn
+    var isbn = normalizarYValidarIsbn(data.isbn)
+        set(value) {
+            field = normalizarYValidarIsbn(value)
+        }
     var idioma = data.idioma
     var editorial = data.editorial
     var fechaPublicacion = data.fechaPublicacion
