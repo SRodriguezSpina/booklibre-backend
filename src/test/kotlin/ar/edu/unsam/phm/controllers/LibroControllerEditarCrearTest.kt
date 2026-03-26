@@ -50,7 +50,7 @@ class LibroControllerEditarCrearTest(
         genero = Genero.DISENO,
         autor = autor,
         paginas = paginas,
-        isbn = "978-0132350884",
+        isbn = "9780132350884",
         idioma = Idioma.INGLES,
         editorial = "Prentice Hall",
         estado = estado,

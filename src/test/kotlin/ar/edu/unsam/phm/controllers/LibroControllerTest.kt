@@ -40,7 +40,7 @@ class LibroControllerTest(
     ) = LibroDTO(
         id = id, titulo = titulo, tipo = "LibroComun", descripcion = "Distopía",
         genero = Genero.LITERATURA_CLASICA, autor = autor, paginas = 300,
-        isbn = "ISBN-001", idioma = Idioma.ESPANOL, editorial = "Debolsillo",
+        isbn = "9780000000001", idioma = Idioma.ESPANOL, editorial = "Debolsillo",
         estado = "EXCELENTE", fechaPublicacion = LocalDate.of(1949, 6, 8),
         propietarioId = 3, imagenUrl = "", alquiladoPorId = null,
         bibliokarma = 1550,
@@ -56,7 +56,7 @@ class LibroControllerTest(
     private fun libroHomeDTO() = LibroHomeDTO(
         id = 1, imagenUrl = "", genero = Genero.LITERATURA_CLASICA,
         titulo = "1984", autor = "George Orwell", calificacion = 4.5,
-        isbn = "ISBN-001", idioma = Idioma.ESPANOL, tipo = "LibroComun",
+        isbn = "9780000000001", idioma = Idioma.ESPANOL, tipo = "LibroComun",
         bibliokarma = 1550, estado = "EXCELENTE", duenio = "Ana García"
     )
 
