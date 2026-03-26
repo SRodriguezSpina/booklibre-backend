@@ -1,11 +1,6 @@
 package ar.edu.unsam.phm.mappers
 
-import ar.edu.unsam.phm.domain.Libro
-import ar.edu.unsam.phm.domain.Reserva
-import ar.edu.unsam.phm.domain.Usuario
-import ar.edu.unsam.phm.domain.UsuarioLector
-import ar.edu.unsam.phm.domain.UsuarioLectorPublicador
-import ar.edu.unsam.phm.domain.UsuarioPublicador
+import ar.edu.unsam.phm.domain.*
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.RangoReservaDTO
@@ -101,9 +96,7 @@ fun Reserva.toDTO(usuarioConsultaId: Int): ReservaDTO {
         fechaDesde = fechaDesde.format(DateTimeFormatter.ISO_DATE),
         fechaHasta = fechaHasta.format(DateTimeFormatter.ISO_DATE),
         rating = this.libro.getCalificacion(),
-        bibliokarma = let {
-            this.libro.calcularBiblioKarmaTotal(it.usuario, it.fechaDesde, it.fechaHasta)
-        }
+        bibliokarma = libro.calcularBiblioKarmaTotal(usuario, fechaDesde, fechaHasta)
     )
 }
 
@@ -122,4 +115,14 @@ fun Libro.toHomeDTO(usuario: Usuario?): LibroHomeDTO {
         estado = this.estado.name,
         duenio = this.duenio.nombre,
     )
+    }
+fun List<Calificacion>.toDetalleDTOs(nombrePorUsuarioId: Map<Int, String>): List<CalificacionDTO> {
+    return map { calificacion ->
+        CalificacionDTO(
+            usuarioId     = calificacion.usuarioId,
+            nombreUsuario = nombrePorUsuarioId[calificacion.usuarioId] ?: "Usuario ${calificacion.usuarioId}",
+            valor         = calificacion.valor,
+            comentario    = calificacion.comentario
+        )
+    }
 }

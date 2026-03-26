@@ -64,8 +64,8 @@ class LibroControllerEditarCrearTest(
         cantidadReservas = 0,
         ultimasCalificaciones = emptyList(),
         reservas = emptyList(),
-        fechaAgregado = TODO(),
-        cantidadCalificaciones = TODO()
+        fechaAgregado = LocalDate.now(),
+        cantidadCalificaciones = 0
     )
 
     private fun toJson(dto: LibroDTO) = mapper.writeValueAsString(dto)
@@ -193,30 +193,29 @@ class LibroControllerEditarCrearTest(
     @DisplayName("PUT /{libroId} con datos válidos devuelve 200 y el DTO actualizado")
     fun editarLibro_ok() {
         val dtoActualizado = libroDTO(titulo = "Clean Code - Edición Revisada")
-        whenever(libroService.actualizarLibro(
-            eq(1), any(),
-            libroDTO().propietarioId
-        )).thenReturn(dtoActualizado)
+        whenever(libroService.actualizarLibro(eq(1), any(),any())).thenReturn(dtoActualizado)
 
         mockMvc.perform(
             put("/api/libros/1")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dtoActualizado))
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.titulo").value("Clean Code - Edición Revisada"))
 
-        verify(libroService).actualizarLibro(eq(1), any(), libroDTO().propietarioId)
+        verify(libroService).actualizarLibro(eq(1), any(),any())
     }
 
     @Test
     @DisplayName("PUT /{libroId} refleja el autor actualizado en la respuesta")
     fun editarLibro_actualizaAutor() {
         val dto = libroDTO(autor = "Martin Fowler")
-        whenever(libroService.actualizarLibro(eq(1), any(), libroDTO().propietarioId)).thenReturn(dto)
+        whenever(libroService.actualizarLibro(eq(1), any(),any())).thenReturn(dto)
 
         mockMvc.perform(
             put("/api/libros/1")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
         )
@@ -227,10 +226,11 @@ class LibroControllerEditarCrearTest(
     @DisplayName("PUT /{libroId} refleja el estado actualizado en la respuesta")
     fun editarLibro_actualizaEstado() {
         val dto = libroDTO(estado = "MALO")
-        whenever(libroService.actualizarLibro(eq(1), any(), libroDTO().propietarioId)).thenReturn(dto)
+        whenever(libroService.actualizarLibro(eq(1), any(), any())).thenReturn(dto)
 
         mockMvc.perform(
             put("/api/libros/1")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
         )
@@ -241,10 +241,11 @@ class LibroControllerEditarCrearTest(
     @DisplayName("PUT /{libroId} refleja las páginas actualizadas en la respuesta")
     fun editarLibro_actualizaPaginas() {
         val dto = libroDTO(paginas = 999)
-        whenever(libroService.actualizarLibro(eq(1), any(), libroDTO().propietarioId)).thenReturn(dto)
+        whenever(libroService.actualizarLibro(eq(1), any(),any())).thenReturn(dto)
 
         mockMvc.perform(
             put("/api/libros/1")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
         )
@@ -255,25 +256,27 @@ class LibroControllerEditarCrearTest(
     @DisplayName("PUT /{libroId} pasa el id de ruta al servicio, no el del body")
     fun editarLibro_usaIdDeRuta() {
         val dto = libroDTO(id = 99)
-        whenever(libroService.actualizarLibro(eq(5), any(), libroDTO().propietarioId)).thenReturn(dto)
+        whenever(libroService.actualizarLibro(eq(5), any(),any())).thenReturn(dto)
 
         mockMvc.perform(
             put("/api/libros/5")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(dto))
         )
 
-        verify(libroService).actualizarLibro(eq(5), any(), libroDTO().propietarioId)
+        verify(libroService).actualizarLibro(eq(5), any(),any())
     }
 
     @Test
     @DisplayName("PUT /{libroId} con libro inexistente devuelve 404")
     fun editarLibro_inexistente() {
-        whenever(libroService.actualizarLibro(eq(9999), any(), libroDTO().propietarioId))
+        whenever(libroService.actualizarLibro(eq(9999), any(),any()))
             .thenThrow(NotFoundException("Libro no encontrado"))
 
         mockMvc.perform(
             put("/api/libros/9999")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(libroDTO()))
         )
@@ -285,6 +288,7 @@ class LibroControllerEditarCrearTest(
     fun editarLibro_sinBody() {
         mockMvc.perform(
             put("/api/libros/1")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isBadRequest)
@@ -295,6 +299,7 @@ class LibroControllerEditarCrearTest(
     fun editarLibro_idInvalido() {
         mockMvc.perform(
             put("/api/libros/abc")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(libroDTO()))
         )
@@ -304,14 +309,15 @@ class LibroControllerEditarCrearTest(
     @Test
     @DisplayName("PUT /{libroId} invoca el servicio exactamente una vez")
     fun editarLibro_llamaAlServicioUnaVez() {
-        whenever(libroService.actualizarLibro(any(), any(), libroDTO().propietarioId)).thenReturn(libroDTO())
+        whenever(libroService.actualizarLibro(any(), any(),any())).thenReturn(libroDTO())
 
         mockMvc.perform(
             put("/api/libros/1")
+                .param("usuarioId", "3")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(libroDTO()))
         )
 
-        verify(libroService).actualizarLibro(any(), any(), libroDTO().propietarioId)
+        verify(libroService).actualizarLibro(any(), any(),any())
     }
 }

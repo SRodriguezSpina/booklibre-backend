@@ -8,6 +8,7 @@ import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.mappers.toResponse
+import ar.edu.unsam.phm.repository.EntityNotFoundException
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import org.springframework.stereotype.Service
@@ -19,27 +20,32 @@ class UsuarioService(
     val usuarioRepository: UsuarioRepository,
     val libroRepository: LibroRepository
 ) {
-    private val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")
-    private val celularRegex = Regex("^\\+?[0-9]{7,15}$")
+    private fun getUsuarioOrThrow(id: Int): Usuario {
+        return try {
+            usuarioRepository.getById(id)
+        } catch (_: EntityNotFoundException) {
+            throw NotFoundException("Usuario no encontrado")
+        }
+    }
 
     fun obtenerUsuario(id: Int): UsuarioResponse {
-        val usuario = usuarioRepository.findById(id) ?: throw NotFoundException("Usuario no encontrado")
+        val usuario = getUsuarioOrThrow(id)
         return usuario.toResponse()
     }
 
     fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioResponse {
-        val existente = usuarioRepository.findById(id) ?: throw NotFoundException("Usuario no encontrado")
-        val emailNormalizado = request.email.trim().lowercase()
-        val celularNormalizado = request.celular.trim()
-        validarEmail(emailNormalizado)
-        validarCelular(celularNormalizado)
-        validarDuplicados(id, emailNormalizado, celularNormalizado)
+        val existente = getUsuarioOrThrow(id)
+
+        val email = Usuario.normalizarYValidarEmail(request.email)
+        val celular = Usuario.normalizarYValidarCelular(request.celular)
+        validarDuplicados(id, email, celular)
         val tipoUsuario = parseTipoUsuario(request.tipoUsuario)
+        
         val actualizado = Usuario(
-            credencial = Credencial(emailNormalizado, existente.getCredencial().password),
+            credencial = Credencial(email, existente.getCredencial().password),
             nombre = request.nombre,
             desc = request.desc,
-            celular = celularNormalizado,
+            celular = celular,
             ciudad = request.ciudad,
             tipoUsuario = tipoUsuario,
             bibliokarmas = existente.bibliokarmas,
@@ -53,23 +59,12 @@ class UsuarioService(
     }
 
     private fun parseTipoUsuario(value: String): TipoUsuario {
-        return when (value.uppercase().replace(" ", "_")) {
+        val normalized = value.trim().uppercase().replace(" ", "_")
+        return when (normalized) {
             "LECTOR" -> UsuarioLector()
             "PUBLICADOR" -> UsuarioPublicador()
             "LECTOR_PUBLICADOR", "LECTORPUBLICADOR" -> UsuarioLectorPublicador()
-            else -> UsuarioLector()
-        }
-    }
-
-    private fun validarEmail(email: String) {
-        if (email.isBlank() || !emailRegex.matches(email)) {
-            throw BusinessException("El email no tiene un formato valido")
-        }
-    }
-
-    private fun validarCelular(celular: String) {
-        if (celular.isBlank() || !celularRegex.matches(celular)) {
-            throw BusinessException("El celular no tiene un formato valido")
+            else -> throw BusinessException("Tipo de usuario inválido: $value")
         }
     }
 

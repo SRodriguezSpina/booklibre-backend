@@ -19,8 +19,30 @@ class Usuario(
     var fechaRegistro: LocalDate = LocalDate.now(),
     val reservas: MutableList<Reserva> = mutableListOf(),
 ) : BaseEntity() {
+    companion object {
+        private val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")
+        private val celularRegex = Regex("^\\+?[0-9]{7,15}$")
+
+        fun normalizarYValidarEmail(raw: String): String {
+            val email = raw.trim().lowercase()
+            if (email.isBlank() || !emailRegex.matches(email)) {
+                throw BusinessException("El email no tiene un formato valido")
+            }
+            return email
+        }
+
+        fun normalizarYValidarCelular(raw: String): String {
+            val celular = raw.trim()
+            if (celular.isBlank() || !celularRegex.matches(celular)) {
+                throw BusinessException("El celular no tiene un formato valido")
+            }
+            return celular
+        }
+    }
+
     fun todasLasReservas(): List<Reserva> = reservas
     fun getCredencial(): Credencial = credencial
+
     fun agregarReserva(reserva: Reserva) {
         if (reservas.any { it.id == reserva.id }) throw BusinessException("La reserva ya existe para este usuario")
         reservas.add(reserva)

@@ -6,6 +6,7 @@ import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
 import ar.edu.unsam.phm.domain.LibroComun
+import ar.edu.unsam.phm.domain.LibroData
 import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.repository.LibroRepository
@@ -45,13 +46,15 @@ class ReservaServiceSpec : DescribeSpec({
         ).apply { id = 1 }
 
         val libro = LibroComun(
-            duenio = duenio, id = 10,
-            titulo = "1984", autor = "George Orwell",
-            descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
-            paginas = 300, isbn = "ISBN-001", idioma = Idioma.ESPANOL,
-            editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
-            estado = EstadoLibro.EXCELENTE, imagenUrl = "",
-        )
+            LibroData(
+                duenio = duenio,
+                titulo = "1984", autor = "George Orwell",
+                descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
+                cantidadPaginas = 300, isbn = "ISBN-001", idioma = Idioma.ESPANOL,
+                editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
+                estado = EstadoLibro.EXCELENTE, imagenUrl = "",
+            )
+        ).apply { id = 10 }
 
         val reserva = Reserva(
             libro = libro,
@@ -134,13 +137,16 @@ class ReservaServiceSpec : DescribeSpec({
 
         it("OBTENER RESERVAS CON MULTIPLES RESERVAS DEVUELVE TODOS LOS DTOs") {
             val libro2 = LibroComun(
-                duenio = duenio, id = 11,
-                titulo = "Dune", autor = "Frank Herbert",
-                descripcion = "Sci-fi", genero = Genero.CIENCIA_FICCION,
-                paginas = 500, isbn = "ISBN-002", idioma = Idioma.ESPANOL,
-                editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
-                estado = EstadoLibro.MUY_BUENO, imagenUrl = "",
-            )
+                LibroData(
+                    duenio = duenio,
+                    titulo = "Dune", autor = "Frank Herbert",
+                    descripcion = "Sci-fi", genero = Genero.CIENCIA_FICCION,
+                    cantidadPaginas = 500, isbn = "ISBN-002", idioma = Idioma.ESPANOL,
+                    editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
+                    estado = EstadoLibro.MUY_BUENO, imagenUrl = "",
+                )
+            ).apply { id = 11 }
+
             val reserva2 = Reserva(
                 libro = libro2,
                 usuario = solicitante,

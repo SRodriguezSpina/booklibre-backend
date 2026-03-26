@@ -6,6 +6,7 @@ import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.mappers.toDTO
+import ar.edu.unsam.phm.repository.EntityNotFoundException
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
@@ -19,6 +20,7 @@ class ReservaService(
     private val usuarioRepository: UsuarioRepository,
     private val reservaRepository: ReservaRepository
 ) {
+    private val locks = java.util.concurrent.ConcurrentHashMap<Int, Any>()
     fun obtenerReservas(usuarioId: Int): List<ReservaDTO> {
         usuarioRepository.findById(usuarioId)
             ?: throw NotFoundException("Usuario $usuarioId no encontrado")
@@ -26,27 +28,25 @@ class ReservaService(
         return reservas.map { it.toDTO(usuarioId) }
     }
     fun crearReserva(dto: CrearReservaDTO): Reserva {
-        val libro = libroRepository.getById(dto.libroId)
-
-        if (reservaRepository.existeSuperposicion(libro.id, dto.fechaDesde, dto.fechaHasta)) {
-            throw ConflictException(
-                "Lo sentimos, este libro ya se encuentra reservado para las fechas seleccionadas."
+        val lock = locks.computeIfAbsent(dto.libroId) { Any() }
+        synchronized(lock) {
+            if (reservaRepository.existeSuperposicion(dto.libroId, dto.fechaDesde, dto.fechaHasta)) {
+                throw ConflictException("El libro ya está reservado para esas fechas.")
+            }
+            val libro = try {
+                libroRepository.getById(dto.libroId)
+            } catch (_: EntityNotFoundException) {
+                throw NotFoundException("Libro ${dto.libroId} no encontrado")
+            }
+            val solicitante = usuarioRepository.getById(dto.usuarioId)
+            val reserva = reservaRepository.create(
+                Reserva(libro, solicitante, dto.fechaDesde, dto.fechaHasta)
             )
+            reserva.confirmar()
+            usuarioRepository.update(solicitante)
+            if (libro.duenio.id != solicitante.id) usuarioRepository.update(libro.duenio)
+            return reserva
         }
-
-        val usuarioSolicitante = usuarioRepository.getById(dto.usuarioId)
-
-        val reservaGuardada = reservaRepository.create(
-            Reserva(libro = libro, usuario = usuarioSolicitante, fechaDesde = dto.fechaDesde, fechaHasta = dto.fechaHasta)
-        )
-
-        reservaGuardada.confirmar()
-
-        usuarioRepository.update(usuarioSolicitante)
-        if (libro.duenio.id != usuarioSolicitante.id) {
-            usuarioRepository.update(libro.duenio)
-        }
-
-        return reservaGuardada
     }
+
 }

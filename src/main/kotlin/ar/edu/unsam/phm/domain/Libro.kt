@@ -5,6 +5,7 @@ import ar.edu.unsam.phm.repository.BaseEntity
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 data class LibroData(
     val duenio: Usuario,
@@ -43,7 +44,6 @@ abstract class Libro(data: LibroData): BaseEntity() {
         val diasReserva = ChronoUnit.DAYS.between(desde, hasta).toInt() + 1
         return (5 * diasReserva) + plusBiblioKarma(usuario)
     }
-    // En tu clase Libro.kt
     fun agregarCalificacion(nueva: Calificacion) {
         if (nueva.valor !in 1..5) throw BusinessException("La calificación debe estar entre 1 y 5")
         if (calificaciones.any { it.usuarioId == nueva.usuarioId }) {
@@ -53,7 +53,8 @@ abstract class Libro(data: LibroData): BaseEntity() {
     }
     fun getCalificacion(): Double {
         if (calificaciones.isEmpty()) return 0.0
-        return calificaciones.map { it.valor }.average()
+        val promedio = calificaciones.map { it.valor }.average()
+        return (promedio * 10.0).roundToInt() / 10.0
     }
     abstract fun plusBiblioKarma(usuario: Usuario): Int
 }

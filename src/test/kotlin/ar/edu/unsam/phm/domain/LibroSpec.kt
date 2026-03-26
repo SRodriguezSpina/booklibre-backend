@@ -28,58 +28,88 @@ class LibroSpec : DescribeSpec({
         // ── LibroComun ────────────────────────────────────────────────────────
         describe("LibroComun") {
 
-            val libro = LibroComun(LibroData(
-                duenio = duenio,
-                titulo = "1984", autor = "George Orwell",
-                descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
-                cantidadPaginas = 300, isbn = "ISBN-001", idioma = Idioma.ESPANOL,
-                editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
-                estado = EstadoLibro.EXCELENTE, imagenUrl = "", LocalDate.of(2020, 6, 8)
-            )
-            )
+            val libro = LibroComun(
+                LibroData(
+                    duenio = duenio,
+                    titulo = "1984", autor = "George Orwell",
+                    descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
+                    cantidadPaginas = 300, isbn = "ISBN-001", idioma = Idioma.ESPANOL,
+                    editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
+                    estado = EstadoLibro.EXCELENTE, imagenUrl = "",
+                )
+            ).apply { id = 1 }
 
             it("PLUS BIBLIOKARMA CON USUARIO CON MENOS DE 1000 KARMA USA MULTIPLICADOR 5") {
-                // 300 páginas * 5 = 1500
                 libro.plusBiblioKarma(usuarioPobre) shouldBe 1500
             }
 
             it("PLUS BIBLIOKARMA CON USUARIO CON MAS DE 1000 KARMA USA MULTIPLICADOR 2") {
-                // 300 páginas * 2 = 600
                 libro.plusBiblioKarma(usuarioRico) shouldBe 600
             }
 
             it("CALCULA BIBLIOKARMA TOTAL CORRECTAMENTE") {
-                // (5 * 10 días) + plusBiblioKarma(usuarioPobre=1500) = 50 + 1500 = 1550
                 libro.calcularBiblioKarmaTotal(usuarioPobre, desde, hasta) shouldBe 1550
+            }
+
+            describe("calcularBiblioKarmaTotal — validaciones") {
+                it("LANZA BusinessException CUANDO HASTA ES IGUAL A DESDE") {
+                    val mismaFecha = LocalDate.of(2026, 3, 1)
+                    assertThrows<BusinessException> {
+                        libro.calcularBiblioKarmaTotal(usuarioPobre, mismaFecha, mismaFecha)
+                    }
+                }
+
+                it("LANZA BusinessException CUANDO HASTA ES ANTERIOR A DESDE") {
+                    assertThrows<BusinessException> {
+                        libro.calcularBiblioKarmaTotal(
+                            usuarioPobre,
+                            LocalDate.of(2026, 3, 10),
+                            LocalDate.of(2026, 3, 1)
+                        )
+                    }
+                }
+            }
+
+            describe("LibroComun — validaciones") {
+                it("LANZA BusinessException SI LA CANTIDAD DE PAGINAS ES 0") {
+                    val libroSinPaginas = LibroComun(LibroData(
+                        duenio = duenio, titulo = "Test", autor = "Test",
+                        descripcion = "", genero = Genero.DRAMA, cantidadPaginas = 0,
+                        isbn = "X", idioma = Idioma.ESPANOL, editorial = "",
+                        fechaPublicacion = LocalDate.now(), estado = EstadoLibro.BUENO, imagenUrl = ""
+                    ))
+                    assertThrows<BusinessException> {
+                        libroSinPaginas.plusBiblioKarma(usuarioPobre)
+                    }
+                }
             }
         }
 
         // ── LibroConDedicatoria ───────────────────────────────────────────────
         describe("LibroConDedicatoria") {
 
-            val libro = LibroConDedicatoria(LibroData(
-                duenio = duenio,
-                titulo = "El Principito", autor = "Saint-Exupéry",
-                descripcion = "Clásico", genero = Genero.LITERATURA_CLASICA,
-                cantidadPaginas = 100, isbn = "ISBN-002", idioma = Idioma.ESPANOL,
-                editorial = "Salamandra", fechaPublicacion = LocalDate.of(1943, 4, 6),
-                estado = EstadoLibro.MUY_BUENO, imagenUrl = "", LocalDate.of(2020, 6, 8)
-            ))
+            val libro = LibroConDedicatoria(
+                LibroData(
+                    duenio = duenio,
+                    titulo = "El Principito", autor = "Saint-Exupéry",
+                    descripcion = "Clásico", genero = Genero.LITERATURA_CLASICA,
+                    cantidadPaginas = 100, isbn = "ISBN-002", idioma = Idioma.ESPANOL,
+                    editorial = "Salamandra", fechaPublicacion = LocalDate.of(1943, 4, 6),
+                    estado = EstadoLibro.MUY_BUENO, imagenUrl = "",
+                )
+            ).apply { id = 2 }
 
             it("PLUS BIBLIOKARMA SIN RESERVAS DEL DUENIO ES 200") {
-                // 200 + (10 * 0 reservas) = 200
                 libro.plusBiblioKarma(usuarioPobre) shouldBe 200
             }
 
             it("PLUS BIBLIOKARMA AUMENTA SEGUN RESERVAS DEL DUENIO") {
                 val reservaFake = Reserva(libro, duenio, desde, hasta)
                 duenio.agregarReserva(reservaFake)
-                // 200 + (10 * 2) = 220
                 libro.plusBiblioKarma(usuarioPobre) shouldBe 210
             }
 
             it("CALCULA BIBLIOKARMA TOTAL CON DUENIO SIN RESERVAS") {
-                // (5 * 10) + 200 = 250
                 libro.calcularBiblioKarmaTotal(usuarioPobre, desde, hasta) shouldBe 250
             }
         }
@@ -87,14 +117,16 @@ class LibroSpec : DescribeSpec({
         // ── LibroColeccionable ────────────────────────────────────────────────
         describe("LibroColeccionable") {
 
-            val libro = LibroColeccionable(LibroData(
-                duenio = duenio,
-                titulo = "Dune", autor = "Frank Herbert",
-                descripcion = "Sci-fi épico", genero = Genero.CIENCIA_FICCION,
-                cantidadPaginas = 500, isbn = "ISBN-003", idioma = Idioma.ESPANOL,
-                editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
-                estado = EstadoLibro.EXCELENTE, imagenUrl = "", LocalDate.of(2020, 6, 8)
-            ))
+            val libro = LibroColeccionable(
+                LibroData(
+                    duenio = duenio,
+                    titulo = "Dune", autor = "Frank Herbert",
+                    descripcion = "Sci-fi épico", genero = Genero.CIENCIA_FICCION,
+                    cantidadPaginas = 500, isbn = "ISBN-003", idioma = Idioma.ESPANOL,
+                    editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
+                    estado = EstadoLibro.EXCELENTE, imagenUrl = "",
+                )
+            ).apply { id = 3 }
 
             it("PLUS BIBLIOKARMA ES CEIL(KARMA/5) + PAGINAS") {
                 // ceil(2000/5) + 500 = 400 + 500 = 900
@@ -110,19 +142,32 @@ class LibroSpec : DescribeSpec({
                 // (5 * 10) + 900 = 950
                 libro.calcularBiblioKarmaTotal(usuarioRico, desde, hasta) shouldBe 950
             }
+
+            describe("LibroColeccionable — validaciones") {
+                it("LANZA BusinessException SI EL USUARIO TIENE BIBLIOKARMAS NEGATIVOS") {
+                    val usuarioKarmaNegativo = Usuario(
+                        Credencial("x", "x"), "X", "", bibliokarmas = -1
+                    )
+                    assertThrows<BusinessException> {
+                        libro.plusBiblioKarma(usuarioKarmaNegativo)
+                    }
+                }
+            }
         }
 
         // ── Calificaciones ────────────────────────────────────────────────────
         describe("Calificaciones") {
 
-            val libro = LibroComun(LibroData(
-                duenio = duenio,
-                titulo = "Sapiens", autor = "Yuval Harari",
-                descripcion = "Historia", genero = Genero.LITERATURA_CLASICA,
-                cantidadPaginas = 400, isbn = "ISBN-004", idioma = Idioma.ESPANOL,
-                editorial = "Debate", fechaPublicacion = LocalDate.of(2011, 1, 1),
-                estado = EstadoLibro.EXCELENTE, imagenUrl = "", LocalDate.of(2020, 6, 8)
-            ))
+            val libro = LibroComun(
+                LibroData(
+                    duenio = duenio,
+                    titulo = "Sapiens", autor = "Yuval Harari",
+                    descripcion = "Historia", genero = Genero.LITERATURA_CLASICA,
+                    cantidadPaginas = 400, isbn = "ISBN-004", idioma = Idioma.ESPANOL,
+                    editorial = "Debate", fechaPublicacion = LocalDate.of(2011, 1, 1),
+                    estado = EstadoLibro.EXCELENTE, imagenUrl = "",
+                )
+            ).apply { id = 4 }
 
             it("CALIFICACION INICIAL ES 0.0 CUANDO NO HAY CALIFICACIONES") {
                 libro.getCalificacion() shouldBe 0.0
@@ -152,6 +197,27 @@ class LibroSpec : DescribeSpec({
                     libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 1))
                 }
                 libro.getCalificacion() shouldBe 5.0
+            }
+
+            describe("Calificaciones — casos borde") {
+                it("AGREGAR CALIFICACION CON VALOR MENOR A 1 LANZA BusinessException") {
+                    assertThrows<BusinessException> {
+                        libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 0))
+                    }
+                }
+
+                it("AGREGAR CALIFICACION CON VALOR MAYOR A 5 LANZA BusinessException") {
+                    assertThrows<BusinessException> {
+                        libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 6))
+                    }
+                }
+
+                it("GETCLASIFICACION REDONDEA A 1 DECIMAL CORRECTAMENTE") {
+                    libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 4))
+                    libro.agregarCalificacion(Calificacion(usuarioId = 2, valor = 3))
+                    libro.agregarCalificacion(Calificacion(usuarioId = 3, valor = 5))
+                    libro.getCalificacion() shouldBe 4.0
+                }
             }
         }
     }
