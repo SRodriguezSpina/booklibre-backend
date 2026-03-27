@@ -12,16 +12,17 @@ import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.*
 import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.UsuarioRepository
+import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.EntityNotFoundException
 import org.springframework.stereotype.Service
 import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.mappers.toDetalleDTOs
-import ar.edu.unsam.phm.repository.UsuarioRepository
 import java.time.LocalDate
 import kotlin.math.ceil
 
 @Service
-class LibroService(val libroRepository: LibroRepository, private val usuarioRepository: UsuarioRepository) {
+class LibroService(val libroRepository: LibroRepository, private val usuarioRepository: UsuarioRepository, private val reservaRepository: ReservaRepository) {
     fun search(query: String, generos: String, page: Int, size: Int, usuarioId: Int?, paginasMin: Int?, paginasMax: Int?,
                fechaDesde: String?, fechaHasta: String?, isbn: String?, prestadoPor: String?, sortBy: String?): PagedResponse<LibroHomeDTO> {
         //validaciones antes
@@ -62,9 +63,7 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
                 val matchFechas = if (fechaDesde != null && fechaHasta != null) {
                     val desde = LocalDate.parse(fechaDesde)
                     val hasta = LocalDate.parse(fechaHasta)
-                    val reservasDelLibro = usuarioRepository.lista
-                        .flatMap { it.reservas }
-                        .filter { it.libro.id == libro.id }
+                    val reservasDelLibro = reservaRepository.findByLibroId(libro.id)
                     reservasDelLibro.none { reserva ->
                         reserva.fechaDesde <= hasta && reserva.fechaHasta >= desde
                     }
@@ -80,7 +79,15 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
                     else -> libro.titulo.lowercase()
                 }
             }
-            .map { it.toHomeDTO(usuario) }
+            .map {
+                val bibliokarma = if (usuario != null) {
+                    val cantidadReservasDelLibro = reservaRepository.findByLibroId(it.id).size
+                    it.plusBiblioKarma(usuario, cantidadReservasDelLibro)
+                } else {
+                    0
+                }
+                it.toHomeDTO(bibliokarma)
+            }
 
         val totalPages = ceil(filtrados.size.toDouble() / size).toInt()
         val content = filtrados.drop(page * size).take(size)
@@ -94,7 +101,7 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
             throw NotFoundException("Libro $id no encontrado")
         }
 
-        val reservasDelLibro = usuarioRepository.findReservasByLibroId(id)
+        val reservasDelLibro = reservaRepository.findByLibroId(id)
         val nombresUsuarios = usuarioRepository.resolverNombresCalificaciones(libro.calificaciones)
 
         return libro.toDTO(
@@ -207,9 +214,8 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
         }
 
         val hoy = LocalDate.now()
-        val hayReservaActiva = usuarioRepository.lista
-            .flatMap { it.reservas }
-            .any { it.libro.id == libroId && !hoy.isBefore(it.fechaDesde) && !hoy.isAfter(it.fechaHasta) }
+        val hayReservaActiva = reservaRepository.findByLibroId(libroId)
+            .any { !hoy.isBefore(it.fechaDesde) && !hoy.isAfter(it.fechaHasta) }
 
         if (hayReservaActiva) {
             throw ConflictException("El libro tiene una reserva activa y no puede eliminarse")

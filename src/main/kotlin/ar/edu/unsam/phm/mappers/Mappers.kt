@@ -82,7 +82,7 @@ fun Libro.toDTO(
     )
 }
 
-fun Reserva.toDTO(usuarioConsultaId: Int): ReservaDTO {
+fun Reserva.toDTO(bibliokarma: Int?): ReservaDTO {
     return ReservaDTO(
         id = this.libro.id,
         prestamoId = this.id,
@@ -95,11 +95,11 @@ fun Reserva.toDTO(usuarioConsultaId: Int): ReservaDTO {
         fechaDesde = fechaDesde.format(DateTimeFormatter.ISO_DATE),
         fechaHasta = fechaHasta.format(DateTimeFormatter.ISO_DATE),
         rating = this.libro.getCalificacion(),
-        bibliokarma = libro.calcularBiblioKarmaTotal(usuario, fechaDesde, fechaHasta)
+        bibliokarma = bibliokarma,
     )
 }
 
-fun Libro.toHomeDTO(usuario: Usuario?): LibroHomeDTO {
+fun Libro.toHomeDTO(bibliokarma: Int?): LibroHomeDTO {
     return LibroHomeDTO(
         id = this.id,
         imagenUrl = this.imagenUrl,
@@ -110,7 +110,7 @@ fun Libro.toHomeDTO(usuario: Usuario?): LibroHomeDTO {
         isbn = this.isbn,
         idioma = this.idioma,
         tipo = this.javaClass.simpleName.replace("Libro", ""),
-        bibliokarma = if(usuario != null) this.plusBiblioKarma(usuario) else 0,
+        bibliokarma = bibliokarma,
         estado = this.estado.name,
         duenio = this.duenio.nombre,
     )

@@ -10,6 +10,7 @@ import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.mappers.toResponse
 import ar.edu.unsam.phm.repository.EntityNotFoundException
 import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -18,7 +19,8 @@ import java.time.format.DateTimeFormatter
 @Service
 class UsuarioService(
     val usuarioRepository: UsuarioRepository,
-    val libroRepository: LibroRepository
+    val libroRepository: LibroRepository,
+    private val reservaRepository: ReservaRepository,
 ) {
     private fun getUsuarioOrThrow(id: Int): Usuario {
         return try {
@@ -85,9 +87,7 @@ class UsuarioService(
         return libroRepository.getLibros()
             .filter { it.duenio.id == usuarioId }
             .map { libro ->
-                val disponible = libro.duenio.reservas.none {
-                    it.libro.id == libro.id && !hoy.isBefore(it.fechaDesde) && !hoy.isAfter(it.fechaHasta)
-                }
+                val disponible = !reservaRepository.existeSuperposicion(libro.id, hoy, hoy)
                 LibroUsuarioItemDTO(
                     id = libro.id,
                     titulo = libro.titulo,

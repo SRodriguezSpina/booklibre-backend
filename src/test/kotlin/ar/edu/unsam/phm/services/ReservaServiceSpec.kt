@@ -72,6 +72,10 @@ class ReservaServiceSpec : DescribeSpec({
         every { usuarioRepository.findById(1) } returns solicitante
         every { usuarioRepository.findById(3) } returns duenio
         every { usuarioRepository.findById(99) } returns usuarioSinReservas
+        every { reservaRepository.findByLibroId(any()) } answers {
+            val libroId = firstArg<Int>()
+            listOf(reserva).filter { it.libro.id == libroId }
+        }
 
         it("OBTENER RESERVAS DEVUELVE LOS DTOs DEL USUARIO SOLICITANTE") {
             every { reservaRepository.getReservasDeUsuario(1) } returns listOf(reserva)
@@ -155,6 +159,10 @@ class ReservaServiceSpec : DescribeSpec({
             ).apply { id = 501 }
 
             every { reservaRepository.getReservasDeUsuario(1) } returns listOf(reserva, reserva2)
+            every { reservaRepository.findByLibroId(any()) } answers {
+                val libroId = firstArg<Int>()
+                listOf(reserva, reserva2).filter { it.libro.id == libroId }
+            }
 
             val resultado = reservaService.obtenerReservas(1)
 

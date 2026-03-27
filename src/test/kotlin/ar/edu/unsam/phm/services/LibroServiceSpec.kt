@@ -8,6 +8,7 @@ import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.repository.EntityNotFoundException
 import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.IsolationMode
@@ -42,8 +43,11 @@ class LibroServiceSpec : DescribeSpec({
         return libroRepo to usuarioRepo
     }
 
-    fun buildService(libroRepo: LibroRepository, usuarioRepo: UsuarioRepository) =
-        LibroService(libroRepo, usuarioRepo)
+    fun buildService(
+        libroRepo: LibroRepository,
+        usuarioRepo: UsuarioRepository,
+        reservaRepo: ReservaRepository = ReservaRepository(),
+    ) = LibroService(libroRepo, usuarioRepo, reservaRepo)
 
     fun libroDTOBase(
         tipo: String = "Comun",
@@ -616,7 +620,8 @@ class LibroServiceSpec : DescribeSpec({
 
         it("lanza ConflictException si el libro tiene una reserva activa") {
             val (libroRepo, usuarioRepo) = buildRepos()
-            val service = buildService(libroRepo, usuarioRepo)
+            val reservaRepo = ReservaRepository()
+            val service = buildService(libroRepo, usuarioRepo, reservaRepo)
             val libroCreado = service.crearLibro(libroDTOBase(), duenio.id)
 
             // Forzamos una reserva activa en el dueño simulando la lógica real
@@ -627,7 +632,7 @@ class LibroServiceSpec : DescribeSpec({
                 fechaDesde = LocalDate.now().minusDays(1),
                 fechaHasta = LocalDate.now().plusDays(5)
             )
-            duenio.agregarReserva(reserva)
+            reservaRepo.create(reserva)
 
             shouldThrow<ConflictException> {
                 service.eliminarLibro(libroCreado.id, duenio.id)

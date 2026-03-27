@@ -25,7 +25,16 @@ class ReservaService(
         usuarioRepository.findById(usuarioId)
             ?: throw NotFoundException("Usuario $usuarioId no encontrado")
         val reservas = reservaRepository.getReservasDeUsuario(usuarioId)
-        return reservas.map { it.toDTO(usuarioId) }
+        return reservas.map {
+            val cantidadReservasDelLibro = reservaRepository.findByLibroId(it.libro.id).size
+            val bibliokarma = it.libro.calcularBiblioKarmaTotal(
+                usuario = it.usuario,
+                desde = it.fechaDesde,
+                hasta = it.fechaHasta,
+                cantidadReservasDelLibro = cantidadReservasDelLibro,
+            )
+            it.toDTO(bibliokarma)
+        }
     }
     fun crearReserva(dto: CrearReservaDTO): Reserva {
         val lock = locks.computeIfAbsent(dto.libroId) { Any() }
