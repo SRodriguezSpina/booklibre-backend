@@ -54,10 +54,15 @@ abstract class Libro(data: LibroData): BaseEntity() {
     var imagenUrl = data.imagenUrl
     var calificaciones: MutableList<Calificacion> = mutableListOf()
 
-    fun calcularBiblioKarmaTotal(usuario: Usuario, desde: LocalDate, hasta: LocalDate): Int {
+    fun calcularBiblioKarmaTotal(
+        usuario: Usuario,
+        desde: LocalDate,
+        hasta: LocalDate,
+        cantidadReservasDelLibro: Int = 0,
+    ): Int {
         if (!hasta.isAfter(desde)) throw BusinessException("La fecha de hasta debe ser posterior a la fecha de desde")
         val diasReserva = ChronoUnit.DAYS.between(desde, hasta).toInt() + 1
-        return (5 * diasReserva) + plusBiblioKarma(usuario)
+        return (5 * diasReserva) + plusBiblioKarma(usuario, cantidadReservasDelLibro)
     }
     fun agregarCalificacion(nueva: Calificacion) {
         if (nueva.valor !in 1..5) throw BusinessException("La calificación debe estar entre 1 y 5")
@@ -71,23 +76,22 @@ abstract class Libro(data: LibroData): BaseEntity() {
         val promedio = calificaciones.map { it.valor }.average()
         return (promedio * 10.0).roundToInt() / 10.0
     }
-    abstract fun plusBiblioKarma(usuario: Usuario): Int
+    abstract fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int = 0): Int
 }
 class LibroComun(data: LibroData) : Libro(data) {
-    override fun plusBiblioKarma(usuario: Usuario): Int {
+    override fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int): Int {
         if (cantidadPaginas <= 0) throw BusinessException("La cantidad de páginas debe ser mayor a 0")
         val multiplicador = if (usuario.bibliokarmas < 1000) 5 else 2
         return cantidadPaginas * multiplicador
     }
 }
 class LibroConDedicatoria(data: LibroData) : Libro(data) {
-    override fun plusBiblioKarma(usuario: Usuario): Int {
-        val cantidadReservasDelLibro = duenio.reservas.count { it.libro.id == this.id }
+    override fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int): Int {
         return 200 + (10 * cantidadReservasDelLibro)
     }
 }
 class LibroColeccionable(data: LibroData) : Libro(data) {
-    override fun plusBiblioKarma(usuario: Usuario): Int {
+    override fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int): Int {
         if (usuario.bibliokarmas < 0) throw BusinessException("El usuario no puede tener bibliokarmas negativos")
         if (cantidadPaginas <= 0) throw BusinessException("La cantidad de páginas debe ser mayor a 0")
         val karmaParte = ceil(usuario.bibliokarmas / 5.0).toInt()
