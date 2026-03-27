@@ -93,7 +93,17 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
         } catch (_: EntityNotFoundException) {
             throw NotFoundException("Libro $id no encontrado")
         }
-        return libro.toDTO(nombreUsuarioResenia(libro.calificaciones))
+
+        val reservasDelLibro = usuarioRepository.findReservasByLibroId(id)
+        val hoy = LocalDate.now()
+        val reservasActivas = reservasDelLibro.filter { it.sePisaCon(hoy, hoy) }
+        val nombresUsuarios = usuarioRepository.resolverNombresCalificaciones(libro.calificaciones)
+
+        return libro.toDTO(
+            reservasActivas = reservasActivas,
+            todosLosRangos = reservasDelLibro,
+            nombresUsuarios = nombresUsuarios,
+        )
     }
     private fun nombreUsuarioResenia(calificaciones: List<Calificacion>): Map<Int, String> {
         return calificaciones

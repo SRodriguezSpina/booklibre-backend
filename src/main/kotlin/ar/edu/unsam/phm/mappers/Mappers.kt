@@ -31,22 +31,21 @@ fun Usuario.toResponse(): UsuarioResponse {
     )
 }
 
-fun Libro.toDTO(nombresUsuarios: Map<Int, String> = emptyMap()): LibroDTO {
+fun Libro.toDTO(
+    reservasActivas: List<Reserva> = emptyList(),
+    todosLosRangos: List<Reserva> = emptyList(),
+    nombresUsuarios: Map<Int, String> = emptyMap(),
+): LibroDTO {
     val hoy = LocalDate.now()
-
-    val reservaPrincipal = this.duenio.reservas.find {
-        it.libro.id == this.id && it.sePisaCon(hoy, hoy)
-    }
-
-    val todosLosRangos = this.duenio.reservas
-        .filter { it.libro.id == this.id && !it.fechaHasta.isBefore(hoy) }
+    val reservaPrincipal = reservasActivas.firstOrNull()
+    val rangosDTO = todosLosRangos
+        .filter { !it.fechaHasta.isBefore(hoy) }
         .map {
             RangoReservaDTO(
                 fechaDesde = it.fechaDesde.format(DateTimeFormatter.ISO_DATE),
                 fechaHasta = it.fechaHasta.format(DateTimeFormatter.ISO_DATE)
             )
         }
-
     return LibroDTO(
         id = this.id,
         titulo = this.titulo,
@@ -64,11 +63,11 @@ fun Libro.toDTO(nombresUsuarios: Map<Int, String> = emptyMap()): LibroDTO {
         propietarioId = this.duenio.id,
         imagenUrl = this.imagenUrl,
         rating = this.getCalificacion(),
-        cantidadReservas = this.duenio.reservas.count { it.libro.id == this.id },
+        cantidadReservas = todosLosRangos.size,
         estoyReservado = reservaPrincipal != null,
         alquiladoPorId = reservaPrincipal?.usuario?.id,
         bibliokarma = null,
-        reservas = todosLosRangos,
+        reservas = rangosDTO,
         cantidadCalificaciones = this.calificaciones.size,
         ultimasCalificaciones = this.calificaciones
             .takeLast(2)
