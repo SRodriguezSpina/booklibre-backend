@@ -95,12 +95,9 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
         }
 
         val reservasDelLibro = usuarioRepository.findReservasByLibroId(id)
-        val hoy = LocalDate.now()
-        val reservasActivas = reservasDelLibro.filter { it.sePisaCon(hoy, hoy) }
         val nombresUsuarios = usuarioRepository.resolverNombresCalificaciones(libro.calificaciones)
 
         return libro.toDTO(
-            reservasActivas = reservasActivas,
             todosLosRangos = reservasDelLibro,
             nombresUsuarios = nombresUsuarios,
         )

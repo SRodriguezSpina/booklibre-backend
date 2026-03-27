@@ -32,11 +32,11 @@ fun Usuario.toResponse(): UsuarioResponse {
 }
 
 fun Libro.toDTO(
-    reservasActivas: List<Reserva> = emptyList(),
     todosLosRangos: List<Reserva> = emptyList(),
     nombresUsuarios: Map<Int, String> = emptyMap(),
 ): LibroDTO {
     val hoy = LocalDate.now()
+    val reservasActivas = todosLosRangos.filter { it.sePisaCon(hoy, hoy) }
     val reservaPrincipal = reservasActivas.firstOrNull()
     val rangosDTO = todosLosRangos
         .filter { !it.fechaHasta.isBefore(hoy) }
