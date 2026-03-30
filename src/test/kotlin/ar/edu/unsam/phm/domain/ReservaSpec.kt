@@ -2,9 +2,7 @@ package ar.edu.unsam.phm.domain
 
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
-import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 
 class ReservaSpec : DescribeSpec({
@@ -42,11 +40,9 @@ class ReservaSpec : DescribeSpec({
             reserva.sePisaCon(LocalDate.of(2026, 3, 21), LocalDate.of(2026, 3, 30)) shouldBe false
         }
 
-        it("confirmar AGREGA LA RESERVA A LAS LISTAS Y ASIGNA KARMA") {
+        it("confirmar ASIGNA EL KARMA AL USUARIO SOLICITANTE") {
             reserva.confirmar()
 
-            solicitante.todasLasReservas() shouldContain reserva
-            duenio.todasLasReservas() shouldContain reserva
             solicitante.bibliokarmas shouldBe 1555
         }
         it("sePisaCon DEVUELVE TRUE CUANDO LAS FECHAS SE TOCAN EXACTAMENTE EN EL BORDE INFERIOR") {
@@ -72,7 +68,7 @@ class ReservaSpec : DescribeSpec({
             ) shouldBe false
         }
 
-        it("confirmar NO AGREGA LA RESERVA AL DUENIO SI ES EL MISMO USUARIO") {
+        it("confirmar FUNCIONA CUANDO EL DUENIO ES EL MISMO USUARIO") {
             val reservaPropia = Reserva(
                 libro = libro, usuario = duenio,
                 fechaDesde = LocalDate.of(2026, 3, 10),
@@ -81,15 +77,7 @@ class ReservaSpec : DescribeSpec({
 
             reservaPropia.confirmar()
 
-            // Aparece una sola vez (como solicitante = dueño)
-            duenio.todasLasReservas().count { it.id == 200 } shouldBe 1
-        }
-
-        it("agregarReserva LANZA BusinessException SI SE INTENTA AGREGAR LA MISMA RESERVA DOS VECES") {
-            solicitante.agregarReserva(reserva)
-            assertThrows<ar.edu.unsam.phm.exceptions.BusinessException> {
-                solicitante.agregarReserva(reserva)
-            }
+            duenio.bibliokarmas shouldBe 1555
         }
     }
 })

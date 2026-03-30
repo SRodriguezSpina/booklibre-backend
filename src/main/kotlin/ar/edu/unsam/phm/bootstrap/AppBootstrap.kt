@@ -280,8 +280,6 @@ class AppBootstrap(
 
         fun reservar(libro: Libro, solicitante: Usuario, desde: LocalDate, hasta: LocalDate) {
             val reserva = Reserva(libro, solicitante, desde, hasta).apply { id = reservaId++ }
-            solicitante.agregarReserva(reserva)
-            if (libro.duenio.id != solicitante.id) libro.duenio.agregarReserva(reserva)
             reservaRepository.create(reserva)
         }
 
