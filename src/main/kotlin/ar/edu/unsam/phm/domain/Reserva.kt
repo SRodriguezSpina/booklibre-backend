@@ -13,15 +13,8 @@ class Reserva (
     }
     fun confirmar() {
         asignarKarma()
-        agregarReservas()
     }
     private fun asignarKarma() {
         usuario.bibliokarmas += libro.calcularBiblioKarmaTotal(usuario, fechaDesde, fechaHasta)
-    }
-    private fun agregarReservas() {
-        usuario.agregarReserva(this)
-        if (libro.duenio.id != usuario.id) {
-            libro.duenio.agregarReserva(this)
-        }
     }
 }
