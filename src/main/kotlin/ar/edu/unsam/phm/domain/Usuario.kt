@@ -17,7 +17,6 @@ class Usuario(
     var bibliokarmas: Int = 0,
     var imagenUrl: String? = null,
     var fechaRegistro: LocalDate = LocalDate.now(),
-    val reservas: MutableList<Reserva> = mutableListOf(),
 ) : BaseEntity() {
     companion object {
         private val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")
@@ -40,13 +39,8 @@ class Usuario(
         }
     }
 
-    fun todasLasReservas(): List<Reserva> = reservas
     fun getCredencial(): Credencial = credencial
 
-    fun agregarReserva(reserva: Reserva) {
-        if (reservas.any { it.id == reserva.id }) throw BusinessException("La reserva ya existe para este usuario")
-        reservas.add(reserva)
-    }
     fun validarPassword(password: String) = password == credencial.password
 }
 

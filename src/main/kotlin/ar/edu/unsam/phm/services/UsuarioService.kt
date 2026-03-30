@@ -53,7 +53,6 @@ class UsuarioService(
             bibliokarmas = existente.bibliokarmas,
             imagenUrl = request.imagenUrl ?: existente.imagenUrl,
             fechaRegistro = existente.fechaRegistro,
-            reservas = existente.reservas.toMutableList(),
         )
         actualizado.id = existente.id
         usuarioRepository.update(actualizado)

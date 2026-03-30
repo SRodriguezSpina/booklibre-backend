@@ -104,9 +104,7 @@ class LibroSpec : DescribeSpec({
             }
 
             it("PLUS BIBLIOKARMA AUMENTA SEGUN RESERVAS DEL DUENIO") {
-                val reservaFake = Reserva(libro, duenio, desde, hasta)
-                duenio.agregarReserva(reservaFake)
-                libro.plusBiblioKarma(usuarioPobre) shouldBe 210
+                libro.plusBiblioKarma(usuarioPobre, cantidadReservasDelLibro = 1) shouldBe 210
             }
 
             it("CALCULA BIBLIOKARMA TOTAL CON DUENIO SIN RESERVAS") {
