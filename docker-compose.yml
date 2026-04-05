@@ -1,5 +1,25 @@
 services:
 
+  db:
+    image: postgres:16
+    container_name: booklibre-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: booklibre
+      POSTGRES_USER: booklibre
+      POSTGRES_PASSWORD: booklibre
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - booklibre-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U booklibre -d booklibre" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: .
@@ -12,8 +32,11 @@ services:
       - "8080:8080"
     networks:
       - booklibre-net
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/libros/home?usuarioId=1 || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8080/api/libros/home?usuarioId=1 || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -41,3 +64,6 @@ services:
 networks:
   booklibre-net:
     driver: bridge
+
+volumes:
+  pgdata:
