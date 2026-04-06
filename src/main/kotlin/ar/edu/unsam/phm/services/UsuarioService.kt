@@ -80,23 +80,17 @@ class UsuarioService(
             throw ConflictException("El celular ya esta en uso")
         }
     }
-
-    fun obtenerLibrosDeUsuario(usuarioId: Int): List<LibroUsuarioItemDTO> {
+    fun actualizarDisponibilidadDeLibros(libros: List<Libro>) {
         val hoy = LocalDate.now()
-        return libroRepository.getLibros()
-            .filter { it.duenio.id == usuarioId }
-            .map { libro ->
-                val disponible = !reservaRepository.existeSuperposicion(libro.id, hoy, hoy)
-                LibroUsuarioItemDTO(
-                    id = libro.id,
-                    titulo = libro.titulo,
-                    autor = libro.autor,
-                    genero = libro.genero.name,
-                    disponible = disponible,
-                    fechaAgregado = libro.fechaAgregado.format(DateTimeFormatter.ISO_DATE),
-                    imagenUrl = libro.imagenUrl
-                )
-            }
-            .sortedByDescending { it.id }
+        libros.forEach { libro ->
+            val disponible = !reservaRepository.existeSuperposicion(libro.id, hoy, hoy)
+            libro.actualizoDisponibilidad(disponible)
+        }
+    }
+
+    fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> {
+        val libros = libroRepository.getLibrosDeUsuario(usuarioId)
+        actualizarDisponibilidadDeLibros(libros)
+        return libros
     }
 }

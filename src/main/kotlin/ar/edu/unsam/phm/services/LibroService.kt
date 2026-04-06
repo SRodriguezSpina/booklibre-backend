@@ -1,5 +1,6 @@
 package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.domain.Calificacion
+import ar.edu.unsam.phm.domain.Disponibilidad
 import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.LibroColeccionable
 import ar.edu.unsam.phm.domain.LibroComun
@@ -151,6 +152,7 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
             estado = EstadoLibro.valueOf(dto.estado),
             imagenUrl = dto.imagenUrl,
             fechaAgregado = LocalDate.now(),
+            disponibilidad = Disponibilidad.DISPONIBLE
         )
 
         val libro = when (dto.tipo) {

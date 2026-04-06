@@ -1,8 +1,10 @@
 package ar.edu.unsam.phm.controllers
 
+import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
+import ar.edu.unsam.phm.mappers.toLibroUsuarioItemDTO
 import ar.edu.unsam.phm.services.UsuarioService
 import org.springframework.web.bind.annotation.*
 
@@ -21,5 +23,5 @@ class UsuarioController(val usuarioService: UsuarioService) {
 
     @GetMapping("/{id}/libros")
     fun getLibrosDeUsuario(@PathVariable id: Int): List<LibroUsuarioItemDTO> =
-        usuarioService.obtenerLibrosDeUsuario(id)
+        usuarioService.obtenerLibrosDeUsuario(id).map { libro -> libro.toLibroUsuarioItemDTO() }
 }
