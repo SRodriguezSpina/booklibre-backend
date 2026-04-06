@@ -21,6 +21,7 @@ data class LibroData(
     val estado: EstadoLibro,
     val imagenUrl: String,
     val fechaAgregado: LocalDate = LocalDate.now(),
+    val disponibilidad: Disponibilidad
 )
 
 abstract class Libro(data: LibroData): BaseEntity() {
@@ -53,6 +54,7 @@ abstract class Libro(data: LibroData): BaseEntity() {
     var estado = data.estado
     var imagenUrl = data.imagenUrl
     var calificaciones: MutableList<Calificacion> = mutableListOf()
+    var disponibilidad: Disponibilidad = data.disponibilidad
 
     fun calcularBiblioKarmaTotal(
         usuario: Usuario,
@@ -76,6 +78,9 @@ abstract class Libro(data: LibroData): BaseEntity() {
         val promedio = calificaciones.map { it.valor }.average()
         return (promedio * 10.0).roundToInt() / 10.0
     }
+    fun estaDisponible() = disponibilidad == Disponibilidad.DISPONIBLE
+    fun actualizoDisponibilidad(estado: Boolean) = if (estado) disponibilidad = Disponibilidad.DISPONIBLE else disponibilidad = Disponibilidad.RESERVADO
+
     abstract fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int = 0): Int
 }
 class LibroComun(data: LibroData) : Libro(data) {

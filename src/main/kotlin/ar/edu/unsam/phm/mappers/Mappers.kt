@@ -5,10 +5,13 @@ import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.RangoReservaDTO
 import ar.edu.unsam.phm.dtos.CalificacionDTO
+import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
+import ar.edu.unsam.phm.repository.ReservaRepository
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlin.collections.sortedByDescending
 
 fun Usuario.toResponse(): UsuarioResponse {
     val tipoStr = when (tipoUsuario) {
@@ -124,4 +127,16 @@ fun List<Calificacion>.toDetalleDTOs(nombrePorUsuarioId: Map<Int, String>): List
             comentario    = calificacion.comentario
         )
     }
+}
+
+fun Libro.toLibroUsuarioItemDTO(): LibroUsuarioItemDTO {
+    return LibroUsuarioItemDTO(
+        id = this.id,
+        titulo = this.titulo,
+        autor = this.autor,
+        genero = this.genero.name,
+        disponible = this.estaDisponible(),
+        fechaAgregado = this.fechaAgregado.format(DateTimeFormatter.ISO_DATE),
+        imagenUrl = this.imagenUrl
+    )
 }

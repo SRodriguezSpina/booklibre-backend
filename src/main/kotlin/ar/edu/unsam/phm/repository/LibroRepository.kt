@@ -5,6 +5,9 @@ import org.springframework.stereotype.Component
 @Component
 class LibroRepository: CommonRepository<Libro>() {
     fun getLibros(): List<Libro> = lista
+    fun getLibrosDeUsuario(idUsuario: Int): List<Libro> {
+        return lista.filter { idUsuario == it.duenio.id }
+    }
     fun search(value: String): List<Libro> {
         if (value.isBlank()) return lista
 

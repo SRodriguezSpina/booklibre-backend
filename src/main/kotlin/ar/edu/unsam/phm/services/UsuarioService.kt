@@ -81,22 +81,7 @@ class UsuarioService(
         }
     }
 
-    fun obtenerLibrosDeUsuario(usuarioId: Int): List<LibroUsuarioItemDTO> {
-        val hoy = LocalDate.now()
-        return libroRepository.getLibros()
-            .filter { it.duenio.id == usuarioId }
-            .map { libro ->
-                val disponible = !reservaRepository.existeSuperposicion(libro.id, hoy, hoy)
-                LibroUsuarioItemDTO(
-                    id = libro.id,
-                    titulo = libro.titulo,
-                    autor = libro.autor,
-                    genero = libro.genero.name,
-                    disponible = disponible,
-                    fechaAgregado = libro.fechaAgregado.format(DateTimeFormatter.ISO_DATE),
-                    imagenUrl = libro.imagenUrl
-                )
-            }
-            .sortedByDescending { it.id }
+    fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> {
+        return libroRepository.getLibrosDeUsuario(usuarioId)
     }
 }

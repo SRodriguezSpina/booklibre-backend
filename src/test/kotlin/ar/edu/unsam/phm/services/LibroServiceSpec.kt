@@ -436,7 +436,7 @@ class LibroServiceSpec : DescribeSpec({
                 editorial = "",
                 fechaPublicacion = LocalDate.of(2020, 1, 1),
                 estado = EstadoLibro.EXCELENTE,
-                imagenUrl = "",
+                imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
             )
         )
         describe("Validaciones de entrada"){

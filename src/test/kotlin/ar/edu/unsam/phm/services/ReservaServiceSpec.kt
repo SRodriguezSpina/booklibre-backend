@@ -2,6 +2,7 @@ package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.domain.Calificacion
 import ar.edu.unsam.phm.domain.Credencial
+import ar.edu.unsam.phm.domain.Disponibilidad
 import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
@@ -52,7 +53,7 @@ class ReservaServiceSpec : DescribeSpec({
                 descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
                 cantidadPaginas = 300, isbn = "9780000000001", idioma = Idioma.ESPANOL,
                 editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
-                estado = EstadoLibro.EXCELENTE, imagenUrl = "",
+                estado = EstadoLibro.EXCELENTE, imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
             )
         ).apply { id = 10 }
 
@@ -147,7 +148,7 @@ class ReservaServiceSpec : DescribeSpec({
                     descripcion = "Sci-fi", genero = Genero.CIENCIA_FICCION,
                     cantidadPaginas = 500, isbn = "9780000000002", idioma = Idioma.ESPANOL,
                     editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
-                    estado = EstadoLibro.MUY_BUENO, imagenUrl = "",
+                    estado = EstadoLibro.MUY_BUENO, imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
                 )
             ).apply { id = 11 }
 
