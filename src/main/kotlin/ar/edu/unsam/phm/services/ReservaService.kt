@@ -52,10 +52,10 @@ class ReservaService(
                 Reserva(libro, solicitante, dto.fechaDesde, dto.fechaHasta)
             )
             reserva.confirmar()
+            libro.actualizoDisponibilidad(false)
             usuarioRepository.update(solicitante)
             if (libro.duenio.id != solicitante.id) usuarioRepository.update(libro.duenio)
             return reserva
         }
     }
-
 }

@@ -305,6 +305,7 @@ class AppBootstrap(
         fun reservar(libro: Libro, solicitante: Usuario, desde: LocalDate, hasta: LocalDate) {
             val reserva = Reserva(libro, solicitante, desde, hasta).apply { id = reservaId++ }
             reservaRepository.create(reserva)
+            libro.actualizoDisponibilidad(false)
         }
 
         // Juan reserva libros de ana y emilia

@@ -80,17 +80,8 @@ class UsuarioService(
             throw ConflictException("El celular ya esta en uso")
         }
     }
-    fun actualizarDisponibilidadDeLibros(libros: List<Libro>) {
-        val hoy = LocalDate.now()
-        libros.forEach { libro ->
-            val disponible = !reservaRepository.existeSuperposicion(libro.id, hoy, hoy)
-            libro.actualizoDisponibilidad(disponible)
-        }
-    }
 
     fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> {
-        val libros = libroRepository.getLibrosDeUsuario(usuarioId)
-        actualizarDisponibilidadDeLibros(libros)
-        return libros
+        return libroRepository.getLibrosDeUsuario(usuarioId)
     }
 }
