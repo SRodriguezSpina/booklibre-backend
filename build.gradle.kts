@@ -28,6 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-hateoas")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
+    compileOnly("org.springframework.data:spring-data-jpa")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
