@@ -3,3 +3,7 @@ server:
     whitelabel:
       enabled: false
     include-message: always
+
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
