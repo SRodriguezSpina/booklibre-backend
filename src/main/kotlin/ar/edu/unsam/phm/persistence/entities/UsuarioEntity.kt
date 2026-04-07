@@ -20,7 +20,7 @@ import java.time.LocalDate
 class UsuarioEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    var id: Int? = null,
 
     @Column(nullable = false)
     var email: String,

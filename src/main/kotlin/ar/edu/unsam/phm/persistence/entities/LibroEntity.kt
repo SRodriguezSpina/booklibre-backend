@@ -16,7 +16,13 @@ import java.time.LocalDate
 class LibroEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    var id: Int? = null,
+
+    @Column(nullable = false)
+    var tipo: String,
+
+    @Column(nullable = false, length = 2000)
+    var descripcion: String,
 
     @Column(nullable = false)
     var titulo: String,
@@ -31,6 +37,12 @@ class LibroEntity(
     var estado: String,
 
     @Column(nullable = false)
+    var disponibilidad: String,
+
+    @Column(nullable = false)
+    var cantidadPaginas: Int,
+
+    @Column(nullable = false)
     var isbn: String,
 
     @Column(nullable = false)
@@ -40,7 +52,7 @@ class LibroEntity(
     var editorial: String,
 
     @Column(nullable = false)
-    var fechaPublicacion: String,
+    var fechaPublicacion: LocalDate,
 
     @Column(nullable = false)
     var fechaAgregado: LocalDate = LocalDate.now(),
