@@ -47,7 +47,7 @@ class LibroServiceSpec : DescribeSpec({
         libroRepo: LibroRepository,
         usuarioRepo: UsuarioRepository,
         reservaRepo: ReservaRepository = ReservaRepository(),
-    ) = LibroService(libroRepo, usuarioRepo, reservaRepo)
+    ) = LibroServiceInMemory(libroRepo, usuarioRepo, reservaRepo)
 
     fun libroDTOBase(
         tipo: String = "Comun",

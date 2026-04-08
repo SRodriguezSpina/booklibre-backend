@@ -9,13 +9,14 @@ import ar.edu.unsam.phm.mappers.toResponse
 import ar.edu.unsam.phm.persistence.entities.UsuarioEntity
 import ar.edu.unsam.phm.persistence.mappers.toDomain
 import ar.edu.unsam.phm.persistence.repositories.UsuarioJpaRepository
+import ar.edu.unsam.phm.services.AuthService
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
 @Profile("jpa")
-class AuthServiceJpa(private val usuarioJpaRepository: UsuarioJpaRepository) {
-    fun login(request: LoginRequest): AuthResponseUsuario {
+class AuthServiceJpa(private val usuarioJpaRepository: UsuarioJpaRepository) : AuthService {
+    override fun login(request: LoginRequest): AuthResponseUsuario {
         val usuario = usuarioJpaRepository.findByEmail(request.email)
             ?: throw UnauthorizedException("Usuario o contraseña incorrectos")
 
@@ -26,7 +27,7 @@ class AuthServiceJpa(private val usuarioJpaRepository: UsuarioJpaRepository) {
         return AuthResponseUsuario(true, "Login exitoso", usuario.toResponseEntity())
     }
 
-    fun register(request: RegisterRequest): AuthResponseUsuario {
+    override fun register(request: RegisterRequest): AuthResponseUsuario {
         if (usuarioJpaRepository.existsByEmail(request.email)) {
             throw ConflictException("El email ya está registrado")
         }

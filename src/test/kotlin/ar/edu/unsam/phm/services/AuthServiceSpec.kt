@@ -25,7 +25,7 @@ class AuthServiceSpec : DescribeSpec({
         password: String = "123"
     ) = Usuario(Credencial(email, password), "Juan", "", tipoUsuario = UsuarioLector())
 
-    fun buildService(repo: UsuarioRepository) = AuthService(repo)
+    fun buildService(repo: UsuarioRepository) = AuthServiceInMemory(repo)
 
     describe("login") {
         it("retorna AuthResponse exitoso con credenciales correctas") {
