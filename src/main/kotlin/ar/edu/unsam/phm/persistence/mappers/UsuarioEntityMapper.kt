@@ -25,7 +25,6 @@ fun UsuarioEntity.toDomain(): Usuario {
         bibliokarmas = bibliokarmas,
         imagenUrl = imagenUrl,
         fechaRegistro = fechaRegistro,
-        reservas = mutableListOf(),
     )
 
     usuario.id = id ?: 0

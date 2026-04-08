@@ -60,7 +60,7 @@ class LibroEntity(
     @Column(nullable = true)
     var imagenUrl: String? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "duenio_id", nullable = false)
     var duenio: UsuarioEntity,
 )

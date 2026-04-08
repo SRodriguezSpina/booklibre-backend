@@ -35,7 +35,7 @@ fun LibroEntity.toDomain(): Libro {
     val normalizedTipo = tipo.trim().uppercase().replace(" ", "_")
     val libroDomain = when (normalizedTipo) {
         "COMUN" -> LibroComun(data)
-        "CON_DEDICATORIA", "CONDEDICATORIA", "CONDEDICATORIA".replace("_", "") -> LibroConDedicatoria(data)
+        "CON_DEDICATORIA", "CONDEDICATORIA" -> LibroConDedicatoria(data)
         "COLECCIONABLE" -> LibroColeccionable(data)
         else -> throw BusinessException("Tipo de libro inválido: $tipo")
     }

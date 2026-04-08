@@ -31,7 +31,7 @@ class UsuarioEntity(
     @Column(nullable = false)
     var nombre: String,
 
-    @Column(nullable = false)
+    @Column(name = "descripcion", nullable = false)
     var desc: String = "",
 
     @Column(nullable = false)
