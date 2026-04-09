@@ -1,4 +1,4 @@
-package ar.edu.unsam.phm.services
+package ar.edu.unsam.phm.testing.inmemory.services
 
 import ar.edu.unsam.phm.domain.Credencial
 import ar.edu.unsam.phm.domain.Libro
@@ -13,10 +13,10 @@ import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.mappers.toResponse
-import ar.edu.unsam.phm.repository.EntityNotFoundException
-import ar.edu.unsam.phm.repository.LibroRepository
-import ar.edu.unsam.phm.repository.ReservaRepository
-import ar.edu.unsam.phm.repository.UsuarioRepository
+import ar.edu.unsam.phm.testing.inmemory.repository.EntityNotFoundException
+import ar.edu.unsam.phm.testing.inmemory.repository.LibroRepository
+import ar.edu.unsam.phm.testing.inmemory.repository.ReservaRepository
+import ar.edu.unsam.phm.testing.inmemory.repository.UsuarioRepository
 
 class UsuarioServiceInMemory(
     private val usuarioRepository: UsuarioRepository,
@@ -41,6 +41,7 @@ class UsuarioServiceInMemory(
         val email = Usuario.normalizarYValidarEmail(request.email)
         val celular = Usuario.normalizarYValidarCelular(request.celular)
         validarDuplicados(id, email, celular)
+
         val tipoUsuario = parseTipoUsuario(request.tipoUsuario)
 
         val actualizado = Usuario(
