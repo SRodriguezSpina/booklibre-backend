@@ -28,7 +28,7 @@ services:
     container_name: booklibre-backend
     restart: unless-stopped
     environment:
-      - SPRING_PROFILES_ACTIVE=docker,jpa
+      - SPRING_PROFILES_ACTIVE=docker
     ports:
       - "8080:8080"
     networks:
