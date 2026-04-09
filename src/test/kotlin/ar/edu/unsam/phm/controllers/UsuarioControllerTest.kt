@@ -1,9 +1,11 @@
 package ar.edu.unsam.phm.controllers
 
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
+import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.exceptions.NotFoundException
+import ar.edu.unsam.phm.services.ReservaService
 import ar.edu.unsam.phm.services.UsuarioService
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -23,6 +25,8 @@ class UsuarioControllerTest {
     lateinit var mockMvc: MockMvc
     @MockBean
     lateinit var usuarioService: UsuarioService
+    @MockBean
+    lateinit var reservaService: ReservaService
 
     @Test
     @DisplayName("cuando existe el usuario, GET /api/usuarios/{id} devuelve 200 y el json del usuario")
@@ -151,6 +155,36 @@ class UsuarioControllerTest {
             .andExpect(MockMvcResultMatchers.status().isNotFound)
 
         Mockito.verify(usuarioService).actualizarUsuario(id, request)
+    }
+
+    @Test
+    @DisplayName("cuando se consultan las reservas anuales del perfil, GET /api/usuarios/{id}/reservas/anuales devuelve 200")
+    fun getReservasAnuales_ok() {
+        val id = 1
+        val retorno = listOf(
+            ReservaAnualUsuarioDTO(
+                reservaId = 500,
+                usuarioId = 1,
+                usuarioNombre = "Juan Pérez",
+                libroId = 9,
+                libroTitulo = "Harry Potter y la Piedra Filosofal",
+                libroAutor = "J.K. Rowling",
+                fechaDesde = java.time.LocalDate.of(2026, 3, 1),
+                fechaHasta = java.time.LocalDate.of(2026, 3, 10),
+                anioReserva = 2026,
+            )
+        )
+
+        Mockito.`when`(reservaService.obtenerReservasAnuales(id)).thenReturn(retorno)
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/usuarios/$id/reservas/anuales"))
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].usuarioId").value(1))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].libroTitulo").value("Harry Potter y la Piedra Filosofal"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].anioReserva").value(2026))
+
+        Mockito.verify(reservaService).obtenerReservasAnuales(id)
     }
 
     //@Test

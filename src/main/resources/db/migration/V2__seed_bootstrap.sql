@@ -249,3 +249,69 @@ SELECT 'Coleccionable','Moby Dick','Herman Melville',
     u.id FROM usuarios u
 WHERE u.email = 'juan@mail.com'
   AND NOT EXISTS (SELECT 1 FROM libros WHERE isbn = '9788420651873');
+
+-- ── Reservas ──────────────────────────────────────────────────────────────────
+INSERT INTO reservas (libro_id, usuario_id, fecha_desde, fecha_hasta)
+SELECT l.id, u.id, DATE '2026-03-01', DATE '2026-03-10'
+FROM libros l
+JOIN usuarios u ON u.email = 'juan@mail.com'
+WHERE l.isbn = '9788478884452'
+  AND NOT EXISTS (
+      SELECT 1 FROM reservas r
+      WHERE r.libro_id = l.id
+        AND r.usuario_id = u.id
+        AND r.fecha_desde = DATE '2026-03-01'
+        AND r.fecha_hasta = DATE '2026-03-10'
+  );
+
+INSERT INTO reservas (libro_id, usuario_id, fecha_desde, fecha_hasta)
+SELECT l.id, u.id, DATE '2026-03-17', DATE '2026-04-01'
+FROM libros l
+JOIN usuarios u ON u.email = 'juan@mail.com'
+WHERE l.isbn = '9788420633138'
+  AND NOT EXISTS (
+      SELECT 1 FROM reservas r
+      WHERE r.libro_id = l.id
+        AND r.usuario_id = u.id
+        AND r.fecha_desde = DATE '2026-03-17'
+        AND r.fecha_hasta = DATE '2026-04-01'
+  );
+
+INSERT INTO reservas (libro_id, usuario_id, fecha_desde, fecha_hasta)
+SELECT l.id, u.id, DATE '2026-03-10', DATE '2026-03-30'
+FROM libros l
+JOIN usuarios u ON u.email = 'emilia@example.com'
+WHERE l.isbn = '9780451524935'
+  AND NOT EXISTS (
+      SELECT 1 FROM reservas r
+      WHERE r.libro_id = l.id
+        AND r.usuario_id = u.id
+        AND r.fecha_desde = DATE '2026-03-10'
+        AND r.fecha_hasta = DATE '2026-03-30'
+  );
+
+INSERT INTO reservas (libro_id, usuario_id, fecha_desde, fecha_hasta)
+SELECT l.id, u.id, DATE '2026-02-10', DATE '2026-02-28'
+FROM libros l
+JOIN usuarios u ON u.email = 'carlos@example.com'
+WHERE l.isbn = '9788497592437'
+  AND NOT EXISTS (
+      SELECT 1 FROM reservas r
+      WHERE r.libro_id = l.id
+        AND r.usuario_id = u.id
+        AND r.fecha_desde = DATE '2026-02-10'
+        AND r.fecha_hasta = DATE '2026-02-28'
+  );
+
+INSERT INTO reservas (libro_id, usuario_id, fecha_desde, fecha_hasta)
+SELECT l.id, u.id, DATE '2025-12-15', DATE '2025-12-29'
+FROM libros l
+JOIN usuarios u ON u.email = 'juan@mail.com'
+WHERE l.isbn = '9788408174189'
+  AND NOT EXISTS (
+      SELECT 1 FROM reservas r
+      WHERE r.libro_id = l.id
+        AND r.usuario_id = u.id
+        AND r.fecha_desde = DATE '2025-12-15'
+        AND r.fecha_hasta = DATE '2025-12-29'
+  );

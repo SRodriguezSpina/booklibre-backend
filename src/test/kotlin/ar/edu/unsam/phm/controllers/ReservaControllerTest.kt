@@ -2,7 +2,7 @@ package ar.edu.unsam.phm.controllers
 
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.exceptions.NotFoundException
-import ar.edu.unsam.phm.services.ReservaServiceInMemory
+import ar.edu.unsam.phm.services.ReservaService
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.mockk
 import org.junit.jupiter.api.DisplayName
@@ -28,7 +28,7 @@ class ReservaControllerTest(
     @Autowired val mockMvc: MockMvc,
     @Autowired val objectMapper: ObjectMapper,
 ) {
-    @MockBean lateinit var reservaService: ReservaServiceInMemory
+    @MockBean lateinit var reservaService: ReservaService
 
     @Test
     @DisplayName("cuando se consultan las reservas de un usuario existente, devuelve 200 con la lista de DTOs")
