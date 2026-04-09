@@ -22,7 +22,7 @@ class UsuarioServiceInMemory(
     private val usuarioRepository: UsuarioRepository,
     private val libroRepository: LibroRepository,
     private val reservaRepository: ReservaRepository,
-) : UsuarioService {
+) {
 
     private fun getUsuarioOrThrow(id: Int): Usuario {
         return try {
@@ -32,10 +32,10 @@ class UsuarioServiceInMemory(
         }
     }
 
-    override fun obtenerUsuario(id: Int): UsuarioResponse =
+    fun obtenerUsuario(id: Int): UsuarioResponse =
         getUsuarioOrThrow(id).toResponse()
 
-    override fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioResponse {
+    fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioResponse {
         val existente = getUsuarioOrThrow(id)
 
         val email = Usuario.normalizarYValidarEmail(request.email)
@@ -59,7 +59,7 @@ class UsuarioServiceInMemory(
         return actualizado.toResponse()
     }
 
-    override fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> =
+    fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> =
         libroRepository.getLibrosDeUsuario(usuarioId)
 
     private fun parseTipoUsuario(value: String): TipoUsuario {

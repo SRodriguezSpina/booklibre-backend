@@ -29,8 +29,8 @@ class LibroServiceInMemory(
     private val libroRepository: LibroRepository,
     private val usuarioRepository: UsuarioRepository,
     private val reservaRepository: ReservaRepository,
-) : LibroService {
-    override fun search(
+) {
+    fun search(
         query: String,
         generos: String,
         page: Int,
@@ -109,7 +109,7 @@ class LibroServiceInMemory(
         return PagedResponse(content, page, totalPages)
     }
 
-    override fun getLibro(id: Int): LibroDTO {
+    fun getLibro(id: Int): LibroDTO {
         val libro = try {
             libroRepository.getById(id)
         } catch (_: EntityNotFoundException) {
@@ -134,7 +134,7 @@ class LibroServiceInMemory(
             }
     }
 
-    override fun getRating(libroId: Int): Double {
+    fun getRating(libroId: Int): Double {
         val libro = try {
             libroRepository.getById(libroId)
         } catch (_: EntityNotFoundException) {
@@ -143,7 +143,7 @@ class LibroServiceInMemory(
         return libro.getCalificacion()
     }
 
-    override fun getCalificaciones(libroId: Int): List<CalificacionDTO> {
+    fun getCalificaciones(libroId: Int): List<CalificacionDTO> {
         val libro = try {
             libroRepository.getById(libroId)
         } catch (_: EntityNotFoundException) {
@@ -152,7 +152,7 @@ class LibroServiceInMemory(
         return libro.calificaciones.toDetalleDTOs(nombreUsuarioResenia(libro.calificaciones))
     }
 
-    override fun crearLibro(dto: LibroDTO, usuarioId: Int): LibroDTO {
+    fun crearLibro(dto: LibroDTO, usuarioId: Int): LibroDTO {
         val duenio = usuarioRepository.findById(usuarioId)
             ?: throw NotFoundException("Usuario no encontrado")
 
@@ -183,7 +183,7 @@ class LibroServiceInMemory(
         return libro.toDTO()
     }
 
-    override fun actualizarLibro(id: Int, dto: LibroDTO, usuarioId: Int): LibroDTO {
+    fun actualizarLibro(id: Int, dto: LibroDTO, usuarioId: Int): LibroDTO {
         val libroExistente = try {
             libroRepository.getById(id)
         } catch (_: EntityNotFoundException) {
@@ -210,7 +210,7 @@ class LibroServiceInMemory(
         return libroExistente.toDTO()
     }
 
-    override fun agregarCalificacion(idLibro: Int, calificacion: Calificacion) {
+    fun agregarCalificacion(idLibro: Int, calificacion: Calificacion) {
         val libro = try {
             libroRepository.getById(idLibro)
         } catch (_: EntityNotFoundException) {
@@ -222,7 +222,7 @@ class LibroServiceInMemory(
         libroRepository.update(libro)
     }
 
-    override fun eliminarLibro(libroId: Int, usuarioId: Int) {
+    fun eliminarLibro(libroId: Int, usuarioId: Int) {
         val libro = try {
             libroRepository.getById(libroId)
         } catch (_: EntityNotFoundException) {

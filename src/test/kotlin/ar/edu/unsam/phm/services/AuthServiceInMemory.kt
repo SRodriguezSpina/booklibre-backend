@@ -10,8 +10,8 @@ import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.mappers.toResponse
 import ar.edu.unsam.phm.repository.UsuarioRepository
 
-class AuthServiceInMemory(private val usuarioRepository: UsuarioRepository) : AuthService {
-    override fun login(request: LoginRequest): AuthResponseUsuario {
+class AuthServiceInMemory(private val usuarioRepository: UsuarioRepository) {
+    fun login(request: LoginRequest): AuthResponseUsuario {
         val usuario = usuarioRepository.findByEmail(request.email)
             ?: throw UnauthorizedException("Usuario o contraseña incorrectos")
 
@@ -22,7 +22,7 @@ class AuthServiceInMemory(private val usuarioRepository: UsuarioRepository) : Au
         return AuthResponseUsuario(true, "Login exitoso", usuario.toResponse())
     }
 
-    override fun register(request: RegisterRequest): AuthResponseUsuario {
+    fun register(request: RegisterRequest): AuthResponseUsuario {
         if (usuarioRepository.lista.any { it.getCredencial().email == request.email }) {
             throw ConflictException("El email ya está registrado")
         }
