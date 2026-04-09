@@ -2,15 +2,13 @@ package ar.edu.unsam.phm.controllers
 
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.exceptions.NotFoundException
-import ar.edu.unsam.phm.services.ReservaService
+import ar.edu.unsam.phm.services.ReservaServiceInMemory
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.mockk
 import org.junit.jupiter.api.DisplayName
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.mockito.kotlin.any
-import org.mockito.Mockito.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -30,7 +28,7 @@ class ReservaControllerTest(
     @Autowired val mockMvc: MockMvc,
     @Autowired val objectMapper: ObjectMapper,
 ) {
-    @MockBean lateinit var reservaService: ReservaService
+    @MockBean lateinit var reservaService: ReservaServiceInMemory
 
     @Test
     @DisplayName("cuando se consultan las reservas de un usuario existente, devuelve 200 con la lista de DTOs")
