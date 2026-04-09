@@ -31,10 +31,10 @@ class UsuarioServiceJpa(
         usuarioJpaRepository.findById(id)
             .orElseThrow { NotFoundException("Usuario no encontrado") }
 
-    override fun obtenerUsuario(id: Int): UsuarioResponse =
-        getEntityOrThrow(id).toDomain().toResponse()
+    override fun obtenerUsuario(id: Int): Usuario =
+        getEntityOrThrow(id).toDomain()
 
-    override fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioResponse {
+    override fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): Usuario {
         val existente = getEntityOrThrow(id)
 
         val email = Usuario.normalizarYValidarEmail(request.email)
@@ -50,7 +50,7 @@ class UsuarioServiceJpa(
         if (request.imagenUrl != null) existente.imagenUrl = request.imagenUrl
 
         val guardado = usuarioJpaRepository.save(existente)
-        return guardado.toDomain().toResponse()
+        return guardado.toDomain()
     }
 
     override fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> =

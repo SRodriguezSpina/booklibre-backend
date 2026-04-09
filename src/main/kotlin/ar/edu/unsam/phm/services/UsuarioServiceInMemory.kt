@@ -36,10 +36,10 @@ class UsuarioServiceInMemory(
         }
     }
 
-    override fun obtenerUsuario(id: Int): UsuarioResponse =
-        getUsuarioOrThrow(id).toResponse()
+    override fun obtenerUsuario(id: Int): Usuario =
+        getUsuarioOrThrow(id)
 
-    override fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioResponse {
+    override fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): Usuario {
         val existente = getUsuarioOrThrow(id)
 
         val email = Usuario.normalizarYValidarEmail(request.email)
@@ -60,7 +60,7 @@ class UsuarioServiceInMemory(
         )
         actualizado.id = existente.id
         usuarioRepository.update(actualizado)
-        return actualizado.toResponse()
+        return actualizado
     }
 
     override fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> =

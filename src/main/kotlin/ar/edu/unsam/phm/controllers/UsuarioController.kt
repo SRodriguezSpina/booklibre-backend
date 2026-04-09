@@ -1,11 +1,11 @@
 package ar.edu.unsam.phm.controllers
 
-import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.mappers.toLibroUsuarioItemDTO
+import ar.edu.unsam.phm.mappers.toResponse
 import ar.edu.unsam.phm.services.ReservaService
 import ar.edu.unsam.phm.services.UsuarioService
 import org.springframework.web.bind.annotation.*
@@ -20,11 +20,11 @@ class UsuarioController(
 
     @GetMapping("/{id}")
     fun getUsuario(@PathVariable id: Int): UsuarioResponse =
-        usuarioService.obtenerUsuario(id)
+        usuarioService.obtenerUsuario(id).toResponse()
 
     @PutMapping("/{id}")
     fun actualizarUsuario(@PathVariable id: Int, @RequestBody request: UsuarioUpdateRequest): UsuarioResponse =
-        usuarioService.actualizarUsuario(id, request)
+        usuarioService.actualizarUsuario(id, request).toResponse()
 
     @GetMapping("/{id}/libros")
     fun getLibrosDeUsuario(@PathVariable id: Int): List<LibroUsuarioItemDTO> =

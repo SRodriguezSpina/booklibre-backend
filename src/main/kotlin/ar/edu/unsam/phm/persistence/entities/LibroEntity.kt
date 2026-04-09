@@ -64,4 +64,3 @@ class LibroEntity(
     @JoinColumn(name = "duenio_id", nullable = false)
     var duenio: UsuarioEntity,
 )
-

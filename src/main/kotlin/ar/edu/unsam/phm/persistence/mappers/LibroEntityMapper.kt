@@ -33,6 +33,7 @@ fun LibroEntity.toDomain(): Libro {
     )
 
     val normalizedTipo = tipo.trim().uppercase().replace(" ", "_")
+
     val libroDomain = when (normalizedTipo) {
         "COMUN" -> LibroComun(data)
         "CON_DEDICATORIA", "CONDEDICATORIA" -> LibroConDedicatoria(data)
