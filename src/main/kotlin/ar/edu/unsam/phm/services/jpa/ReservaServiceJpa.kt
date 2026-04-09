@@ -2,6 +2,7 @@ package ar.edu.unsam.phm.services.jpa
 
 import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
+import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
@@ -41,6 +42,25 @@ class ReservaServiceJpa(
                 cantidadReservasDelLibro = cantidadReservasDelLibro,
             )
             reservaDomain.toDTO(bibliokarma)
+        }
+    }
+
+    override fun obtenerReservasAnuales(usuarioId: Int): List<ReservaAnualUsuarioDTO> {
+        usuarioJpaRepository.findById(usuarioId)
+            .orElseThrow { NotFoundException("Usuario $usuarioId no encontrado") }
+
+        return reservaJpaRepository.findReservasAnualesByUsuarioId(usuarioId).map {
+            ReservaAnualUsuarioDTO(
+                reservaId = it.reservaId,
+                usuarioId = it.usuarioId,
+                usuarioNombre = it.usuarioNombre,
+                libroId = it.libroId,
+                libroTitulo = it.libroTitulo,
+                libroAutor = it.libroAutor,
+                fechaDesde = it.fechaDesde,
+                fechaHasta = it.fechaHasta,
+                anioReserva = it.anioReserva,
+            )
         }
     }
 

@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm.persistence.repositories
 
 import ar.edu.unsam.phm.persistence.entities.ReservaEntity
+import ar.edu.unsam.phm.readmodels.ReservaAnualUsuarioView
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -26,4 +27,24 @@ interface ReservaJpaRepository : JpaRepository<ReservaEntity, Int> {
         @Param("desde")   desde: LocalDate,
         @Param("hasta")   hasta: LocalDate,
     ): Boolean
+
+    @Query(
+        value = """
+            SELECT
+                reserva_id AS reservaId,
+                usuario_id AS usuarioId,
+                usuario_nombre AS usuarioNombre,
+                libro_id AS libroId,
+                libro_titulo AS libroTitulo,
+                libro_autor AS libroAutor,
+                fecha_desde AS fechaDesde,
+                fecha_hasta AS fechaHasta,
+                anio_reserva AS anioReserva
+            FROM vw_reservas_anuales_usuario
+            WHERE usuario_id = :usuarioId
+            ORDER BY fecha_desde ASC
+        """,
+        nativeQuery = true,
+    )
+    fun findReservasAnualesByUsuarioId(@Param("usuarioId") usuarioId: Int): List<ReservaAnualUsuarioView>
 }
