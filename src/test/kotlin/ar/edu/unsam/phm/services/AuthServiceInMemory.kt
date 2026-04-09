@@ -9,11 +9,7 @@ import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.mappers.toResponse
 import ar.edu.unsam.phm.repository.UsuarioRepository
-import org.springframework.context.annotation.Profile
-import org.springframework.stereotype.Service
 
-@Service
-@Profile("!jpa")
 class AuthServiceInMemory(private val usuarioRepository: UsuarioRepository) : AuthService {
     override fun login(request: LoginRequest): AuthResponseUsuario {
         val usuario = usuarioRepository.findByEmail(request.email)

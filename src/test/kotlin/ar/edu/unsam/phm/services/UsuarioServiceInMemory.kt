@@ -17,11 +17,7 @@ import ar.edu.unsam.phm.repository.EntityNotFoundException
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
-import org.springframework.context.annotation.Profile
-import org.springframework.stereotype.Service
 
-@Service
-@Profile("!jpa")
 class UsuarioServiceInMemory(
     private val usuarioRepository: UsuarioRepository,
     private val libroRepository: LibroRepository,

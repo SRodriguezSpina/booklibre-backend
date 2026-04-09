@@ -1,10 +1,8 @@
 package ar.edu.unsam.phm.repository
 
 import ar.edu.unsam.phm.domain.Reserva
-import org.springframework.stereotype.Component
 import java.time.LocalDate
 
-@Component
 class ReservaRepository : CommonRepository<Reserva>() {
     fun findByLibroId(libroId: Int): List<Reserva> {
         return lista.filter { reserva -> reserva.libro.id == libroId }
@@ -16,11 +14,11 @@ class ReservaRepository : CommonRepository<Reserva>() {
             val esSolicitante = reserva.usuario.id == usuarioId
 
             esDuenio || esSolicitante
-        } // Realiza el filtro en el repositorio
+        }
     }
 
     fun existeSuperposicion(libroId: Int, desde: LocalDate, hasta: LocalDate): Boolean {
-        val reservasQueChocan = this.search { reserva ->
+        val reservasQueChocan = search { reserva ->
             reserva.libro.id == libroId && reserva.sePisaCon(desde, hasta)
         }
         return reservasQueChocan.isNotEmpty()

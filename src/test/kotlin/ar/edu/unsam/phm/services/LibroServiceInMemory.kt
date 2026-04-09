@@ -22,13 +22,9 @@ import ar.edu.unsam.phm.repository.EntityNotFoundException
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
-import org.springframework.context.annotation.Profile
-import org.springframework.stereotype.Service
 import java.time.LocalDate
 import kotlin.math.ceil
 
-@Service
-@Profile("!jpa")
 class LibroServiceInMemory(
     private val libroRepository: LibroRepository,
     private val usuarioRepository: UsuarioRepository,
@@ -60,7 +56,6 @@ class LibroServiceInMemory(
         }
 
         val usuario = if (usuarioId != null) usuarioRepository.findById(usuarioId) else null
-
         val listaGeneros = if (generos.isBlank()) emptyList() else generos.split(",")
 
         val filtrados = libroRepository.getLibros()
@@ -70,15 +65,10 @@ class LibroServiceInMemory(
                     libro.titulo.contains(query, ignoreCase = true) ||
                     libro.autor.contains(query, ignoreCase = true)
 
-                val matchGenero = listaGeneros.isEmpty() ||
-                    listaGeneros.contains(libro.genero.name)
-
+                val matchGenero = listaGeneros.isEmpty() || listaGeneros.contains(libro.genero.name)
                 val matchPaginasMin = paginasMin == null || libro.cantidadPaginas >= paginasMin
                 val matchPaginasMax = paginasMax == null || libro.cantidadPaginas <= paginasMax
-
-                val matchIsbn = isbn.isNullOrBlank() ||
-                    libro.isbn.contains(isbn, ignoreCase = true)
-
+                val matchIsbn = isbn.isNullOrBlank() || libro.isbn.contains(isbn, ignoreCase = true)
                 val matchPrestadoPor = prestadoPor.isNullOrBlank() ||
                     libro.duenio.nombre.contains(prestadoPor, ignoreCase = true)
 

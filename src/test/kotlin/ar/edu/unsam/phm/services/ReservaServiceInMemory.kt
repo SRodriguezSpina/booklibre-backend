@@ -11,16 +11,12 @@ import ar.edu.unsam.phm.repository.EntityNotFoundException
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
-import org.springframework.context.annotation.Profile
-import org.springframework.stereotype.Service
 import java.time.LocalDate
 
-@Service
-@Profile("!jpa")
 class ReservaServiceInMemory(
     private val libroRepository: LibroRepository,
     private val usuarioRepository: UsuarioRepository,
-    private val reservaRepository: ReservaRepository
+    private val reservaRepository: ReservaRepository,
 ) : ReservaService {
     private val locks = java.util.concurrent.ConcurrentHashMap<Int, Any>()
 
@@ -76,7 +72,7 @@ class ReservaServiceInMemory(
             }
             val solicitante = usuarioRepository.getById(dto.usuarioId)
             val reserva = reservaRepository.create(
-                Reserva(libro, solicitante, dto.fechaDesde, dto.fechaHasta)
+                Reserva(libro, solicitante, dto.fechaDesde, dto.fechaHasta),
             )
             reserva.confirmar()
             libro.actualizoDisponibilidad(false)

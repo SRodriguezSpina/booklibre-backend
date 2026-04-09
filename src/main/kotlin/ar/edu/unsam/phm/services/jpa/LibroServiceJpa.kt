@@ -21,8 +21,8 @@ import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.persistence.mappers.toDomain
 import ar.edu.unsam.phm.persistence.mappers.toEntity
 import ar.edu.unsam.phm.persistence.repositories.LibroJpaRepository
+import ar.edu.unsam.phm.persistence.repositories.ReservaJpaRepository
 import ar.edu.unsam.phm.persistence.repositories.UsuarioJpaRepository
-import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.services.LibroService
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -34,7 +34,7 @@ import kotlin.math.ceil
 class LibroServiceJpa(
     private val libroJpaRepository: LibroJpaRepository,
     private val usuarioJpaRepository: UsuarioJpaRepository,
-    private val reservaRepository: ReservaRepository,
+    private val reservaJpaRepository: ReservaJpaRepository,
 ) : LibroService {
 
     override fun search(
@@ -93,7 +93,7 @@ class LibroServiceJpa(
                 val matchFechas = if (fechaDesde != null && fechaHasta != null) {
                     val desde = LocalDate.parse(fechaDesde)
                     val hasta = LocalDate.parse(fechaHasta)
-                    val reservasDelLibro = reservaRepository.findByLibroId(libro.id)
+                    val reservasDelLibro = reservaJpaRepository.findByLibroId(libro.id).map { it.toDomain() }
                     reservasDelLibro.none { reserva ->
                         reserva.fechaDesde <= hasta && reserva.fechaHasta >= desde
                     }
@@ -113,7 +113,7 @@ class LibroServiceJpa(
             }
             .map {
                 val bibliokarma = if (usuario != null) {
-                    val cantidadReservasDelLibro = reservaRepository.findByLibroId(it.id).size
+                    val cantidadReservasDelLibro = reservaJpaRepository.findByLibroId(it.id).size
                     it.plusBiblioKarma(usuario, cantidadReservasDelLibro)
                 } else {
                     0
@@ -132,7 +132,7 @@ class LibroServiceJpa(
             .orElseThrow { NotFoundException("Libro $id no encontrado") }
 
         val libro = entity.toDomainLight()
-        val reservasDelLibro = reservaRepository.findByLibroId(id)
+        val reservasDelLibro = reservaJpaRepository.findByLibroId(id).map { it.toDomain() }
         val nombresUsuarios = nombreUsuarioResenia(libro.calificaciones)
         return libro.toDTO(
             todosLosRangos = reservasDelLibro,
@@ -220,11 +220,16 @@ class LibroServiceJpa(
     }
 
     override fun agregarCalificacion(idLibro: Int, calificacion: Calificacion) {
-        libroJpaRepository.findById(idLibro)
+        val libroEntity = libroJpaRepository.findById(idLibro)
             .orElseThrow { NotFoundException("Libro $idLibro no encontrado") }
         usuarioJpaRepository.findById(calificacion.usuarioId)
             .orElseThrow { NotFoundException("Usuario ${calificacion.usuarioId} no encontrado") }
-        throw BusinessException("Las calificaciones para libros persistidos aún no están implementadas en base de datos")
+
+        val libro = libroEntity.toDomainLight()
+        libro.agregarCalificacion(calificacion)
+
+        libroEntity.calificaciones = libro.calificaciones.map { it.toEntity(libroEntity) }.toMutableList()
+        libroJpaRepository.save(libroEntity)
     }
 
     override fun eliminarLibro(libroId: Int, usuarioId: Int) {
@@ -236,7 +241,8 @@ class LibroServiceJpa(
         }
 
         val hoy = LocalDate.now()
-        val hayReservaActiva = reservaRepository.findByLibroId(libroId)
+        val hayReservaActiva = reservaJpaRepository.findByLibroId(libroId)
+            .map { it.toDomain() }
             .any { !hoy.isBefore(it.fechaDesde) && !hoy.isAfter(it.fechaHasta) }
 
         if (hayReservaActiva) {
