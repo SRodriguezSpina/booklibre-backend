@@ -30,7 +30,7 @@ class ReservaServiceSpec : DescribeSpec({
         val libroRepository = mockk<LibroRepository>()
         val reservaRepository = mockk<ReservaRepository>()
         val usuarioRepository = mockk<UsuarioRepository>()
-        val reservaService = ReservaService(libroRepository, usuarioRepository, reservaRepository)
+        val reservaService = ReservaServiceInMemory(libroRepository, usuarioRepository, reservaRepository)
 
         val duenio = Usuario(
             credencial = Credencial("ana", "pass"),
