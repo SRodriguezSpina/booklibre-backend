@@ -17,16 +17,12 @@ import ar.edu.unsam.phm.repository.EntityNotFoundException
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
-import org.springframework.context.annotation.Profile
-import org.springframework.stereotype.Service
 
-@Service
-@Profile("!jpa")
 class UsuarioServiceInMemory(
     private val usuarioRepository: UsuarioRepository,
     private val libroRepository: LibroRepository,
     private val reservaRepository: ReservaRepository,
-) : UsuarioService {
+) {
 
     private fun getUsuarioOrThrow(id: Int): Usuario {
         return try {
@@ -36,10 +32,10 @@ class UsuarioServiceInMemory(
         }
     }
 
-    override fun obtenerUsuario(id: Int): UsuarioResponse =
+    fun obtenerUsuario(id: Int): UsuarioResponse =
         getUsuarioOrThrow(id).toResponse()
 
-    override fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioResponse {
+    fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioResponse {
         val existente = getUsuarioOrThrow(id)
 
         val email = Usuario.normalizarYValidarEmail(request.email)
@@ -63,7 +59,7 @@ class UsuarioServiceInMemory(
         return actualizado.toResponse()
     }
 
-    override fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> =
+    fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> =
         libroRepository.getLibrosDeUsuario(usuarioId)
 
     private fun parseTipoUsuario(value: String): TipoUsuario {

@@ -11,20 +11,16 @@ import ar.edu.unsam.phm.repository.EntityNotFoundException
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
-import org.springframework.context.annotation.Profile
-import org.springframework.stereotype.Service
 import java.time.LocalDate
 
-@Service
-@Profile("!jpa")
 class ReservaServiceInMemory(
     private val libroRepository: LibroRepository,
     private val usuarioRepository: UsuarioRepository,
-    private val reservaRepository: ReservaRepository
-) : ReservaService {
+    private val reservaRepository: ReservaRepository,
+) {
     private val locks = java.util.concurrent.ConcurrentHashMap<Int, Any>()
 
-    override fun obtenerReservas(usuarioId: Int): List<ReservaDTO> {
+    fun obtenerReservas(usuarioId: Int): List<ReservaDTO> {
         usuarioRepository.findById(usuarioId)
             ?: throw NotFoundException("Usuario $usuarioId no encontrado")
         val reservas = reservaRepository.getReservasDeUsuario(usuarioId)
@@ -40,7 +36,7 @@ class ReservaServiceInMemory(
         }
     }
 
-    override fun obtenerReservasAnuales(usuarioId: Int): List<ReservaAnualUsuarioDTO> {
+    fun obtenerReservasAnuales(usuarioId: Int): List<ReservaAnualUsuarioDTO> {
         usuarioRepository.findById(usuarioId)
             ?: throw NotFoundException("Usuario $usuarioId no encontrado")
 
@@ -63,7 +59,7 @@ class ReservaServiceInMemory(
             }
     }
 
-    override fun crearReserva(dto: CrearReservaDTO): Reserva {
+    fun crearReserva(dto: CrearReservaDTO): Reserva {
         val lock = locks.computeIfAbsent(dto.libroId) { Any() }
         synchronized(lock) {
             if (reservaRepository.existeSuperposicion(dto.libroId, dto.fechaDesde, dto.fechaHasta)) {
@@ -76,7 +72,7 @@ class ReservaServiceInMemory(
             }
             val solicitante = usuarioRepository.getById(dto.usuarioId)
             val reserva = reservaRepository.create(
-                Reserva(libro, solicitante, dto.fechaDesde, dto.fechaHasta)
+                Reserva(libro, solicitante, dto.fechaDesde, dto.fechaHasta),
             )
             reserva.confirmar()
             libro.actualizoDisponibilidad(false)

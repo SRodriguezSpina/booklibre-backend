@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.time.LocalDate
 
@@ -63,5 +64,9 @@ class LibroEntity(
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "duenio_id", nullable = false)
     var duenio: UsuarioEntity,
+
+    @OneToMany(mappedBy = "libro", fetch = FetchType.EAGER, cascade = [jakarta.persistence.CascadeType.ALL], orphanRemoval = true)
+    @jakarta.persistence.OrderBy("id ASC")
+    var calificaciones: MutableList<CalificacionEntity> = mutableListOf(),
 )
 

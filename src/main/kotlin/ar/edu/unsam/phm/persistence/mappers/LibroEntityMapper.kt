@@ -41,6 +41,7 @@ fun LibroEntity.toDomain(): Libro {
     }
 
     libroDomain.id = id ?: 0
+    libroDomain.calificaciones = calificaciones.map { it.toDomain() }.toMutableList()
     return libroDomain
 }
 
@@ -52,7 +53,7 @@ fun Libro.toEntity(duenioEntity: ar.edu.unsam.phm.persistence.entities.UsuarioEn
         else -> "Comun"
     }
 
-    return LibroEntity(
+    val libroEntity = LibroEntity(
         id = id,
         tipo = tipoPersistido,
         descripcion = descripcion,
@@ -70,5 +71,8 @@ fun Libro.toEntity(duenioEntity: ar.edu.unsam.phm.persistence.entities.UsuarioEn
         imagenUrl = imagenUrl,
         duenio = duenioEntity,
     )
+
+    libroEntity.calificaciones = calificaciones.map { it.toEntity(libroEntity) }.toMutableList()
+    return libroEntity
 }
 
