@@ -2,6 +2,7 @@ package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
+import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
@@ -12,6 +13,7 @@ import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 
 @Service
 @Profile("!jpa")
@@ -36,6 +38,29 @@ class ReservaServiceInMemory(
             )
             it.toDTO(bibliokarma)
         }
+    }
+
+    override fun obtenerReservasAnuales(usuarioId: Int): List<ReservaAnualUsuarioDTO> {
+        usuarioRepository.findById(usuarioId)
+            ?: throw NotFoundException("Usuario $usuarioId no encontrado")
+
+        val anioActual = LocalDate.now().year
+        return reservaRepository.getReservasDeUsuario(usuarioId)
+            .filter { it.usuario.id == usuarioId && it.fechaDesde.year == anioActual }
+            .sortedBy { it.fechaDesde }
+            .map {
+                ReservaAnualUsuarioDTO(
+                    reservaId = it.id,
+                    usuarioId = it.usuario.id,
+                    usuarioNombre = it.usuario.nombre,
+                    libroId = it.libro.id,
+                    libroTitulo = it.libro.titulo,
+                    libroAutor = it.libro.autor,
+                    fechaDesde = it.fechaDesde,
+                    fechaHasta = it.fechaHasta,
+                    anioReserva = it.fechaDesde.year,
+                )
+            }
     }
 
     override fun crearReserva(dto: CrearReservaDTO): Reserva {

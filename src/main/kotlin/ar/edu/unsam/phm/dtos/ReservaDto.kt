@@ -22,3 +22,15 @@ data class ReservaDTO(
     val rating: Double,
     val bibliokarma: Int?
 )
+
+data class ReservaAnualUsuarioDTO(
+    val reservaId: Int,
+    val usuarioId: Int,
+    val usuarioNombre: String,
+    val libroId: Int,
+    val libroTitulo: String,
+    val libroAutor: String,
+    val fechaDesde: LocalDate,
+    val fechaHasta: LocalDate,
+    val anioReserva: Int,
+)
