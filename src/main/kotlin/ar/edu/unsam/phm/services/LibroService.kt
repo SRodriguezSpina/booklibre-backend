@@ -225,7 +225,7 @@ class LibroService(
         val libro = libroEntity.toDomainLight()
         libro.agregarCalificacion(calificacion)
 
-        libroEntity.calificaciones = libro.calificaciones.map { it.toEntity(libroEntity) }.toMutableList()
+        libroEntity.calificaciones.add(calificacion.toEntity(libroEntity))
         libroJpaRepository.save(libroEntity)
     }
 
