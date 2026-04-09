@@ -10,9 +10,10 @@ import ar.edu.unsam.phm.domain.LibroComun
 import ar.edu.unsam.phm.domain.LibroData
 import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.domain.Usuario
-import ar.edu.unsam.phm.repository.LibroRepository
-import ar.edu.unsam.phm.repository.ReservaRepository
-import ar.edu.unsam.phm.repository.UsuarioRepository
+import ar.edu.unsam.phm.testing.inmemory.repository.LibroRepository
+import ar.edu.unsam.phm.testing.inmemory.repository.ReservaRepository
+import ar.edu.unsam.phm.testing.inmemory.repository.UsuarioRepository
+import ar.edu.unsam.phm.testing.inmemory.services.ReservaServiceInMemory
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeEmpty

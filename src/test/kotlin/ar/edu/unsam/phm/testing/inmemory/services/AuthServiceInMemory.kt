@@ -1,4 +1,4 @@
-package ar.edu.unsam.phm.services
+package ar.edu.unsam.phm.testing.inmemory.services
 
 import ar.edu.unsam.phm.domain.Credencial
 import ar.edu.unsam.phm.domain.Usuario
@@ -8,7 +8,7 @@ import ar.edu.unsam.phm.dtos.RegisterRequest
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.mappers.toResponse
-import ar.edu.unsam.phm.repository.UsuarioRepository
+import ar.edu.unsam.phm.testing.inmemory.repository.UsuarioRepository
 
 class AuthServiceInMemory(private val usuarioRepository: UsuarioRepository) {
     fun login(request: LoginRequest): AuthResponseUsuario {

@@ -1,4 +1,4 @@
-package ar.edu.unsam.phm.repository
+package ar.edu.unsam.phm.testing.inmemory.repository
 
 import ar.edu.unsam.phm.domain.BaseEntity
 
