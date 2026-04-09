@@ -7,7 +7,8 @@ import ar.edu.unsam.phm.dtos.LoginRequest
 import ar.edu.unsam.phm.dtos.RegisterRequest
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
-import ar.edu.unsam.phm.repository.UsuarioRepository
+import ar.edu.unsam.phm.testing.inmemory.repository.UsuarioRepository
+import ar.edu.unsam.phm.testing.inmemory.services.AuthServiceInMemory
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe

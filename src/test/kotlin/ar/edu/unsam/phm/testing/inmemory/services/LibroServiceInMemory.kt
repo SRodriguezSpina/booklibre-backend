@@ -1,4 +1,4 @@
-package ar.edu.unsam.phm.services
+package ar.edu.unsam.phm.testing.inmemory.services
 
 import ar.edu.unsam.phm.domain.Calificacion
 import ar.edu.unsam.phm.domain.Disponibilidad
@@ -18,10 +18,10 @@ import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.mappers.toDetalleDTOs
 import ar.edu.unsam.phm.mappers.toHomeDTO
-import ar.edu.unsam.phm.repository.EntityNotFoundException
-import ar.edu.unsam.phm.repository.LibroRepository
-import ar.edu.unsam.phm.repository.ReservaRepository
-import ar.edu.unsam.phm.repository.UsuarioRepository
+import ar.edu.unsam.phm.testing.inmemory.repository.EntityNotFoundException
+import ar.edu.unsam.phm.testing.inmemory.repository.LibroRepository
+import ar.edu.unsam.phm.testing.inmemory.repository.ReservaRepository
+import ar.edu.unsam.phm.testing.inmemory.repository.UsuarioRepository
 import java.time.LocalDate
 import kotlin.math.ceil
 
