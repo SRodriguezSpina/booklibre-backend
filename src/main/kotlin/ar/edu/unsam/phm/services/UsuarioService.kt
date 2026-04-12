@@ -1,71 +1,87 @@
 package ar.edu.unsam.phm.services
 
-import ar.edu.unsam.phm.domain.Libro
-import ar.edu.unsam.phm.domain.Usuario
+import ar.edu.unsam.phm.domain.*
+import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.mappers.toResponse
-import ar.edu.unsam.phm.persistence.mappers.toDomain
-import ar.edu.unsam.phm.persistence.repositories.LibroJpaRepository
-import ar.edu.unsam.phm.persistence.repositories.UsuarioJpaRepository
+import ar.edu.unsam.phm.repository.EntityNotFoundException
+import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.ReservaRepository
+import ar.edu.unsam.phm.repository.UsuarioRepository
 import org.springframework.stereotype.Service
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Service
 class UsuarioService(
-    private val usuarioJpaRepository: UsuarioJpaRepository,
-    private val libroJpaRepository: LibroJpaRepository,
+    val usuarioRepository: UsuarioRepository,
+    val libroRepository: LibroRepository,
+    private val reservaRepository: ReservaRepository,
 ) {
+    private fun getUsuarioOrThrow(id: Int): Usuario {
+        return try {
+            usuarioRepository.getById(id)
+        } catch (_: EntityNotFoundException) {
+            throw NotFoundException("Usuario no encontrado")
+        }
+    }
 
-    private fun getEntityOrThrow(id: Int) =
-        usuarioJpaRepository.findById(id)
-            .orElseThrow { NotFoundException("Usuario no encontrado") }
+    fun obtenerUsuario(id: Int): UsuarioResponse {
+        val usuario = getUsuarioOrThrow(id)
+        return usuario.toResponse()
+    }
 
-    fun obtenerUsuario(id: Int): Usuario =
-        getEntityOrThrow(id).toDomain()
-
-    fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): Usuario {
-        val existente = getEntityOrThrow(id)
+    fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioResponse {
+        val existente = getUsuarioOrThrow(id)
 
         val email = Usuario.normalizarYValidarEmail(request.email)
         val celular = Usuario.normalizarYValidarCelular(request.celular)
         validarDuplicados(id, email, celular)
-
-        existente.email = email
-        existente.nombre = request.nombre
-        existente.desc = request.desc
-        existente.celular = celular
-        existente.ciudad = request.ciudad
-        existente.tipoUsuario = parseTipoUsuarioStr(request.tipoUsuario)
-        if (request.imagenUrl != null) existente.imagenUrl = request.imagenUrl
-
-        val guardado = usuarioJpaRepository.save(existente)
-        return guardado.toDomain()
+        val tipoUsuario = parseTipoUsuario(request.tipoUsuario)
+        
+        val actualizado = Usuario(
+            credencial = Credencial(email, existente.getCredencial().password),
+            nombre = request.nombre,
+            desc = request.desc,
+            celular = celular,
+            ciudad = request.ciudad,
+            tipoUsuario = tipoUsuario,
+            bibliokarmas = existente.bibliokarmas,
+            imagenUrl = request.imagenUrl ?: existente.imagenUrl,
+            fechaRegistro = existente.fechaRegistro,
+        )
+        actualizado.id = existente.id
+        usuarioRepository.update(actualizado)
+        return actualizado.toResponse()
     }
 
-    fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> =
-        libroJpaRepository.findByDuenioId(usuarioId).map { it.toDomain() }
-
-    private fun parseTipoUsuarioStr(value: String): String {
+    private fun parseTipoUsuario(value: String): TipoUsuario {
         val normalized = value.trim().uppercase().replace(" ", "_")
         return when (normalized) {
-            "LECTOR" -> "LECTOR"
-            "PUBLICADOR" -> "PUBLICADOR"
-            "LECTOR_PUBLICADOR", "LECTORPUBLICADOR" -> "LECTOR_PUBLICADOR"
+            "LECTOR" -> UsuarioLector()
+            "PUBLICADOR" -> UsuarioPublicador()
+            "LECTOR_PUBLICADOR", "LECTORPUBLICADOR" -> UsuarioLectorPublicador()
             else -> throw BusinessException("Tipo de usuario inválido: $value")
         }
     }
 
     private fun validarDuplicados(idUsuarioActual: Int, email: String, celular: String) {
-        val conEmail = usuarioJpaRepository.findByEmail(email)
-        if (conEmail != null && conEmail.id != idUsuarioActual) {
+        val usuarioConEmail = usuarioRepository.findByEmail(email)
+        if (usuarioConEmail != null && usuarioConEmail.id != idUsuarioActual) {
             throw ConflictException("El email ya esta en uso")
         }
-        val conCelular = usuarioJpaRepository.findByCelular(celular)
-        if (conCelular != null && conCelular.id != idUsuarioActual) {
+
+        val usuarioConCelular = usuarioRepository.findByCelular(celular)
+        if (usuarioConCelular != null && usuarioConCelular.id != idUsuarioActual) {
             throw ConflictException("El celular ya esta en uso")
         }
+    }
+
+    fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> {
+        return libroRepository.getLibrosDeUsuario(usuarioId)
     }
 }

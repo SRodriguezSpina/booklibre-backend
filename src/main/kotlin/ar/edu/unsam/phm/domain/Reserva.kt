@@ -1,4 +1,5 @@
 package ar.edu.unsam.phm.domain
+import ar.edu.unsam.phm.repository.BaseEntity
 import java.time.LocalDate
 
 class Reserva (

@@ -7,8 +7,7 @@ import ar.edu.unsam.phm.dtos.LoginRequest
 import ar.edu.unsam.phm.dtos.RegisterRequest
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
-import ar.edu.unsam.phm.testing.inmemory.repository.UsuarioRepository
-import ar.edu.unsam.phm.testing.inmemory.services.AuthServiceInMemory
+import ar.edu.unsam.phm.repository.UsuarioRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -26,7 +25,7 @@ class AuthServiceSpec : DescribeSpec({
         password: String = "123"
     ) = Usuario(Credencial(email, password), "Juan", "", tipoUsuario = UsuarioLector())
 
-    fun buildService(repo: UsuarioRepository) = AuthServiceInMemory(repo)
+    fun buildService(repo: UsuarioRepository) = AuthService(repo)
 
     describe("login") {
         it("retorna AuthResponse exitoso con credenciales correctas") {

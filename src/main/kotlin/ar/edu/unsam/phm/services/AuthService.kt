@@ -1,45 +1,37 @@
 package ar.edu.unsam.phm.services
 
+import ar.edu.unsam.phm.domain.Credencial
+import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.AuthResponseUsuario
 import ar.edu.unsam.phm.dtos.LoginRequest
 import ar.edu.unsam.phm.dtos.RegisterRequest
-import ar.edu.unsam.phm.exceptions.ConflictException
-import ar.edu.unsam.phm.exceptions.UnauthorizedException
+import ar.edu.unsam.phm.exceptions.*
 import ar.edu.unsam.phm.mappers.toResponse
-import ar.edu.unsam.phm.persistence.entities.UsuarioEntity
-import ar.edu.unsam.phm.persistence.mappers.toDomain
-import ar.edu.unsam.phm.persistence.repositories.UsuarioJpaRepository
+import ar.edu.unsam.phm.repository.UsuarioRepository
 import org.springframework.stereotype.Service
 
 @Service
-class AuthService(private val usuarioJpaRepository: UsuarioJpaRepository) {
+class AuthService (private val usuarioRepository : UsuarioRepository) {
     fun login(request: LoginRequest): AuthResponseUsuario {
-        val usuario = usuarioJpaRepository.findByEmail(request.email)
+        val usuario = usuarioRepository.findByEmail(request.email)
             ?: throw UnauthorizedException("Usuario o contraseña incorrectos")
 
-        if (usuario.password != request.password) {
+        if (!usuario.validarPassword(request.password))
             throw UnauthorizedException("Usuario o contraseña incorrectos")
-        }
 
-        return AuthResponseUsuario(true, "Login exitoso", usuario.toResponseEntity())
+        return AuthResponseUsuario(true, "Login exitoso", usuario.toResponse())
     }
 
     fun register(request: RegisterRequest): AuthResponseUsuario {
-        if (usuarioJpaRepository.existsByEmail(request.email)) {
+        if (usuarioRepository.lista.any { it.getCredencial().email == request.email })
             throw ConflictException("El email ya está registrado")
-        }
 
-        val nuevo = UsuarioEntity(
-            email = request.email,
-            password = request.password,
+        val nuevo = Usuario(
+            credencial = Credencial(request.email, request.password),
             nombre = request.nombre,
-            desc = "",
+            desc = ""
         )
-        val guardado = usuarioJpaRepository.save(nuevo)
-        return AuthResponseUsuario(true, "Registro exitoso", guardado.toResponseEntity())
+        usuarioRepository.create(nuevo)
+        return AuthResponseUsuario(true, "Registro exitoso", nuevo.toResponse())
     }
-
-    private fun UsuarioEntity.toResponseEntity() = this.toDomainForResponse().toResponse()
-
-    private fun UsuarioEntity.toDomainForResponse() = this.toDomain()
 }

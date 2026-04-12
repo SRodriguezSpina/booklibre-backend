@@ -6,10 +6,9 @@ import ar.edu.unsam.phm.domain.UsuarioLector
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
-import ar.edu.unsam.phm.testing.inmemory.repository.LibroRepository
-import ar.edu.unsam.phm.testing.inmemory.repository.ReservaRepository
-import ar.edu.unsam.phm.testing.inmemory.repository.UsuarioRepository
-import ar.edu.unsam.phm.testing.inmemory.services.UsuarioServiceInMemory
+import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.ReservaRepository
+import ar.edu.unsam.phm.repository.UsuarioRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -34,7 +33,7 @@ class UsuarioServiceSpec : DescribeSpec({
         tipoUsuario = UsuarioLector()
     )
 
-    fun buildService(repo: UsuarioRepository) = UsuarioServiceInMemory(repo, LibroRepository(), ReservaRepository())
+    fun buildService(repo: UsuarioRepository) = UsuarioService(repo, LibroRepository(), ReservaRepository())
 
     describe("actualizarUsuario") {
         it("actualiza email y celular cuando son validos y no duplicados") {
