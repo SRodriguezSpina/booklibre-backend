@@ -2,70 +2,50 @@ package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.Usuario
-import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.exceptions.BusinessException
-import ar.edu.unsam.phm.exceptions.ConflictException
-import ar.edu.unsam.phm.exceptions.NotFoundException
-import ar.edu.unsam.phm.mappers.toResponse
-import ar.edu.unsam.phm.persistence.mappers.toDomain
-import ar.edu.unsam.phm.persistence.repositories.LibroJpaRepository
-import ar.edu.unsam.phm.persistence.repositories.UsuarioJpaRepository
-import org.springframework.stereotype.Service
+import ar.edu.unsam.phm.repository.UsuarioRepository
 
+import org.springframework.stereotype.Service
 @Service
 class UsuarioService(
-    private val usuarioJpaRepository: UsuarioJpaRepository,
-    private val libroJpaRepository: LibroJpaRepository,
+    private val usuarioRepository: UsuarioRepository,
+    private val libroRepository: LibroRepository,
 ) {
-
-    private fun getEntityOrThrow(id: Int) =
-        usuarioJpaRepository.findById(id)
-            .orElseThrow { NotFoundException("Usuario no encontrado") }
-
     fun obtenerUsuario(id: Int): Usuario =
-        getEntityOrThrow(id).toDomain()
+        usuarioRepository.getById(id)
 
     fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): Usuario {
-        val existente = getEntityOrThrow(id)
-
-        val email = Usuario.normalizarYValidarEmail(request.email)
+        val usuario = usuarioRepository.getById(id)
+        val email   = Usuario.normalizarYValidarEmail(request.email)
         val celular = Usuario.normalizarYValidarCelular(request.celular)
-        validarDuplicados(id, email, celular)
 
-        existente.email = email
-        existente.nombre = request.nombre
-        existente.desc = request.desc
-        existente.celular = celular
-        existente.ciudad = request.ciudad
-        existente.tipoUsuario = parseTipoUsuarioStr(request.tipoUsuario)
-        if (request.imagenUrl != null) existente.imagenUrl = request.imagenUrl
+        usuarioRepository.validarEmailDisponible(email, id)
+        usuarioRepository.validarCelularDisponible(celular, id)
 
-        val guardado = usuarioJpaRepository.save(existente)
-        return guardado.toDomain()
+        usuario.actualizarDatosPersonales(
+            nuevoNombre    = request.nombre,
+            nuevaDesc      = request.desc,
+            nuevoCelular   = celular,
+            nuevaCiudad    = request.ciudad,
+            nuevoTipo      = parseTipoUsuario(request.tipoUsuario),
+            nuevaImagenUrl = request.imagenUrl,
+            nuevoEmail     = email,
+        )
+
+        return usuarioRepository.save(usuario)
     }
 
     fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> =
-        libroJpaRepository.findByDuenioId(usuarioId).map { it.toDomain() }
+        libroRepository.getLibrosDeUsuario(usuarioId)
 
-    private fun parseTipoUsuarioStr(value: String): String {
+    private fun parseTipoUsuario(value: String): String {
         val normalized = value.trim().uppercase().replace(" ", "_")
         return when (normalized) {
-            "LECTOR" -> "LECTOR"
-            "PUBLICADOR" -> "PUBLICADOR"
+            "LECTOR"                                -> "LECTOR"
+            "PUBLICADOR"                            -> "PUBLICADOR"
             "LECTOR_PUBLICADOR", "LECTORPUBLICADOR" -> "LECTOR_PUBLICADOR"
             else -> throw BusinessException("Tipo de usuario inválido: $value")
-        }
-    }
-
-    private fun validarDuplicados(idUsuarioActual: Int, email: String, celular: String) {
-        val conEmail = usuarioJpaRepository.findByEmail(email)
-        if (conEmail != null && conEmail.id != idUsuarioActual) {
-            throw ConflictException("El email ya esta en uso")
-        }
-        val conCelular = usuarioJpaRepository.findByCelular(celular)
-        if (conCelular != null && conCelular.id != idUsuarioActual) {
-            throw ConflictException("El celular ya esta en uso")
         }
     }
 }

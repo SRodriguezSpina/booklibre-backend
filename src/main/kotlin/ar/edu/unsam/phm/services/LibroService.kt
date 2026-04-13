@@ -20,9 +20,9 @@ import ar.edu.unsam.phm.mappers.toDetalleDTOs
 import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.persistence.mappers.toDomain
 import ar.edu.unsam.phm.persistence.mappers.toEntity
-import ar.edu.unsam.phm.persistence.repositories.LibroJpaRepository
-import ar.edu.unsam.phm.persistence.repositories.ReservaJpaRepository
-import ar.edu.unsam.phm.persistence.repositories.UsuarioJpaRepository
+import ar.edu.unsam.phm.repository.LibroJpaRepository
+import ar.edu.unsam.phm.repository.ReservaJpaRepository
+import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import kotlin.math.ceil

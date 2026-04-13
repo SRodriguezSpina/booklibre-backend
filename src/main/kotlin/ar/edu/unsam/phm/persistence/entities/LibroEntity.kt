@@ -1,5 +1,6 @@
 package ar.edu.unsam.phm.persistence.entities
 
+import ar.edu.unsam.phm.domain.Usuario
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -63,7 +64,7 @@ class LibroEntity(
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "duenio_id", nullable = false)
-    var duenio: UsuarioEntity,
+    var duenio: Usuario,
 
     @OneToMany(mappedBy = "libro", fetch = FetchType.EAGER, cascade = [jakarta.persistence.CascadeType.ALL], orphanRemoval = true)
     @jakarta.persistence.OrderBy("id ASC")

@@ -1,5 +1,6 @@
 package ar.edu.unsam.phm.persistence.entities
 
+import ar.edu.unsam.phm.domain.Usuario
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -24,7 +25,7 @@ class ReservaEntity(
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
-    var usuario: UsuarioEntity,
+    var usuario: Usuario,
 
     @Column(nullable = false)
     var fechaDesde: LocalDate,

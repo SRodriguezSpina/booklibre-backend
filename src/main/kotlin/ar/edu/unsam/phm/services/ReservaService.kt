@@ -9,9 +9,9 @@ import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.persistence.mappers.toDomain
 import ar.edu.unsam.phm.persistence.mappers.toEntity
-import ar.edu.unsam.phm.persistence.repositories.LibroJpaRepository
-import ar.edu.unsam.phm.persistence.repositories.ReservaJpaRepository
-import ar.edu.unsam.phm.persistence.repositories.UsuarioJpaRepository
+import ar.edu.unsam.phm.repository.LibroJpaRepository
+import ar.edu.unsam.phm.repository.ReservaJpaRepository
+import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
