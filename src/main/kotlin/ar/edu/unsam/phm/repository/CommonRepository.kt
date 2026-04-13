@@ -25,7 +25,7 @@ open class CommonRepository<T:BaseEntity>{
             throw EntityNotFoundException("No se encontró el elemento con ID ${objeto.id}")
         }
     }
-    fun getById(id: Int): T {
+    open fun getById(id: Int): T {
         return lista.find { it.id == id } ?: throw EntityNotFoundException("No se encontró el elemento con ID $id")
     }
     fun findAll(): List<T> = lista.toList()

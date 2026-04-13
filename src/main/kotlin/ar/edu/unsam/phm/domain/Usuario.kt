@@ -8,8 +8,8 @@ interface TipoUsuario {
 }
 
 class Usuario(
-    private val credencial: Credencial,
-    val nombre: String,
+    private var credencial: Credencial,
+    var nombre: String,
     var desc: String,
     var celular: String = "",
     var ciudad: String = "",
@@ -42,6 +42,25 @@ class Usuario(
     fun getCredencial(): Credencial = credencial
 
     fun validarPassword(password: String) = password == credencial.password
+
+    fun actualizarDatosPersonales(
+        nuevoNombre: String,
+        nuevaDesc: String,
+        nuevoCelular: String,
+        nuevaCiudad: String,
+        nuevoTipo: TipoUsuario,
+        nuevaImagenUrl: String?,
+        nuevoEmail: String,
+        nuevaPassword: String = credencial.password,
+    ) {
+        nombre = nuevoNombre
+        desc = nuevaDesc
+        celular = nuevoCelular
+        ciudad = nuevaCiudad
+        tipoUsuario = nuevoTipo
+        imagenUrl = nuevaImagenUrl ?: imagenUrl
+        credencial = Credencial(nuevoEmail, nuevaPassword)
+    }
 }
 
 class UsuarioLector() : TipoUsuario {}
