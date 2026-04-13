@@ -26,12 +26,12 @@ class UsuarioServiceSpec : DescribeSpec({
         email: String,
         celular: String
     ) = Usuario(
-        credencial = Credencial(email, "1234"),
+        email, "1234",
         nombre = nombre,
         desc = "desc",
         celular = celular,
         ciudad = "CABA",
-        tipoUsuario = UsuarioLector()
+        tipoUsuario = "LECTOR"
     )
 
     fun buildService(repo: UsuarioRepository) = UsuarioServiceInMemory(repo, LibroRepository(), ReservaRepository())

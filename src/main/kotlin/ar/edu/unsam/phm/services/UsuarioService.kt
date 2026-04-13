@@ -4,6 +4,7 @@ import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.exceptions.BusinessException
+import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 
 import org.springframework.stereotype.Service

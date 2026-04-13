@@ -23,12 +23,12 @@ class AuthServiceInMemory(private val usuarioRepository: UsuarioRepository) {
     }
 
     fun register(request: RegisterRequest): AuthResponseUsuario {
-        if (usuarioRepository.lista.any { it.getCredencial().email == request.email }) {
+        if (usuarioRepository.lista.any { it.email == request.email }) {
             throw ConflictException("El email ya está registrado")
         }
 
         val nuevo = Usuario(
-            credencial = Credencial(request.email, request.password),
+            request.email, request.password,
             nombre = request.nombre,
             desc = "",
         )

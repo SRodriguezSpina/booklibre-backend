@@ -7,7 +7,7 @@ import ar.edu.unsam.phm.persistence.entities.ReservaEntity
 
 fun ReservaEntity.toDomain(): Reserva {
     val libroDomain  = libro.toDomain()
-    val usuarioDomain = usuario.toDomain()
+    val usuarioDomain = usuario
 
     val reserva = Reserva(
         libro     = libroDomain,

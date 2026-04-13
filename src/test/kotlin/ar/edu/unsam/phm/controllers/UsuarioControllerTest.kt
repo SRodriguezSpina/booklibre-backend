@@ -36,7 +36,8 @@ class UsuarioControllerTest {
     // Helper para crear un usuario de dominio rápidamente
     private fun crearUsuarioFake(id: Int, nombre: String): Usuario {
         return Usuario(
-            credencial = Credencial("user$id@mail.com", "pass123"),
+            email = "user$id@mail.com",
+            password = "pass123",
             nombre = nombre,
             desc = "Desc",
             celular = "111222333",
@@ -88,12 +89,13 @@ class UsuarioControllerTest {
 
         // El service recibe el DTO de request pero devuelve el objeto de dominio actualizado
         val usuarioActualizado = Usuario(
-            credencial = Credencial("user1@mail.com", "pass123"),
+            "user1@mail.com",
+            "pass123",
             nombre = "Juan Actualizado",
             desc = "Nueva desc",
             celular = "111222333",
             ciudad = "Rosario",
-            tipoUsuario = UsuarioPublicador()
+            tipoUsuario = "PUBLICADOR"
         ).apply { this.id = id }
 
         Mockito.`when`(usuarioService.actualizarUsuario(id, request)).thenReturn(usuarioActualizado)

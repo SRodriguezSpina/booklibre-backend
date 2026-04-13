@@ -42,15 +42,13 @@ class UsuarioServiceInMemory(
         val celular = Usuario.normalizarYValidarCelular(request.celular)
         validarDuplicados(id, email, celular)
 
-        val tipoUsuario = parseTipoUsuario(request.tipoUsuario)
-
         val actualizado = Usuario(
-            credencial = Credencial(email, existente.getCredencial().password),
+            email, existente.password,
             nombre = request.nombre,
             desc = request.desc,
             celular = celular,
             ciudad = request.ciudad,
-            tipoUsuario = tipoUsuario,
+            tipoUsuario = request.tipoUsuario,
             bibliokarmas = existente.bibliokarmas,
             imagenUrl = request.imagenUrl ?: existente.imagenUrl,
             fechaRegistro = existente.fechaRegistro,

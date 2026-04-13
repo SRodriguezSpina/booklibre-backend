@@ -13,7 +13,7 @@ import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.persistence.entities.LibroEntity
 
 fun LibroEntity.toDomain(): Libro {
-    val duenioDomain = duenio.toDomain()
+    val duenioDomain = duenio
 
     val data = LibroData(
         duenio = duenioDomain,
