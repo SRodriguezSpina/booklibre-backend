@@ -1,5 +1,9 @@
 package ar.edu.unsam.phm.controllers
 
+import ar.edu.unsam.phm.domain.Credencial
+import ar.edu.unsam.phm.domain.Usuario
+import ar.edu.unsam.phm.domain.UsuarioLector
+import ar.edu.unsam.phm.domain.UsuarioPublicador
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
@@ -15,6 +19,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import java.time.LocalDate
 
 @WebMvcTest(UsuarioController::class)
 @DisplayName("Dado un UsuarioController")
@@ -28,19 +33,20 @@ class UsuarioControllerTest {
     @DisplayName("cuando existe el usuario, GET /api/usuarios/{id} devuelve 200 y el json del usuario")
     fun getUsuario_ok() {
         val id = 1
-        val retorno = UsuarioResponse(
-            id = 1,
+        val usuario = Usuario(
+            credencial = Credencial("juan@mail.com", "1234"),
             nombre = "Juan",
             desc = "Desc",
-            email = "juan@mail.com",
-            fechaRegistro = "2026-03-16",
             celular = "111",
             ciudad = "CABA",
-            tipoUsuario = "Lector",
-            bibliokarmas = 10
+            tipoUsuario = UsuarioLector(),
+            bibliokarmas = 10,
+            fechaRegistro = LocalDate.of(2026, 3, 16)
         )
 
-        Mockito.`when`(usuarioService.obtenerUsuario(id)).thenReturn(retorno)
+        usuario.id = 1
+
+        Mockito.`when`(usuarioService.obtenerUsuario(id)).thenReturn(usuario)
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/usuarios/$id"))
             .andExpect(MockMvcResultMatchers.status().isOk)
@@ -77,19 +83,20 @@ class UsuarioControllerTest {
             ciudad = "Rosario",
             tipoUsuario = "PUBLICADOR"
         )
-        val retorno = UsuarioResponse(
-            id = 1,
+        val usuario = Usuario(
+            credencial = Credencial("nuevo@mail.com", "1234"),
             nombre = "Juan Actualizado",
             desc = "Nueva desc",
-            email = "nuevo@mail.com",
-            fechaRegistro = "2026-03-16",
             celular = "222",
             ciudad = "Rosario",
-            tipoUsuario = "Publicador",
-            bibliokarmas = 10
+            tipoUsuario = UsuarioPublicador(),
+            bibliokarmas = 10,
+            fechaRegistro = LocalDate.of(2026, 3, 16)
         )
 
-        Mockito.`when`(usuarioService.actualizarUsuario(id, request)).thenReturn(retorno)
+        usuario.id = 1
+
+        Mockito.`when`(usuarioService.actualizarUsuario(id, request)).thenReturn(usuario)
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/api/usuarios/$id")

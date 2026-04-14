@@ -14,9 +14,8 @@ class ReservaRepository : CommonRepository<Reserva>() {
         return lista.filter { reserva ->
             val esDuenio = reserva.libro.duenio.id == usuarioId
             val esSolicitante = reserva.usuario.id == usuarioId
-
             esDuenio || esSolicitante
-        } // Realiza el filtro en el repositorio
+        }
     }
 
     fun existeSuperposicion(libroId: Int, desde: LocalDate, hasta: LocalDate): Boolean {

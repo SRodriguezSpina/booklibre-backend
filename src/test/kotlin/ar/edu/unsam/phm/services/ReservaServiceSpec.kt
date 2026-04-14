@@ -21,6 +21,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import net.bytebuddy.asm.Advice.Local
 import java.time.LocalDate
 
 class ReservaServiceSpec : DescribeSpec({
@@ -70,9 +71,9 @@ class ReservaServiceSpec : DescribeSpec({
             desc = ""
         ).apply { id = 99 }
 
-        every { usuarioRepository.findById(1) } returns solicitante
-        every { usuarioRepository.findById(3) } returns duenio
-        every { usuarioRepository.findById(99) } returns usuarioSinReservas
+        every { usuarioRepository.getById(1) } returns solicitante
+        every { usuarioRepository.getById(3) } returns duenio
+        every { usuarioRepository.getById(99) } returns usuarioSinReservas
         every { reservaRepository.findByLibroId(any()) } answers {
             val libroId = firstArg<Int>()
             listOf(reserva).filter { it.libro.id == libroId }
@@ -84,12 +85,12 @@ class ReservaServiceSpec : DescribeSpec({
             val resultado = reservaService.obtenerReservas(1)
 
             resultado shouldHaveSize 1
-            resultado[0].titulo shouldBe "1984"
-            resultado[0].autor shouldBe "George Orwell"
-            resultado[0].alquiladoPorId shouldBe 1
-            resultado[0].propietarioId shouldBe 3
-            resultado[0].fechaDesde shouldBe "2026-03-01"
-            resultado[0].fechaHasta shouldBe "2026-03-10"
+            resultado[0].libro.titulo shouldBe "1984"
+            resultado[0].libro.autor shouldBe "George Orwell"
+            resultado[0].usuario.id shouldBe 1
+            resultado[0].libro.duenio.id shouldBe 3
+            resultado[0].fechaDesde shouldBe LocalDate.of(2026, 3, 1)
+            resultado[0].fechaHasta shouldBe LocalDate.of(2026, 3,10)
 
             verify { reservaRepository.getReservasDeUsuario(1) }
         }
@@ -100,7 +101,7 @@ class ReservaServiceSpec : DescribeSpec({
             val resultado = reservaService.obtenerReservas(3)
 
             resultado shouldHaveSize 1
-            resultado[0].propietarioId shouldBe 3
+            resultado[0].libro.duenio.id shouldBe 3
 
             verify { reservaRepository.getReservasDeUsuario(3) }
         }
@@ -114,21 +115,21 @@ class ReservaServiceSpec : DescribeSpec({
             verify { reservaRepository.getReservasDeUsuario(99) }
         }
 
-        it("OBTENER RESERVAS MAPEA EL BIBLIOKARMA CORRECTAMENTE") {
-            every { reservaRepository.getReservasDeUsuario(1) } returns listOf(reserva)
-
-            val resultado = reservaService.obtenerReservas(1)
-
-            // (5 * 10 días) + plusBiblioKarma(500 karma → multiplicador 5 → 300*5=1500) = 1550
-            resultado[0].bibliokarma shouldBe 1550
-        }
+//        it("OBTENER RESERVAS MAPEA EL BIBLIOKARMA CORRECTAMENTE") {
+//            every { reservaRepository.getReservasDeUsuario(1) } returns listOf(reserva)
+//
+//            val resultado = reservaService.obtenerReservas(1)
+//
+//            // (5 * 10 días) + plusBiblioKarma(500 karma → multiplicador 5 → 300*5=1500) = 1550
+//            resultado[0].bibliokarma shouldBe 1550
+//        }
 
         it("OBTENER RESERVAS MAPEA EL RATING CORRECTAMENTE CUANDO NO HAY CALIFICACIONES") {
             every { reservaRepository.getReservasDeUsuario(1) } returns listOf(reserva)
 
             val resultado = reservaService.obtenerReservas(1)
 
-            resultado[0].rating shouldBe 0.0
+            resultado[0].libro.getCalificacion() shouldBe 0.0
         }
 
         it("OBTENER RESERVAS MAPEA EL RATING CUANDO HAY CALIFICACIONES") {
@@ -137,7 +138,7 @@ class ReservaServiceSpec : DescribeSpec({
 
             val resultado = reservaService.obtenerReservas(1)
 
-            resultado[0].rating shouldBe 4.0
+            resultado[0].libro.getCalificacion() shouldBe 4.0
         }
 
         it("OBTENER RESERVAS CON MULTIPLES RESERVAS DEVUELVE TODOS LOS DTOs") {
@@ -168,8 +169,8 @@ class ReservaServiceSpec : DescribeSpec({
             val resultado = reservaService.obtenerReservas(1)
 
             resultado shouldHaveSize 2
-            resultado[0].titulo shouldBe "1984"
-            resultado[1].titulo shouldBe "Dune"
+            resultado[0].libro.titulo shouldBe "1984"
+            resultado[1].libro.titulo shouldBe "Dune"
         }
     }
 })

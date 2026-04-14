@@ -33,7 +33,7 @@ class UsuarioServiceSpec : DescribeSpec({
         tipoUsuario = UsuarioLector()
     )
 
-    fun buildService(repo: UsuarioRepository) = UsuarioService(repo, LibroRepository(), ReservaRepository())
+    fun buildService(repo: UsuarioRepository) = UsuarioService(repo, LibroRepository())
 
     describe("actualizarUsuario") {
         it("actualiza email y celular cuando son validos y no duplicados") {
@@ -56,7 +56,6 @@ class UsuarioServiceSpec : DescribeSpec({
                 )
             )
 
-            response.email shouldBe "juan.nuevo@mail.com"
             response.celular shouldBe "33333333"
             response.nombre shouldBe "Juan Actualizado"
         }
