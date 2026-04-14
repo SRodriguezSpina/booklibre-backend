@@ -34,14 +34,14 @@ class ReservaServiceSpec : DescribeSpec({
         val reservaService = ReservaServiceInMemory(libroRepository, usuarioRepository, reservaRepository)
 
         val duenio = Usuario(
-            credencial = Credencial("ana", "pass"),
+            "ana", "pass",
             nombre = "Ana García",
             desc = "Publicadora",
             bibliokarmas = 1200,
         ).apply { id = 3 }
 
         val solicitante = Usuario(
-            credencial = Credencial("juan", "1234"),
+            "juan", "1234",
             nombre = "Juan Pérez",
             desc = "Lector",
             bibliokarmas = 500,
@@ -66,7 +66,7 @@ class ReservaServiceSpec : DescribeSpec({
         ).apply { id = 500 }
 
         val usuarioSinReservas = Usuario(
-            credencial = Credencial("vacio", "123"),
+            "vacio", "123",
             nombre = "Sin Reservas",
             desc = ""
         ).apply { id = 99 }

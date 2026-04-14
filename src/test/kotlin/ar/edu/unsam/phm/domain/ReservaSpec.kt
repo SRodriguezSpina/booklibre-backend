@@ -10,8 +10,8 @@ class ReservaSpec : DescribeSpec({
 
     describe("Compruebo Reserva") {
         // Asignamos IDs distintos para que la lógica de Reserva sepa que son personas diferentes
-        val duenio = Usuario(Credencial("ana", "pass"), "Ana", "").apply { id = 1 }
-        val solicitante = Usuario(Credencial("juan", "pass"), "Juan", "").apply { id = 2 }
+        val duenio = Usuario("ana", "pass", "Ana", "").apply { id = 1 }
+        val solicitante = Usuario("juan", "pass", "Juan", "").apply { id = 2 }
 
         val libro = LibroComun(
             LibroData(

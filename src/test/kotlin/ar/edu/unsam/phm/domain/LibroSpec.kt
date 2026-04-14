@@ -13,14 +13,14 @@ class LibroSpec : DescribeSpec({
     describe("Compruebo Libro") {
 
         val duenio = Usuario(
-            credencial = Credencial("ana", "pass"),
+            "ana", "pass",
             nombre = "Ana García",
             desc = "Publicadora",
             bibliokarmas = 500,
         )
 
-        val usuarioPobre   = Usuario(Credencial("p", "p"), "Pobre",   "sin karma", bibliokarmas = 0)
-        val usuarioRico    = Usuario(Credencial("r", "r"), "Rico",    "con karma", bibliokarmas = 2000)
+        val usuarioPobre   = Usuario("p", "p", "Pobre",   "sin karma", bibliokarmas = 0)
+        val usuarioRico    = Usuario("r", "r", "Rico",    "con karma", bibliokarmas = 2000)
 
         val desde = LocalDate.of(2026, 3, 1)
         val hasta = LocalDate.of(2026, 3, 10) // 10 días
@@ -145,7 +145,7 @@ class LibroSpec : DescribeSpec({
             describe("LibroColeccionable — validaciones") {
                 it("LANZA BusinessException SI EL USUARIO TIENE BIBLIOKARMAS NEGATIVOS") {
                     val usuarioKarmaNegativo = Usuario(
-                        Credencial("x", "x"), "X", "", bibliokarmas = -1
+                        "x", "x", "X", "", bibliokarmas = -1
                     )
                     assertThrows<BusinessException> {
                         libro.plusBiblioKarma(usuarioKarmaNegativo)

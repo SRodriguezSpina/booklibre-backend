@@ -81,6 +81,32 @@ abstract class Libro(data: LibroData): BaseEntity() {
     fun actualizoDisponibilidad(estado: Boolean) = if (estado) disponibilidad = Disponibilidad.DISPONIBLE else disponibilidad = Disponibilidad.RESERVADO
 
     abstract fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int = 0): Int
+
+    fun actualizarDatos(
+        nuevoTitulo: String,
+        nuevoAutor: String,
+        nuevaDescripcion: String,
+        nuevoGenero: Genero,
+        nuevasPaginas: Int,
+        nuevoIsbn: String,
+        nuevoIdioma: Idioma,
+        nuevaEditorial: String,
+        nuevaFechaPublicacion: LocalDate,
+        nuevoEstado: EstadoLibro,
+        nuevaImagenUrl: String,
+    ) {
+        titulo           = nuevoTitulo
+        autor            = nuevoAutor
+        descripcion      = nuevaDescripcion
+        genero           = nuevoGenero
+        cantidadPaginas  = nuevasPaginas
+        isbn             = nuevoIsbn
+        idioma           = nuevoIdioma
+        editorial        = nuevaEditorial
+        fechaPublicacion = nuevaFechaPublicacion
+        estado           = nuevoEstado
+        imagenUrl        = nuevaImagenUrl
+    }
 }
 class LibroComun(data: LibroData) : Libro(data) {
     override fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int): Int {

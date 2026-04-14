@@ -13,7 +13,7 @@ import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.persistence.entities.LibroEntity
 
 fun LibroEntity.toDomain(): Libro {
-    val duenioDomain = duenio.toDomain()
+    val duenioDomain = duenio
 
     val data = LibroData(
         duenio = duenioDomain,
@@ -46,7 +46,7 @@ fun LibroEntity.toDomain(): Libro {
     return libroDomain
 }
 
-fun Libro.toEntity(duenioEntity: ar.edu.unsam.phm.persistence.entities.UsuarioEntity): LibroEntity {
+fun Libro.toEntity(): LibroEntity {
     val tipoPersistido = when (this) {
         is LibroComun -> "Comun"
         is LibroConDedicatoria -> "ConDedicatoria"
@@ -70,7 +70,7 @@ fun Libro.toEntity(duenioEntity: ar.edu.unsam.phm.persistence.entities.UsuarioEn
         fechaPublicacion = fechaPublicacion,
         fechaAgregado = fechaAgregado,
         imagenUrl = imagenUrl,
-        duenio = duenioEntity,
+        duenio = duenio,
     )
 
     libroEntity.calificaciones = calificaciones.map { it.toEntity(libroEntity) }.toMutableList()

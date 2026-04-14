@@ -13,23 +13,22 @@ import java.time.format.DateTimeFormatter
 import kotlin.collections.sortedByDescending
 
 fun Usuario.toResponse(): UsuarioResponse {
-    val tipoStr = when (tipoUsuario) {
-        is UsuarioLector -> "Lector"
-        is UsuarioPublicador -> "Publicador"
-        is UsuarioLectorPublicador -> "LectorPublicador"
-        else -> "Lector"
+    val tipoStr = when (tipoUsuario.trim().uppercase().replace(" ", "_")) {
+        "PUBLICADOR"                              -> "Publicador"
+        "LECTOR_PUBLICADOR", "LECTORPUBLICADOR"  -> "LectorPublicador"
+        else                                      -> "Lector"
     }
     return UsuarioResponse(
-        id = id,
-        nombre = nombre,
-        email = getCredencial().email,
-        desc = desc,
+        id          = id,
+        nombre      = nombre,
+        email       = email,
+        desc        = desc,
         fechaRegistro = fechaRegistro.toString(),
-        celular = celular,
-        ciudad = ciudad,
+        celular     = celular,
+        ciudad      = ciudad,
         tipoUsuario = tipoStr,
         bibliokarmas = bibliokarmas,
-        imagenUrl = imagenUrl,
+        imagenUrl   = imagenUrl,
     )
 }
 

@@ -23,14 +23,14 @@ import java.time.LocalDate
 class LibroServiceSpec : DescribeSpec({
     isolationMode = IsolationMode.InstancePerTest
     val duenio = Usuario(
-        credencial = Credencial("ana@mail.com", "pass"),
+        "ana@mail.com", "pass",
         nombre = "Ana García",
         desc = "Publicadora",
         bibliokarmas = 1200,
     )
 
     val otroUsuario = Usuario(
-        credencial = Credencial("carlos@mail.com", "pass"),
+        "carlos@mail.com", "pass",
         nombre = "Carlos",
         desc = "",
         bibliokarmas = 50,
@@ -568,7 +568,7 @@ class LibroServiceSpec : DescribeSpec({
                 val service = buildService(libroRepo, usuarioRepo)
 
                 val tercerUsuario = Usuario(
-                    credencial = Credencial("z@mail.com", "pass"),
+                    "z@mail.com", "pass",
                     nombre = "Zoe",
                     desc = "",
                     bibliokarmas = 0,

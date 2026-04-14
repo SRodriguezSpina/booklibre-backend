@@ -10,14 +10,14 @@ class UsuarioSpec : DescribeSpec({
 
     describe("Compruebo Usuario") {
 
-        val credencial = Credencial("juanito", "1234")
+
         val usuario = Usuario(
-            credencial = credencial,
+            "juanito", "1234",
             nombre = "Juan Pérez",
             desc = "Lector intrépido",
             celular = "11556677",
             ciudad = "San Martín",
-            tipoUsuario = UsuarioLector(),
+            tipoUsuario = "LECTOR",
             bibliokarmas = 500,
             fechaRegistro = LocalDate.of(2020, 9, 15)
         )
@@ -30,22 +30,8 @@ class UsuarioSpec : DescribeSpec({
             usuario.validarPassword("wrongpass") shouldBe false
         }
 
-        it("GET CREDENCIAL DEVUELVE LA CREDENCIAL CORRECTA") {
-            usuario.getCredencial() shouldBe credencial
-        }
-
         it("TIPO USUARIO POR DEFECTO ES LECTOR") {
-            usuario.tipoUsuario::class shouldBe UsuarioLector::class
-        }
-
-        it("SE PUEDE CAMBIAR EL TIPO DE USUARIO A PUBLICADOR") {
-            usuario.tipoUsuario = UsuarioPublicador()
-            usuario.tipoUsuario::class shouldBe UsuarioPublicador::class
-        }
-
-        it("SE PUEDE CAMBIAR EL TIPO DE USUARIO A LECTOR PUBLICADOR") {
-            usuario.tipoUsuario = UsuarioLectorPublicador()
-            usuario.tipoUsuario::class shouldBe UsuarioLectorPublicador::class
+            usuario.tipoUsuario shouldBe "LECTOR"
         }
     }
 })

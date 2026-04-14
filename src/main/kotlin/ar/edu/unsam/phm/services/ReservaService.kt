@@ -9,9 +9,9 @@ import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.persistence.mappers.toDomain
 import ar.edu.unsam.phm.persistence.mappers.toEntity
-import ar.edu.unsam.phm.persistence.repositories.LibroJpaRepository
-import ar.edu.unsam.phm.persistence.repositories.ReservaJpaRepository
-import ar.edu.unsam.phm.persistence.repositories.UsuarioJpaRepository
+import ar.edu.unsam.phm.repository.LibroJpaRepository
+import ar.edu.unsam.phm.repository.ReservaJpaRepository
+import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -72,15 +72,14 @@ class ReservaService(
             val libroEntity = libroJpaRepository.findById(dto.libroId)
                 .orElseThrow { NotFoundException("Libro ${dto.libroId} no encontrado") }
 
-            val solicitanteEntity = usuarioJpaRepository.findById(dto.usuarioId)
+            val solicitante = usuarioJpaRepository.findById(dto.usuarioId)
                 .orElseThrow { NotFoundException("Usuario ${dto.usuarioId} no encontrado") }
 
             val libroDomain = libroEntity.toDomain()
-            val solicitanteDomain = solicitanteEntity.toDomain()
 
             val reservaDomain = Reserva(
                 libro = libroDomain,
-                usuario = solicitanteDomain,
+                usuario = solicitante,
                 fechaDesde = dto.fechaDesde,
                 fechaHasta = dto.fechaHasta,
             )
@@ -91,10 +90,10 @@ class ReservaService(
             libroEntity.disponibilidad = libroDomain.disponibilidad.name
             libroJpaRepository.save(libroEntity)
 
-            solicitanteEntity.bibliokarmas = solicitanteDomain.bibliokarmas
-            usuarioJpaRepository.save(solicitanteEntity)
+            solicitante.bibliokarmas = solicitante.bibliokarmas
+            usuarioJpaRepository.save(solicitante)
 
-            val reservaEntity = reservaDomain.toEntity(libroEntity, solicitanteEntity)
+            val reservaEntity = reservaDomain.toEntity(libroEntity, solicitante)
             val savedReserva = reservaJpaRepository.save(reservaEntity)
 
             return savedReserva.toDomain()

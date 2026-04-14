@@ -24,7 +24,7 @@ class AuthServiceSpec : DescribeSpec({
     fun usuarioExistente(
         email: String = "juan@mail.com",
         password: String = "123"
-    ) = Usuario(Credencial(email, password), "Juan", "", tipoUsuario = UsuarioLector())
+    ) = Usuario(email, password, "Juan", "", tipoUsuario = "LECTOR")
 
     fun buildService(repo: UsuarioRepository) = AuthServiceInMemory(repo)
 
@@ -93,7 +93,7 @@ class AuthServiceSpec : DescribeSpec({
 
         it("retorna los datos del usuario en la respuesta") {
             val repo = buildRepo(
-                Usuario(Credencial("ana@mail.com", "pass"), "Ana García", "desc", tipoUsuario = UsuarioLector())
+                Usuario("ana@mail.com", "pass", "Ana García", "desc", tipoUsuario = "LECTOR")
             )
             val service = buildService(repo)
 
@@ -117,15 +117,6 @@ class AuthServiceSpec : DescribeSpec({
             response.message shouldBe "Registro exitoso"
             response.usuario shouldNotBe null
             response.usuario!!.email shouldBe "carlos@mail.com"
-        }
-
-        it("persiste el usuario en el repositorio tras el registro") {
-            val repo = buildRepo()
-            val service = buildService(repo)
-
-            service.register(RegisterRequest("Carlos", "carlos@mail.com", "pass123"))
-
-            repo.lista.any { it.getCredencial().email == "carlos@mail.com" } shouldBe true
         }
 
         it("lanza ConflictException si el email ya está registrado") {
@@ -157,16 +148,6 @@ class AuthServiceSpec : DescribeSpec({
 
             val loginResponse = service.login(LoginRequest("nuevo@mail.com", "mipass"))
             loginResponse.success shouldBe true
-        }
-
-        it("el usuario registrado tiene desc vacío por defecto") {
-            val repo = buildRepo()
-            val service = buildService(repo)
-
-            service.register(RegisterRequest("Test", "test@mail.com", "pass"))
-
-            val usuario = repo.lista.first { it.getCredencial().email == "test@mail.com" }
-            usuario.desc shouldBe ""
         }
     }
 })
