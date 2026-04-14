@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm.repository
 
 import ar.edu.unsam.phm.domain.Reserva
+import ar.edu.unsam.phm.exceptions.ConflictException
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 
@@ -18,10 +19,13 @@ class ReservaRepository : CommonRepository<Reserva>() {
         }
     }
 
-    fun existeSuperposicion(libroId: Int, desde: LocalDate, hasta: LocalDate): Boolean {
+    fun existeSuperposicion(libroId: Int, desde: LocalDate, hasta: LocalDate) {
         val reservasQueChocan = this.search { reserva ->
             reserva.libro.id == libroId && reserva.sePisaCon(desde, hasta)
+        }.isNotEmpty()
+
+        if (reservasQueChocan) {
+            throw ConflictException("El libro ya está reservado para esas fechas.")
         }
-        return reservasQueChocan.isNotEmpty()
     }
 }

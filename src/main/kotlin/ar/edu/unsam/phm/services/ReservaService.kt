@@ -29,14 +29,8 @@ class ReservaService(
     fun crearReserva(dto: CrearReservaDTO): Reserva {
         val lock = locks.computeIfAbsent(dto.libroId) { Any() }
         synchronized(lock) {
-            if (reservaRepository.existeSuperposicion(dto.libroId, dto.fechaDesde, dto.fechaHasta)) {
-                throw ConflictException("El libro ya está reservado para esas fechas.")
-            }
-            val libro = try {
-                libroRepository.getById(dto.libroId)
-            } catch (_: EntityNotFoundException) {
-                throw NotFoundException("Libro ${dto.libroId} no encontrado")
-            }
+            reservaRepository.existeSuperposicion(dto.libroId, dto.fechaDesde, dto.fechaHasta)
+            val libro = libroRepository.getById(dto.libroId)
             val solicitante = usuarioRepository.getById(dto.usuarioId)
             val reserva = reservaRepository.create(
                 Reserva(libro, solicitante, dto.fechaDesde, dto.fechaHasta)
