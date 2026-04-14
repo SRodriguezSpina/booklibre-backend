@@ -38,7 +38,7 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
             }
         }
 
-        val usuario = if(usuarioId != null) usuarioRepository.findById(usuarioId) else null
+        val usuario = if(usuarioId != null) usuarioRepository.getById(usuarioId) else null
 
         val listaGeneros = if (generos.isBlank()) emptyList() else generos.split(",")
 
@@ -115,7 +115,7 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
             .map { it.usuarioId }
             .toSet()
             .associateWith { idCalificador ->
-                usuarioRepository.findById(idCalificador)?.nombre ?: "Usuario $idCalificador"
+                usuarioRepository.getById(idCalificador)?.nombre ?: "Usuario $idCalificador"
             }
     }
     fun getRating(libroId: Int): Double {
@@ -135,7 +135,7 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
         return libro.calificaciones.toDetalleDTOs(nombreUsuarioResenia(libro.calificaciones))
     }
     fun crearLibro(dto: LibroDTO, usuarioId: Int): LibroDTO {
-        val duenio = usuarioRepository.findById(usuarioId)
+        val duenio = usuarioRepository.getById(usuarioId)
             ?: throw NotFoundException("Usuario no encontrado")
 
         val data = LibroData(
@@ -198,7 +198,7 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
         } catch (_: EntityNotFoundException) {
             throw NotFoundException("Libro $idLibro no encontrado")
         }
-        usuarioRepository.findById(calificacion.usuarioId)
+        usuarioRepository.getById(calificacion.usuarioId)
             ?: throw NotFoundException("Usuario ${calificacion.usuarioId} no encontrado")
         libro.agregarCalificacion(calificacion) // el BusinessException de duplicado ya está en el dominio
         libroRepository.update(libro)

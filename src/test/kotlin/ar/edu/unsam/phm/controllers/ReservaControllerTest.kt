@@ -1,5 +1,7 @@
 package ar.edu.unsam.phm.controllers
 
+import ar.edu.unsam.phm.domain.*
+import java.time.LocalDate
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.services.ReservaService
@@ -35,26 +37,69 @@ class ReservaControllerTest(
     @Test
     @DisplayName("cuando se consultan las reservas de un usuario existente, devuelve 200 con la lista de DTOs")
     fun getReservas_ok() {
-        val dtos = listOf(
-            ReservaDTO(
-                id = 1, prestamoId = 500,
-                titulo = "1984", autor = "George Orwell",
-                estado = "EXCELENTE", propietarioId = 3,
-                imagenUrl = "", alquiladoPorId = 1,
-                fechaDesde = "2026-03-01", fechaHasta = "2026-03-10",
-                rating = 0.0, bibliokarma = 1550
-            ),
-            ReservaDTO(
-                id = 2, prestamoId = 501,
-                titulo = "Dune", autor = "Frank Herbert",
-                estado = "MUY_BUENO", propietarioId = 3,
-                imagenUrl = "", alquiladoPorId = 1,
-                fechaDesde = "2026-03-15", fechaHasta = "2026-03-25",
-                rating = 4.0, bibliokarma = 1200
+        val usuario1 = Usuario(
+            credencial = Credencial("test@mail.com", "1234"),
+            nombre = "Santi",
+            desc = "Usuario test",
+            bibliokarmas = 500 // importante para cálculos de algunos libros
+        )
+        val duenio = Usuario(
+            credencial = Credencial("duenio@mail.com", "1234"),
+            nombre = "Duenio",
+            desc = "Propietario"
+        )
+        val libro1 = LibroComun(
+            LibroData(
+                duenio = duenio,
+                titulo = "1984",
+                autor = "George Orwell",
+                descripcion = "",
+                genero = Genero.CIENCIA_FICCION,
+                cantidadPaginas = 300,
+                isbn = "1234567890123",
+                idioma = Idioma.ESPANOL,
+                editorial = "Test",
+                fechaPublicacion = LocalDate.of(2000, 1, 1),
+                estado = EstadoLibro.EXCELENTE,
+                imagenUrl = "",
+                disponibilidad = Disponibilidad.DISPONIBLE
             )
         )
+        libro1.id = 1
 
-        whenever(reservaService.obtenerReservas(1)).thenReturn(dtos)
+        val libro2 = LibroConDedicatoria(
+            LibroData(
+                duenio = duenio,
+                titulo = "Dune",
+                autor = "Frank Herbert",
+                descripcion = "",
+                genero = Genero.CIENCIA_FICCION,
+                cantidadPaginas = 500,
+                isbn = "1234567890124",
+                idioma = Idioma.ESPANOL,
+                editorial = "Test",
+                fechaPublicacion = LocalDate.of(2005, 1, 1),
+                estado = EstadoLibro.MUY_BUENO,
+                imagenUrl = "",
+                disponibilidad = Disponibilidad.DISPONIBLE
+            )
+        )
+        libro2.id = 2
+        val fechaDesde1 = LocalDate.of(2026, 3, 1)
+        val fechaHasta1 = LocalDate.of(2026, 3, 10)
+        val fechaDesde2 = LocalDate.of(2026, 3, 15)
+        val fechaHasta2 = LocalDate.of(2026, 3, 25)
+
+        val reservas = listOf(
+            Reserva(libro1, usuario1, fechaDesde1, fechaHasta1, 1550).apply {
+                id = 500
+            },
+            Reserva(libro2, usuario1, fechaDesde2, fechaHasta2, 1200).apply {
+                id = 501
+            }
+        )
+
+        whenever(reservaService.obtenerReservas(1)).thenReturn(reservas)
 
         mockMvc.perform(get("/api/reservas/1"))
             .andExpect(status().isOk)

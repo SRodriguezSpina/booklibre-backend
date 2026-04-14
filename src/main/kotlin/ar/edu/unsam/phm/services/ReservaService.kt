@@ -21,32 +21,16 @@ class ReservaService(
     private val reservaRepository: ReservaRepository
 ) {
     private val locks = java.util.concurrent.ConcurrentHashMap<Int, Any>()
-    fun obtenerReservas(usuarioId: Int): List<ReservaDTO> {
-        usuarioRepository.findById(usuarioId)
-            ?: throw NotFoundException("Usuario $usuarioId no encontrado")
+    fun obtenerReservas(usuarioId: Int): List<Reserva> {
+        usuarioRepository.getById(usuarioId)
         val reservas = reservaRepository.getReservasDeUsuario(usuarioId)
-        return reservas.map {
-            val cantidadReservasDelLibro = reservaRepository.findByLibroId(it.libro.id).size
-            val bibliokarma = it.libro.calcularBiblioKarmaTotal(
-                usuario = it.usuario,
-                desde = it.fechaDesde,
-                hasta = it.fechaHasta,
-                cantidadReservasDelLibro = cantidadReservasDelLibro,
-            )
-            it.toDTO(bibliokarma)
-        }
+        return reservas
     }
     fun crearReserva(dto: CrearReservaDTO): Reserva {
         val lock = locks.computeIfAbsent(dto.libroId) { Any() }
         synchronized(lock) {
-            if (reservaRepository.existeSuperposicion(dto.libroId, dto.fechaDesde, dto.fechaHasta)) {
-                throw ConflictException("El libro ya está reservado para esas fechas.")
-            }
-            val libro = try {
-                libroRepository.getById(dto.libroId)
-            } catch (_: EntityNotFoundException) {
-                throw NotFoundException("Libro ${dto.libroId} no encontrado")
-            }
+            reservaRepository.existeSuperposicion(dto.libroId, dto.fechaDesde, dto.fechaHasta)
+            val libro = libroRepository.getById(dto.libroId)
             val solicitante = usuarioRepository.getById(dto.usuarioId)
             val reserva = reservaRepository.create(
                 Reserva(libro, solicitante, dto.fechaDesde, dto.fechaHasta)
