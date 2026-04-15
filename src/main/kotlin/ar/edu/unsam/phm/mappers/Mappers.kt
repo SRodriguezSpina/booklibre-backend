@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.mappers
 import ar.edu.unsam.phm.domain.*
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
+import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.dtos.RangoReservaDTO
 import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
@@ -99,6 +100,9 @@ fun Reserva.toDTO(): ReservaDTO {
         bibliokarma = bibliokarma,
     )
 }
+
+fun PagedResponse<Libro>.toHomeDTO(bibliokarma: (Libro) -> Int?): PagedResponse<LibroHomeDTO> =
+    PagedResponse(content.map { it.toHomeDTO(bibliokarma(it)) }, page, totalPages)
 
 fun Libro.toHomeDTO(bibliokarma: Int?): LibroHomeDTO {
     return LibroHomeDTO(
