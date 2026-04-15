@@ -83,7 +83,7 @@ fun Libro.toDTO(
     )
 }
 
-fun Reserva.toDTO(bibliokarma: Int?): ReservaDTO {
+fun Reserva.toDTO(): ReservaDTO {
     return ReservaDTO(
         id = this.libro.id,
         prestamoId = this.id,
