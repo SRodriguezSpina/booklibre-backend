@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.domain.Reserva
+import ar.edu.unsam.phm.domain.TipoReserva
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.exceptions.ConflictException
@@ -20,10 +21,12 @@ class ReservaService(
     private val reservaRepository: ReservaRepository
 ) {
     private val locks = java.util.concurrent.ConcurrentHashMap<Int, Any>()
-    fun obtenerReservas(usuarioId: Int): List<Reserva> {
+    fun obtenerReservas(usuarioId: Int, tipo: TipoReserva): List<Reserva> {
         usuarioRepository.getById(usuarioId)
-        val reservas = reservaRepository.getReservasDeUsuario(usuarioId)
-        return reservas
+        return when (tipo) {
+            TipoReserva.HECHAS -> reservaRepository.getReservasHechas(usuarioId)
+            TipoReserva.RECIBIDAS -> reservaRepository.getReservasRecibidas(usuarioId)
+        }
     }
     fun crearReserva(dto: CrearReservaDTO): Reserva {
         val lock = locks.computeIfAbsent(dto.libroId) { Any() }
