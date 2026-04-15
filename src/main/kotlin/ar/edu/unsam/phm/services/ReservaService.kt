@@ -6,7 +6,6 @@ import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.mappers.toDTO
-import ar.edu.unsam.phm.repository.EntityNotFoundException
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository

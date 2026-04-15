@@ -1,5 +1,6 @@
 package ar.edu.unsam.phm.repository
 import ar.edu.unsam.phm.domain.Libro
+import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.domain.LibroFiltros
 import ar.edu.unsam.phm.dtos.PagedResponse
 import org.springframework.stereotype.Component
@@ -7,6 +8,10 @@ import kotlin.math.ceil
 
 @Component
 class LibroRepository: CommonRepository<Libro>() {
+    override fun getById(id: Int): Libro =
+        lista.find { it.id == id }
+            ?: throw NotFoundException("Libro $id no encontrado")
+
     fun getLibros(): List<Libro> = lista
     fun getLibrosDeUsuario(idUsuario: Int): List<Libro> {
         return lista.filter { idUsuario == it.duenio.id }

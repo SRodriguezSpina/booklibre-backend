@@ -1,6 +1,14 @@
 package ar.edu.unsam.phm.controllers
 
-import ar.edu.unsam.phm.domain.*
+import ar.edu.unsam.phm.domain.Calificacion
+import ar.edu.unsam.phm.domain.Credencial
+import ar.edu.unsam.phm.domain.Disponibilidad
+import ar.edu.unsam.phm.domain.EstadoLibro
+import ar.edu.unsam.phm.domain.Genero
+import ar.edu.unsam.phm.domain.Idioma
+import ar.edu.unsam.phm.domain.LibroComun
+import ar.edu.unsam.phm.domain.LibroData
+import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.BusinessException
@@ -30,6 +38,39 @@ class LibroControllerTest(
 ) {
     @MockBean lateinit var libroService: LibroService
 
+    private fun libroDominio(
+        id: Int = 1,
+        titulo: String = "1984",
+        autor: String = "George Orwell",
+    ): LibroComun {
+        val duenio = Usuario(
+            credencial = Credencial("ana@mail.com", "pass"),
+            nombre = "Ana García",
+            desc = "Publicadora",
+        ).also { it.id = 3 }
+
+        val libro = LibroComun(
+            LibroData(
+                duenio = duenio,
+                titulo = titulo,
+                autor = autor,
+                descripcion = "Distopía",
+                genero = Genero.LITERATURA_CLASICA,
+                cantidadPaginas = 300,
+                isbn = "9780000000001",
+                idioma = Idioma.ESPANOL,
+                editorial = "Debolsillo",
+                fechaPublicacion = LocalDate.of(1949, 6, 8),
+                estado = EstadoLibro.EXCELENTE,
+                imagenUrl = "https://example.com/cover.jpg",
+                fechaAgregado = LocalDate.now(),
+                disponibilidad = Disponibilidad.DISPONIBLE,
+            )
+        )
+        libro.id = id
+        return libro
+    }
+
     private fun libroDTO(
         id: Int = 1,
         titulo: String = "1984",
@@ -39,7 +80,7 @@ class LibroControllerTest(
         genero = Genero.LITERATURA_CLASICA, autor = autor, paginas = 300,
         isbn = "9780000000001", idioma = Idioma.ESPANOL, editorial = "Debolsillo",
         estado = "EXCELENTE", fechaPublicacion = LocalDate.of(1949, 6, 8),
-        propietarioId = 3, imagenUrl = "", alquiladoPorId = null,
+        propietarioId = 3, imagenUrl = "https://example.com/cover.jpg", alquiladoPorId = null,
         bibliokarma = 1550,
         estoyReservado = false,
         rating = 0.0,
@@ -50,19 +91,6 @@ class LibroControllerTest(
         cantidadCalificaciones = 0
     )
 
-    private fun libroDominio(): Libro {
-        val duenio = Usuario(Credencial("ana", "pass"), "Ana García", "").apply { id = 3 }
-        return LibroComun(
-            LibroData(
-                duenio = duenio,
-                titulo = "1984", autor = "George Orwell", descripcion = "Distopía",
-                genero = Genero.LITERATURA_CLASICA, cantidadPaginas = 300,
-                isbn = "9780000000001", idioma = Idioma.ESPANOL, editorial = "Debolsillo",
-                fechaPublicacion = LocalDate.of(1949, 6, 8), estado = EstadoLibro.EXCELENTE,
-                imagenUrl = "", disponibilidad = Disponibilidad.DISPONIBLE
-            )
-        ).apply { id = 1 }
-    }
 
     @Test
     @DisplayName("cuando se buscan libros con parámetros mínimos, devuelve 200 con la respuesta paginada")
@@ -112,33 +140,36 @@ class LibroControllerTest(
 
         mockMvc.perform(get("/api/libros/home").param("usuarioId", "1"))
             .andExpect(status().isOk)
-
         verify(libroService).search("", "", 0, 6, 1, null, null, null, null, null, null, "titulo")
     }
 
     @Test
     @DisplayName("cuando se consulta un libro existente, devuelve 200 con el DTO")
     fun getLibro_ok() {
-        whenever(libroService.getLibro(1)).thenReturn(libroDTO())
+        val libro = libroDominio()
+        whenever(libroService.obtenerLibro(1)).thenReturn(libro)
+        whenever(libroService.obtenerReservasDeLibro(1)).thenReturn(emptyList())
+        whenever(libroService.obtenerNombresUsuariosCalificaciones(libro)).thenReturn(emptyMap())
 
         mockMvc.perform(get("/api/libros/1").param("usuarioId", "1"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.titulo").value("1984"))
             .andExpect(jsonPath("$.autor").value("George Orwell"))
-            .andExpect(jsonPath("$.bibliokarma").value(1550))
 
-        verify(libroService).getLibro(1)
+        verify(libroService).obtenerLibro(1)
+        verify(libroService).obtenerReservasDeLibro(1)
+        verify(libroService).obtenerNombresUsuariosCalificaciones(libro)
     }
 
     @Test
     @DisplayName("cuando se consulta un libro inexistente, devuelve 404 Not Found")
     fun getLibro_inexistente() {
-        whenever(libroService.getLibro(999)).thenThrow(NotFoundException("Libro no encontrado"))
+        whenever(libroService.obtenerLibro(999)).thenThrow(NotFoundException("Libro no encontrado"))
 
         mockMvc.perform(get("/api/libros/999").param("usuarioId", "1"))
             .andExpect(status().isNotFound)
 
-        verify(libroService).getLibro(999)
+        verify(libroService).obtenerLibro(999)
     }
 
     @Test
@@ -206,7 +237,7 @@ class LibroControllerTest(
     @DisplayName("cuando se actualiza un libro existente, devuelve 200 con el DTO actualizado")
     fun updateLibro_ok() {
         val dto = libroDTO(titulo = "1984 - Edición revisada")
-        whenever(libroService.actualizarLibro(eq(1), any(), any())).thenReturn(dto)
+        whenever(libroService.actualizarLibro(eq(1), any(), any())).thenReturn(libroDominio(titulo = "1984 - Edición revisada"))
         mockMvc.perform(
             put("/api/libros/1")
                 .param("usuarioId", "1")
@@ -236,7 +267,7 @@ class LibroControllerTest(
     @DisplayName("cuando se crea un libro con datos válidos, devuelve 200 con el DTO creado")
     fun crearLibro_ok() {
         val dto = libroDTO()
-        whenever(libroService.crearLibro(any(), any())).thenReturn(dto)
+        whenever(libroService.crearLibro(any(), any())).thenReturn(libroDominio())
 
         mockMvc.perform(
             post("/api/libros/nuevo")

@@ -64,6 +64,21 @@ abstract class Libro(data: LibroData): BaseEntity() {
     companion object {
         private val ISBN_REGEX = Regex("^\\d{13}$")
 
+        private fun normalizarYValidarTextoObligatorio(raw: String, nombreCampo: String): String {
+            val value = raw.trim()
+            if (value.isBlank()) {
+                throw BusinessException("El $nombreCampo no puede estar vacío")
+            }
+            return value
+        }
+
+        private fun validarPaginas(value: Int): Int {
+            if (value <= 0) {
+                throw BusinessException("La cantidad de páginas debe ser mayor a 0")
+            }
+            return value
+        }
+
         fun normalizarYValidarIsbn(raw: String): String {
             val isbn = raw.trim()
             if (!ISBN_REGEX.matches(isbn)) {
@@ -74,23 +89,67 @@ abstract class Libro(data: LibroData): BaseEntity() {
     }
 
     val duenio = data.duenio
-    var titulo = data.titulo
-    var autor = data.autor
-    var descripcion = data.descripcion
+    var titulo = normalizarYValidarTextoObligatorio(data.titulo, "título")
+        set(value) {
+            field = normalizarYValidarTextoObligatorio(value, "título")
+        }
+    var autor = normalizarYValidarTextoObligatorio(data.autor, "autor")
+        set(value) {
+            field = normalizarYValidarTextoObligatorio(value, "autor")
+        }
+    var descripcion = normalizarYValidarTextoObligatorio(data.descripcion, "descripción")
+        set(value) {
+            field = normalizarYValidarTextoObligatorio(value, "descripción")
+        }
     var genero = data.genero
-    var cantidadPaginas = data.cantidadPaginas
+    var cantidadPaginas = validarPaginas(data.cantidadPaginas)
+        set(value) {
+            field = validarPaginas(value)
+        }
     var isbn = normalizarYValidarIsbn(data.isbn)
         set(value) {
             field = normalizarYValidarIsbn(value)
         }
     var idioma = data.idioma
-    var editorial = data.editorial
+    var editorial = normalizarYValidarTextoObligatorio(data.editorial, "editorial")
+        set(value) {
+            field = normalizarYValidarTextoObligatorio(value, "editorial")
+        }
     var fechaPublicacion = data.fechaPublicacion
     var fechaAgregado = data.fechaAgregado
     var estado = data.estado
-    var imagenUrl = data.imagenUrl
+    var imagenUrl = normalizarYValidarTextoObligatorio(data.imagenUrl, "URL de imagen")
+        set(value) {
+            field = normalizarYValidarTextoObligatorio(value, "URL de imagen")
+        }
     var calificaciones: MutableList<Calificacion> = mutableListOf()
     var disponibilidad: Disponibilidad = data.disponibilidad
+
+    fun actualizarDatos(
+        nuevoTitulo: String,
+        nuevoAutor: String,
+        nuevaDescripcion: String,
+        nuevoGenero: Genero,
+        nuevasPaginas: Int,
+        nuevoIsbn: String,
+        nuevoIdioma: Idioma,
+        nuevaEditorial: String,
+        nuevoEstado: EstadoLibro,
+        nuevaFechaPublicacion: LocalDate,
+        nuevaImagenUrl: String,
+    ) {
+        titulo = nuevoTitulo
+        autor = nuevoAutor
+        descripcion = nuevaDescripcion
+        genero = nuevoGenero
+        cantidadPaginas = nuevasPaginas
+        isbn = nuevoIsbn
+        idioma = nuevoIdioma
+        editorial = nuevaEditorial
+        estado = nuevoEstado
+        fechaPublicacion = nuevaFechaPublicacion
+        imagenUrl = nuevaImagenUrl
+    }
 
     fun calcularBiblioKarmaTotal(
         usuario: Usuario,

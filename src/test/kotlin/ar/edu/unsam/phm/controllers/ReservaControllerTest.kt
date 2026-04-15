@@ -53,7 +53,7 @@ class ReservaControllerTest(
                 duenio = duenio,
                 titulo = "1984",
                 autor = "George Orwell",
-                descripcion = "",
+                descripcion = "Descripción de prueba",
                 genero = Genero.CIENCIA_FICCION,
                 cantidadPaginas = 300,
                 isbn = "1234567890123",
@@ -61,7 +61,7 @@ class ReservaControllerTest(
                 editorial = "Test",
                 fechaPublicacion = LocalDate.of(2000, 1, 1),
                 estado = EstadoLibro.EXCELENTE,
-                imagenUrl = "",
+                imagenUrl = "https://example.com/cover.jpg",
                 disponibilidad = Disponibilidad.DISPONIBLE
             )
         )
@@ -72,7 +72,7 @@ class ReservaControllerTest(
                 duenio = duenio,
                 titulo = "Dune",
                 autor = "Frank Herbert",
-                descripcion = "",
+                descripcion = "Descripción de prueba",
                 genero = Genero.CIENCIA_FICCION,
                 cantidadPaginas = 500,
                 isbn = "1234567890124",
@@ -80,7 +80,7 @@ class ReservaControllerTest(
                 editorial = "Test",
                 fechaPublicacion = LocalDate.of(2005, 1, 1),
                 estado = EstadoLibro.MUY_BUENO,
-                imagenUrl = "",
+                imagenUrl = "https://example.com/cover2.jpg",
                 disponibilidad = Disponibilidad.DISPONIBLE
             )
         )
