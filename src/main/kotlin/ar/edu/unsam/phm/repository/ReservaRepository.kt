@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm.repository
 
 import ar.edu.unsam.phm.domain.Reserva
+import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import org.springframework.stereotype.Component
 import java.time.LocalDate
@@ -27,5 +28,21 @@ class ReservaRepository : CommonRepository<Reserva>() {
         if (reservasQueChocan) {
             throw ConflictException("El libro ya está reservado para esas fechas.")
         }
+    }
+
+    fun obtenerIdsLibrosReservados(fechaDesdeStr: String?, fechaHastaStr: String?): Set<Int>? {
+        if (fechaDesdeStr == null || fechaHastaStr == null) return null
+
+        val desde = LocalDate.parse(fechaDesdeStr)
+        val hasta = LocalDate.parse(fechaHastaStr)
+
+        if (!desde.isBefore(hasta)) {
+            throw BusinessException("La fecha de inicio debe ser anterior a la fecha final")
+        }
+
+        return lista
+            .filter { it.sePisaCon(desde, hasta) }
+            .map { it.libro.id }
+            .toSet()
     }
 }
