@@ -11,7 +11,6 @@ class ReservaRepository : CommonRepository<Reserva>() {
     fun findByLibroId(libroId: Int): List<Reserva> {
         return lista.filter { reserva -> reserva.libro.id == libroId }
     }
-
 //    fun getReservasDeUsuario(usuarioId: Int): List<Reserva> {
 //        return lista.filter { reserva ->
 //            val esDuenio = reserva.libro.duenio.id == usuarioId
