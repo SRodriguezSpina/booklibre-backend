@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm.domain
 
 import ar.edu.unsam.phm.exceptions.BusinessException
+import jakarta.persistence.*
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
@@ -52,22 +53,27 @@ data class LibroData(
     val editorial: String,
     val fechaPublicacion: LocalDate,
     val estado: EstadoLibro,
-    val imagenUrl: String,
+    val imagenUrl: String? = null,
     val fechaAgregado: LocalDate = LocalDate.now(),
-    val disponibilidad: Disponibilidad
+    val disponibilidad: Disponibilidad,
 )
 
-abstract class Libro(data: LibroData): BaseEntity() {
+@Entity
+@Table(name = "libros")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "tipo", discriminatorType = DiscriminatorType.STRING)
+abstract class Libro() : BaseEntity() {
+
     companion object {
         private val ISBN_REGEX = Regex("^\\d{13}$")
 
-        private fun validarTextoObligatorio(raw: String, campo: String): String {
+        fun validarTextoObligatorio(raw: String, campo: String): String {
             val value = raw.trim()
             if (value.isBlank()) throw BusinessException("El $campo no puede estar vacío")
             return value
         }
 
-        private fun validarPaginas(value: Int): Int {
+        fun validarPaginas(value: Int): Int {
             if (value <= 0) throw BusinessException("La cantidad de páginas debe ser mayor a 0")
             return value
         }
@@ -79,28 +85,72 @@ abstract class Libro(data: LibroData): BaseEntity() {
         }
     }
 
-    val duenio = data.duenio
-    var titulo = validarTextoObligatorio(data.titulo, "título")
-        set(value) { field = validarTextoObligatorio(value, "título") }
-    var autor = validarTextoObligatorio(data.autor, "autor")
-        set(value) { field = validarTextoObligatorio(value, "autor") }
-    var descripcion = validarTextoObligatorio(data.descripcion, "descripción")
-        set(value) { field = validarTextoObligatorio(value, "descripción") }
-    var genero = data.genero
-    var cantidadPaginas = validarPaginas(data.cantidadPaginas)
-        set(value) { field = validarPaginas(value) }
-    var isbn = normalizarYValidarIsbn(data.isbn)
-        set(value) { field = normalizarYValidarIsbn(value) }
-    var idioma = data.idioma
-    var editorial = validarTextoObligatorio(data.editorial, "editorial")
-        set(value) { field = validarTextoObligatorio(value, "editorial") }
-    var fechaPublicacion = data.fechaPublicacion
-    var fechaAgregado = data.fechaAgregado
-    var estado = data.estado
-    var imagenUrl = validarTextoObligatorio(data.imagenUrl, "URL de imagen")
-        set(value) { field = validarTextoObligatorio(value, "URL de imagen") }
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "duenio_id", nullable = false)
+    lateinit var duenio: Usuario
+
+    @Column(nullable = false)
+    var titulo: String = ""
+
+    @Column(nullable = false)
+    var autor: String = ""
+
+    @Column(nullable = false, length = 2000)
+    var descripcion: String = ""
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var genero: Genero = Genero.DRAMA
+
+    @Column(name = "cantidad_paginas", nullable = false)
+    var cantidadPaginas: Int = 1
+
+    @Column(nullable = false)
+    var isbn: String = ""
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var idioma: Idioma = Idioma.ESPANOL
+
+    @Column(nullable = false)
+    var editorial: String = ""
+
+    @Column(nullable = false)
+    var fechaPublicacion: LocalDate = LocalDate.now()
+
+    @Column(nullable = false)
+    var fechaAgregado: LocalDate = LocalDate.now()
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var estado: EstadoLibro = EstadoLibro.BUENO
+
+    @Column(nullable = true)
+    var imagenUrl: String? = null
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var disponibilidad: Disponibilidad = Disponibilidad.DISPONIBLE
+
+    @Transient
     var calificaciones: MutableList<Calificacion> = mutableListOf()
-    var disponibilidad: Disponibilidad = data.disponibilidad
+
+    constructor(data: LibroData) : this() {
+        duenio          = data.duenio
+        titulo          = validarTextoObligatorio(data.titulo, "título")
+        autor           = validarTextoObligatorio(data.autor, "autor")
+        descripcion     = validarTextoObligatorio(data.descripcion, "descripción")
+        genero          = data.genero
+        cantidadPaginas = validarPaginas(data.cantidadPaginas)
+        isbn            = normalizarYValidarIsbn(data.isbn)
+        idioma          = data.idioma
+        editorial       = validarTextoObligatorio(data.editorial, "editorial")
+        fechaPublicacion = data.fechaPublicacion
+        fechaAgregado   = data.fechaAgregado
+        estado          = data.estado
+        imagenUrl       = data.imagenUrl
+        disponibilidad  = data.disponibilidad
+    }
 
     fun calcularBiblioKarmaTotal(
         usuario: Usuario,
@@ -112,20 +162,25 @@ abstract class Libro(data: LibroData): BaseEntity() {
         val diasReserva = ChronoUnit.DAYS.between(desde, hasta).toInt() + 1
         return (5 * diasReserva) + plusBiblioKarma(usuario, cantidadReservasDelLibro)
     }
+
     fun agregarCalificacion(nueva: Calificacion) {
         if (nueva.valor !in 1..5) throw BusinessException("La calificación debe estar entre 1 y 5")
-        if (calificaciones.any { it.usuarioId == nueva.usuarioId }) {
+        if (calificaciones.any { it.usuarioId == nueva.usuarioId })
             throw BusinessException("Usuario ${nueva.usuarioId} ya calificó este libro")
-        }
         calificaciones.add(nueva)
     }
+
     fun getCalificacion(): Double {
         if (calificaciones.isEmpty()) return 0.0
         val promedio = calificaciones.map { it.valor }.average()
         return (promedio * 10.0).roundToInt() / 10.0
     }
+
     fun estaDisponible() = disponibilidad == Disponibilidad.DISPONIBLE
-    fun actualizoDisponibilidad(estado: Boolean) = if (estado) disponibilidad = Disponibilidad.DISPONIBLE else disponibilidad = Disponibilidad.RESERVADO
+
+    fun actualizoDisponibilidad(estaDisponible: Boolean) {
+        disponibilidad = if (estaDisponible) Disponibilidad.DISPONIBLE else Disponibilidad.RESERVADO
+    }
 
     abstract fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int = 0): Int
 
@@ -155,34 +210,52 @@ abstract class Libro(data: LibroData): BaseEntity() {
         nuevaEditorial: String,
         nuevaFechaPublicacion: LocalDate,
         nuevoEstado: EstadoLibro,
-        nuevaImagenUrl: String,
+        nuevaImagenUrl: String?,
     ) {
-        titulo           = nuevoTitulo
-        autor            = nuevoAutor
-        descripcion      = nuevaDescripcion
+        titulo           = validarTextoObligatorio(nuevoTitulo, "título")
+        autor            = validarTextoObligatorio(nuevoAutor, "autor")
+        descripcion      = validarTextoObligatorio(nuevaDescripcion, "descripción")
         genero           = nuevoGenero
-        cantidadPaginas  = nuevasPaginas
-        isbn             = nuevoIsbn
+        cantidadPaginas  = validarPaginas(nuevasPaginas)
+        isbn             = normalizarYValidarIsbn(nuevoIsbn)
         idioma           = nuevoIdioma
-        editorial        = nuevaEditorial
+        editorial        = validarTextoObligatorio(nuevaEditorial, "editorial")
         fechaPublicacion = nuevaFechaPublicacion
         estado           = nuevoEstado
         imagenUrl        = nuevaImagenUrl
     }
 }
-class LibroComun(data: LibroData) : Libro(data) {
+
+@Entity
+@DiscriminatorValue("Comun")
+class LibroComun : Libro {
+    constructor() : super()
+    constructor(data: LibroData) : super(data)
+
     override fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int): Int {
         if (cantidadPaginas <= 0) throw BusinessException("La cantidad de páginas debe ser mayor a 0")
         val multiplicador = if (usuario.bibliokarmas < 1000) 5 else 2
         return cantidadPaginas * multiplicador
     }
 }
-class LibroConDedicatoria(data: LibroData) : Libro(data) {
+
+@Entity
+@DiscriminatorValue("ConDedicatoria")
+class LibroConDedicatoria : Libro {
+    constructor() : super()
+    constructor(data: LibroData) : super(data)
+
     override fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int): Int {
         return 200 + (10 * cantidadReservasDelLibro)
     }
 }
-class LibroColeccionable(data: LibroData) : Libro(data) {
+
+@Entity
+@DiscriminatorValue("Coleccionable")
+class LibroColeccionable : Libro {
+    constructor() : super()
+    constructor(data: LibroData) : super(data)
+
     override fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int): Int {
         if (usuario.bibliokarmas < 0) throw BusinessException("El usuario no puede tener bibliokarmas negativos")
         if (cantidadPaginas <= 0) throw BusinessException("La cantidad de páginas debe ser mayor a 0")
