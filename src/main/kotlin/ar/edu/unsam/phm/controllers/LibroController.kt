@@ -6,6 +6,7 @@ import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.mappers.toDTO
+import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.services.LibroService
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -30,13 +31,12 @@ class LibroController(val libroService: LibroService) {
         @RequestParam(required = false) prestadoPor: String?,
         @RequestParam(defaultValue = "titulo") sortBy: String?,
     ): PagedResponse<LibroHomeDTO> {
-        val pagedLibros = libroService.search(
+        return libroService.search(
             query, generos, page, size, usuarioId, paginasMin, paginasMax,
-            fechaDesde, fechaHasta, isbn, prestadoPor, sortBy)
-        val content = pagedLibros.content.map { libro ->
-            libro.toHomeDTO(libroService.calcularBiblioKarma(libro, usuarioId))
+            fechaDesde, fechaHasta, isbn, prestadoPor, sortBy
+        ).toHomeDTO { libro ->
+            libroService.calcularBiblioKarma(libro, usuarioId)
         }
-        return PagedResponse(content, pagedLibros.page, pagedLibros.totalPages)
     }
 
     @GetMapping("/{libroId}")

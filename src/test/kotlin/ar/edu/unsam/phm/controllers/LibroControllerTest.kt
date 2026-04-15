@@ -8,6 +8,7 @@ import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
 import ar.edu.unsam.phm.domain.LibroComun
 import ar.edu.unsam.phm.domain.LibroData
+import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.PagedResponse

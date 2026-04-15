@@ -1,13 +1,5 @@
 package ar.edu.unsam.phm.services
-import ar.edu.unsam.phm.domain.Calificacion
-import ar.edu.unsam.phm.domain.Disponibilidad
-import ar.edu.unsam.phm.domain.EstadoLibro
-import ar.edu.unsam.phm.domain.Libro
-import ar.edu.unsam.phm.domain.LibroColeccionable
-import ar.edu.unsam.phm.domain.LibroComun
-import ar.edu.unsam.phm.domain.LibroConDedicatoria
-import ar.edu.unsam.phm.domain.LibroData
-import ar.edu.unsam.phm.domain.Reserva
+import ar.edu.unsam.phm.domain.*
 import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
@@ -27,17 +19,13 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
         fechaDesde: String?, fechaHasta: String?,
         isbn: String?, prestadoPor: String?, sortBy: String?
     ): PagedResponse<Libro> {
-
-        // 1. Delegamos el cálculo de libros bloqueados al especialista (ReservaRepository)
         val librosReservadosIds = reservaRepository.obtenerIdsLibrosReservados(fechaDesde, fechaHasta)
 
-        // 2. Delegamos la creación y validación de filtros al propio Dominio (LibroFiltros)
         val filtros = LibroFiltros.desdeRequest(
             query, generos, paginasMin, paginasMax, isbn,
             prestadoPor, usuarioId, librosReservadosIds, sortBy
         )
 
-        // 3. Delegamos la búsqueda y la paginación a la base de datos (LibroRepository)
         return libroRepository.buscarPaginado(filtros, page, size)
     }
 

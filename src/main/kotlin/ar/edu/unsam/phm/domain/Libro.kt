@@ -37,7 +37,7 @@ data class LibroFiltros(
                 prestadoPor = prestadoPor,
                 excluirDuenioId = usuarioId,
                 libroIdsReservados = libroIdsReservados,
-                sortBy = sortBy ?: "titulo" // Valor por defecto
+                sortBy = sortBy ?: "titulo"
             )
         }
     }
