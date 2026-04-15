@@ -28,6 +28,16 @@ interface ReservaJpaRepository : JpaRepository<ReservaEntity, Int> {
         @Param("hasta")   hasta: LocalDate,
     ): Boolean
 
+    @Query("""
+        SELECT r.libro.id FROM ReservaEntity r
+        WHERE r.fechaDesde <= :hasta
+          AND r.fechaHasta >= :desde
+    """)
+    fun findLibroIdsBySuperposicion(
+        @Param("desde") desde: LocalDate,
+        @Param("hasta") hasta: LocalDate,
+    ): List<Int>
+
     @Query(
         value = """
             SELECT
