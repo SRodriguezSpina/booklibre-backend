@@ -24,22 +24,12 @@ class ReservaService(
 
     private val locks = java.util.concurrent.ConcurrentHashMap<Int, Any>()
 
-    fun obtenerReservas(usuarioId: Int): List<ReservaDTO> {
+    fun obtenerReservas(usuarioId: Int): List<Reserva> {
         usuarioJpaRepository.findById(usuarioId)
             .orElseThrow { NotFoundException("Usuario $usuarioId no encontrado") }
 
         val reservasDomain = reservaJpaRepository.findByUsuarioIdOrLibroDuenioId(usuarioId).map { it.toDomain() }
-
-        return reservasDomain.map { reservaDomain ->
-            val cantidadReservasDelLibro = reservaJpaRepository.findByLibroId(reservaDomain.libro.id).size
-            val bibliokarma = reservaDomain.libro.calcularBiblioKarmaTotal(
-                usuario = reservaDomain.usuario,
-                desde = reservaDomain.fechaDesde,
-                hasta = reservaDomain.fechaHasta,
-                cantidadReservasDelLibro = cantidadReservasDelLibro,
-            )
-            reservaDomain.toDTO(bibliokarma)
-        }
+        return reservasDomain
     }
 
     fun obtenerReservasAnuales(usuarioId: Int): List<ReservaAnualUsuarioDTO> {
