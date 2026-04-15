@@ -7,6 +7,42 @@ import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
+data class LibroFiltros(
+    val query: String = "",
+    val generos: List<String> = emptyList(),
+    val paginasMin: Int? = null,
+    val paginasMax: Int? = null,
+    val isbn: String? = null,
+    val prestadoPor: String? = null,
+    val excluirDuenioId: Int? = null,
+    val libroIdsReservados: Set<Int>? = null,
+    val sortBy: String = "titulo"
+) {
+    companion object {
+        fun desdeRequest(
+            query: String, generos: String, paginasMin: Int?, paginasMax: Int?,
+            isbn: String?, prestadoPor: String?, usuarioId: Int?,
+            libroIdsReservados: Set<Int>?, sortBy: String?
+        ): LibroFiltros {
+            if (paginasMin != null && paginasMax != null && paginasMin >= paginasMax) {
+                throw BusinessException("El mínimo de páginas debe ser menor al máximo")
+            }
+
+            return LibroFiltros(
+                query = query,
+                generos = if (generos.isBlank()) emptyList() else generos.split(","),
+                paginasMin = paginasMin,
+                paginasMax = paginasMax,
+                isbn = isbn,
+                prestadoPor = prestadoPor,
+                excluirDuenioId = usuarioId,
+                libroIdsReservados = libroIdsReservados,
+                sortBy = sortBy ?: "titulo"
+            )
+        }
+    }
+}
+
 data class LibroData(
     val duenio: Usuario,
     val titulo: String,
@@ -125,6 +161,7 @@ abstract class Libro(data: LibroData): BaseEntity() {
         val diasReserva = ChronoUnit.DAYS.between(desde, hasta).toInt() + 1
         return (5 * diasReserva) + plusBiblioKarma(usuario, cantidadReservasDelLibro)
     }
+
     fun agregarCalificacion(nueva: Calificacion) {
         if (nueva.valor !in 1..5) throw BusinessException("La calificación debe estar entre 1 y 5")
         if (calificaciones.any { it.usuarioId == nueva.usuarioId }) {
@@ -132,15 +169,42 @@ abstract class Libro(data: LibroData): BaseEntity() {
         }
         calificaciones.add(nueva)
     }
+
     fun getCalificacion(): Double {
         if (calificaciones.isEmpty()) return 0.0
         val promedio = calificaciones.map { it.valor }.average()
         return (promedio * 10.0).roundToInt() / 10.0
     }
+
     fun estaDisponible() = disponibilidad == Disponibilidad.DISPONIBLE
-    fun actualizoDisponibilidad(estado: Boolean) = if (estado) disponibilidad = Disponibilidad.DISPONIBLE else disponibilidad = Disponibilidad.RESERVADO
+    fun actualizoDisponibilidad(estado: Boolean) =
+        if (estado) disponibilidad = Disponibilidad.DISPONIBLE else disponibilidad = Disponibilidad.RESERVADO
 
     abstract fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int = 0): Int
+
+    fun cumpleFiltros(filtros: LibroFiltros): Boolean {
+        val matchQuery = filtros.query.isBlank() ||
+                titulo.contains(filtros.query, ignoreCase = true) ||
+                autor.contains(filtros.query, ignoreCase = true)
+
+        val matchGenero = filtros.generos.isEmpty() ||
+                filtros.generos.contains(genero.name)
+
+        val matchPaginasMin = filtros.paginasMin == null || cantidadPaginas >= filtros.paginasMin
+        val matchPaginasMax = filtros.paginasMax == null || cantidadPaginas <= filtros.paginasMax
+
+        val matchIsbn = filtros.isbn.isNullOrBlank() ||
+                isbn.contains(filtros.isbn, ignoreCase = true)
+
+        val matchPrestadoPor = filtros.prestadoPor.isNullOrBlank() ||
+                duenio.nombre.contains(filtros.prestadoPor, ignoreCase = true)
+
+        val matchDisponibilidad = filtros.libroIdsReservados == null ||
+                id !in filtros.libroIdsReservados
+
+        return matchQuery && matchGenero && matchPaginasMin && matchPaginasMax &&
+                matchIsbn && matchPrestadoPor && matchDisponibilidad
+    }
 }
 class LibroComun(data: LibroData) : Libro(data) {
     override fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int): Int {

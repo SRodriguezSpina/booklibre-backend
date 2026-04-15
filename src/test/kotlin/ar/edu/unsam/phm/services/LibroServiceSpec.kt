@@ -559,7 +559,7 @@ class LibroServiceSpec : DescribeSpec({
 
                 val resultado = service.search("", "", 0, 6, otroUsuario.id, null, null, null, null, null, null, "duenio")
 
-                resultado.content.map { it.duenio } shouldBe listOf("Ana García", "Zoe")
+                resultado.content.map { it.duenio.nombre } shouldBe listOf("Ana García", "Zoe")
             }
         }
         describe("bibliokarma sin usuario logueado") {
@@ -571,7 +571,9 @@ class LibroServiceSpec : DescribeSpec({
 
                 val resultado = service.search("", "", 0, 6, null, null, null, null, null, null, null, "titulo")
 
-                resultado.content.first().bibliokarma shouldBe 0
+                val libroEncontrado = resultado.content.first()
+
+                service.calcularBiblioKarma(libroEncontrado, null) shouldBe 0
             }
         }
     }

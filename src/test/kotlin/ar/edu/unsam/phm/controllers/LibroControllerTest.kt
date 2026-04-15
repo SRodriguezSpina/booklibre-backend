@@ -8,9 +8,9 @@ import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
 import ar.edu.unsam.phm.domain.LibroComun
 import ar.edu.unsam.phm.domain.LibroData
+import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.LibroDTO
-import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.NotFoundException
@@ -92,18 +92,15 @@ class LibroControllerTest(
         cantidadCalificaciones = 0
     )
 
-    private fun libroHomeDTO() = LibroHomeDTO(
-        id = 1, imagenUrl = "https://example.com/cover.jpg", genero = Genero.LITERATURA_CLASICA,
-        titulo = "1984", autor = "George Orwell", calificacion = 4.5,
-        isbn = "9780000000001", idioma = Idioma.ESPANOL, tipo = "LibroComun",
-        bibliokarma = 1550, estado = "EXCELENTE", duenio = "Ana García"
-    )
 
     @Test
     @DisplayName("cuando se buscan libros con parámetros mínimos, devuelve 200 con la respuesta paginada")
     fun search_ok() {
-        val paged = PagedResponse(content = listOf(libroHomeDTO()), totalPages = 1, page = 0)
+        val libro = libroDominio()
+        val paged = PagedResponse<Libro>(content = listOf(libro), totalPages = 1, page = 0)
+
         whenever(libroService.search("1984", "", 0, 6, 1, null, null, null, null, null, null, "titulo")).thenReturn(paged)
+        whenever(libroService.calcularBiblioKarma(any(), eq(1))).thenReturn(1550)
 
         mockMvc.perform(
             get("/api/libros/home")
@@ -112,6 +109,7 @@ class LibroControllerTest(
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.content[0].titulo").value("1984"))
+            .andExpect(jsonPath("$.content[0].bibliokarma").value(1550))
 
         verify(libroService).search("1984", "", 0, 6, 1, null, null, null, null, null, null, "titulo")
     }
@@ -119,7 +117,7 @@ class LibroControllerTest(
     @Test
     @DisplayName("cuando se buscan libros con filtros opcionales, los pasa correctamente al service")
     fun search_conFiltros() {
-        val paged = PagedResponse(content = emptyList<LibroHomeDTO>(), totalPages = 0, page = 0)
+        val paged = PagedResponse<Libro>(content = emptyList(), totalPages = 0, page = 0)
         whenever(libroService.search("", "", 0, 6, 1, 100, 500, "2026-01-01", "2026-12-31", null, null, "titulo")).thenReturn(paged)
 
         mockMvc.perform(
@@ -138,7 +136,7 @@ class LibroControllerTest(
     @Test
     @DisplayName("cuando se busca sin resultados, devuelve 200 con lista vacía")
     fun search_sinResultados() {
-        val paged = PagedResponse(content = emptyList<LibroHomeDTO>(), totalPages = 0, page = 0)
+        val paged = PagedResponse<Libro>(content = emptyList(), totalPages = 0, page = 0)
         whenever(libroService.search("", "", 0, 6, 1, null, null, null, null, null, null, "titulo")).thenReturn(paged)
 
         mockMvc.perform(get("/api/libros/home").param("usuarioId", "1"))
@@ -243,7 +241,7 @@ class LibroControllerTest(
         whenever(libroService.actualizarLibro(eq(1), any(), any())).thenReturn(libroDominio(titulo = "1984 - Edición revisada"))
         mockMvc.perform(
             put("/api/libros/1")
-                .param("usuarioId", "1") // <--- ¡AÑADIDO AQUÍ!
+                .param("usuarioId", "1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto))
         )
@@ -260,7 +258,7 @@ class LibroControllerTest(
         whenever(libroService.actualizarLibro(eq(999), any(), any())).thenThrow(NotFoundException("Libro no encontrado"))
         mockMvc.perform(
             put("/api/libros/999")
-                .param("usuarioId", "1") // <--- ¡AÑADIDO AQUÍ!
+                .param("usuarioId", "1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto))
         ).andExpect(status().isNotFound)

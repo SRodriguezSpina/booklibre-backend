@@ -1,100 +1,38 @@
 package ar.edu.unsam.phm.services
-import ar.edu.unsam.phm.domain.Calificacion
-import ar.edu.unsam.phm.domain.Disponibilidad
-import ar.edu.unsam.phm.domain.EstadoLibro
-import ar.edu.unsam.phm.domain.Libro
-import ar.edu.unsam.phm.domain.LibroColeccionable
-import ar.edu.unsam.phm.domain.LibroComun
-import ar.edu.unsam.phm.domain.LibroConDedicatoria
-import ar.edu.unsam.phm.domain.LibroData
-import ar.edu.unsam.phm.domain.Reserva
+import ar.edu.unsam.phm.domain.*
 import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroDTO
-import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.*
-import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import org.springframework.stereotype.Service
 import ar.edu.unsam.phm.mappers.toDetalleDTOs
 import java.time.LocalDate
-import kotlin.math.ceil
 
 @Service
 class LibroService(val libroRepository: LibroRepository, private val usuarioRepository: UsuarioRepository, private val reservaRepository: ReservaRepository) {
+    fun search(
+        query: String, generos: String, page: Int, size: Int,
+        usuarioId: Int?, paginasMin: Int?, paginasMax: Int?,
+        fechaDesde: String?, fechaHasta: String?,
+        isbn: String?, prestadoPor: String?, sortBy: String?
+    ): PagedResponse<Libro> {
+        val librosReservadosIds = reservaRepository.obtenerIdsLibrosReservados(fechaDesde, fechaHasta)
 
-    fun search(query: String, generos: String, page: Int, size: Int, usuarioId: Int?, paginasMin: Int?, paginasMax: Int?,
-               fechaDesde: String?, fechaHasta: String?, isbn: String?, prestadoPor: String?, sortBy: String?): PagedResponse<LibroHomeDTO> {
-        //validaciones antes
-        if (paginasMin != null && paginasMax != null && paginasMin >= paginasMax) {
-            throw BusinessException("El mínimo de páginas debe ser menor al máximo")
-        }
-        if (fechaDesde != null && fechaHasta != null) {
-            val desde = LocalDate.parse(fechaDesde)
-            val hasta = LocalDate.parse(fechaHasta)
-            if (!desde.isBefore(hasta)) {
-                throw BusinessException("La fecha de inicio debe ser anterior a la fecha final")
-            }
-        }
+        val filtros = LibroFiltros.desdeRequest(
+            query, generos, paginasMin, paginasMax, isbn,
+            prestadoPor, usuarioId, librosReservadosIds, sortBy
+        )
 
-        val usuario = if(usuarioId != null) usuarioRepository.getById(usuarioId) else null
+        return libroRepository.buscarPaginado(filtros, page, size)
+    }
 
-        val listaGeneros = if (generos.isBlank()) emptyList() else generos.split(",")
-
-        val filtrados = libroRepository.getLibros()
-            .filter { usuario == null || it.duenio.id != usuarioId } //para excluir los libros que son de el
-            .filter { libro ->
-                val matchQuery = query.isBlank() ||
-                        libro.titulo.contains(query, ignoreCase = true) ||
-                        libro.autor.contains(query, ignoreCase = true)
-
-                val matchGenero = listaGeneros.isEmpty() ||
-                        listaGeneros.contains(libro.genero.name)
-
-                val matchPaginasMin = paginasMin == null || libro.cantidadPaginas >= paginasMin
-                val matchPaginasMax = paginasMax == null || libro.cantidadPaginas <= paginasMax
-
-                val matchIsbn = isbn.isNullOrBlank() ||
-                        libro.isbn.contains(isbn, ignoreCase = true)
-
-                val matchPrestadoPor = prestadoPor.isNullOrBlank() ||
-                        libro.duenio.nombre.contains(prestadoPor, ignoreCase = true)
-
-                val matchFechas = if (fechaDesde != null && fechaHasta != null) {
-                    val desde = LocalDate.parse(fechaDesde)
-                    val hasta = LocalDate.parse(fechaHasta)
-                    val reservasDelLibro = reservaRepository.findByLibroId(libro.id)
-                    reservasDelLibro.none { reserva ->
-                        reserva.fechaDesde <= hasta && reserva.fechaHasta >= desde
-                    }
-                } else true
-
-                matchQuery && matchGenero && matchPaginasMin && matchPaginasMax &&
-                        matchIsbn && matchPrestadoPor && matchFechas
-            }
-            .sortedBy { libro ->    // Al final y que me lo lleve ordenado al front
-                when (sortBy) {
-                    "autor" -> libro.autor.lowercase()
-                    "duenio" -> libro.duenio.nombre.lowercase()
-                    else -> libro.titulo.lowercase()
-                }
-            }
-            .map {
-                val bibliokarma = if (usuario != null) {
-                    val cantidadReservasDelLibro = reservaRepository.findByLibroId(it.id).size
-                    it.plusBiblioKarma(usuario, cantidadReservasDelLibro)
-                } else {
-                    0
-                }
-                it.toHomeDTO(bibliokarma)
-            }
-
-        val totalPages = ceil(filtrados.size.toDouble() / size).toInt()
-        val content = filtrados.drop(page * size).take(size)
-
-        return PagedResponse(content, page, totalPages)
+    fun calcularBiblioKarma(libro: Libro, usuarioId: Int?): Int {
+        val usuario = usuarioId?.let { usuarioRepository.getById(it) } ?: return 0
+        val cantidadReservas = reservaRepository.findByLibroId(libro.id).size
+        return libro.plusBiblioKarma(usuario, cantidadReservas)
     }
 
     fun obtenerLibro(id: Int): Libro = libroRepository.getById(id)
@@ -110,10 +48,10 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
             .map { it.usuarioId }
             .toSet()
             .associateWith { idCalificador ->
-                usuarioRepository.getById(idCalificador)?.nombre ?: "Usuario $idCalificador"
+                usuarioRepository.getById(idCalificador).nombre
             }
     }
-    
+
     fun getRating(libroId: Int): Double {
         val libro = libroRepository.getById(libroId)
         return libro.getCalificacion()
@@ -127,7 +65,6 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
 
     fun crearLibro(dto: LibroDTO, usuarioId: Int): Libro {
         val duenio = usuarioRepository.getById(usuarioId)
-            ?: throw NotFoundException("Usuario no encontrado")
 
         val data = LibroData(
             duenio = duenio,
@@ -184,7 +121,6 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
     fun agregarCalificacion(idLibro: Int, calificacion: Calificacion) {
         val libro = libroRepository.getById(idLibro)
         usuarioRepository.getById(calificacion.usuarioId)
-            ?: throw NotFoundException("Usuario ${calificacion.usuarioId} no encontrado")
         libro.agregarCalificacion(calificacion) // el BusinessException de duplicado ya está en el dominio
         libroRepository.update(libro)
     }

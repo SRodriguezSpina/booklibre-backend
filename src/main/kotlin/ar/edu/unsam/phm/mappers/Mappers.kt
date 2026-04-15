@@ -8,10 +8,9 @@ import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
-import ar.edu.unsam.phm.repository.ReservaRepository
+import ar.edu.unsam.phm.dtos.PagedResponse
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import kotlin.collections.sortedByDescending
 
 fun Usuario.toResponse(): UsuarioResponse {
     val tipoStr = when (tipoUsuario) {
@@ -139,4 +138,11 @@ fun Libro.toLibroUsuarioItemDTO(): LibroUsuarioItemDTO {
         fechaAgregado = this.fechaAgregado.format(DateTimeFormatter.ISO_DATE),
         imagenUrl = this.imagenUrl
     )
+}
+
+fun PagedResponse<Libro>.toHomeDTO(calcularKarma: (Libro) -> Int): PagedResponse<LibroHomeDTO> {
+    val contentDTO = this.content.map { libro ->
+        libro.toHomeDTO(calcularKarma(libro))
+    }
+    return PagedResponse(contentDTO, this.page, this.totalPages)
 }
