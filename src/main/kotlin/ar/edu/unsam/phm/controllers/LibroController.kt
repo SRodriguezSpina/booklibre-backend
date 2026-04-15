@@ -5,6 +5,7 @@ import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
+import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.services.LibroService
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -33,7 +34,15 @@ class LibroController(val libroService: LibroService) {
         fechaDesde, fechaHasta, isbn, prestadoPor, sortBy)
 
     @GetMapping("/{libroId}")
-    fun getLibro(@PathVariable libroId: Int): LibroDTO = libroService.getLibro(libroId)
+    fun getLibro(@PathVariable libroId: Int): LibroDTO {
+        val libro = libroService.obtenerLibro(libroId)
+        val reservas = libroService.obtenerReservasDeLibro(libroId)
+        val nombresUsuarios = libroService.obtenerNombresUsuariosCalificaciones(libro)
+        return libro.toDTO(
+            todosLosRangos = reservas,
+            nombresUsuarios = nombresUsuarios,
+        )
+    }
 
     @GetMapping("/{libroId}/calificaciones")
     fun getCalificaciones(@PathVariable libroId: Int): List<CalificacionDTO> = libroService.getCalificaciones(libroId)
@@ -47,7 +56,7 @@ class LibroController(val libroService: LibroService) {
 
     @PutMapping("/{libroId}")
     fun updateLibro(@PathVariable libroId: Int, @RequestParam usuarioId: Int, @RequestBody dto: LibroDTO
-    ) = libroService.actualizarLibro(libroId, dto, usuarioId)
+    ): LibroDTO = libroService.actualizarLibro(libroId, dto, usuarioId).toDTO()
 
     @DeleteMapping("/{libroId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -56,7 +65,6 @@ class LibroController(val libroService: LibroService) {
     }
 
     @PostMapping("/nuevo")
-    fun crearLibro(@RequestParam usuarioId: Int, @RequestBody dto: LibroDTO): LibroDTO {
-        return libroService.crearLibro(dto, usuarioId)
-    }
+    fun crearLibro(@RequestParam usuarioId: Int, @RequestBody dto: LibroDTO): LibroDTO =
+        libroService.crearLibro(dto, usuarioId).toDTO()
 }

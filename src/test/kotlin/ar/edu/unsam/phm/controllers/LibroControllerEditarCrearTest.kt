@@ -1,7 +1,16 @@
 package ar.edu.unsam.phm.controllers
 
+import ar.edu.unsam.phm.domain.Credencial
+import ar.edu.unsam.phm.domain.Disponibilidad
+import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
+import ar.edu.unsam.phm.domain.Libro
+import ar.edu.unsam.phm.domain.LibroColeccionable
+import ar.edu.unsam.phm.domain.LibroComun
+import ar.edu.unsam.phm.domain.LibroConDedicatoria
+import ar.edu.unsam.phm.domain.LibroData
+import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.NotFoundException
@@ -33,6 +42,48 @@ class LibroControllerEditarCrearTest(
     private val mapper = ObjectMapper().registerModule(JavaTimeModule())
 
     // ── Fixtures ──────────────────────────────────────────────────────────────
+
+    private fun libroDominio(
+        id: Int = 1,
+        titulo: String = "Clean Code",
+        autor: String = "Robert C. Martin",
+        tipo: String = "Comun",
+        estado: String = "EXCELENTE",
+        paginas: Int = 464,
+        propietarioId: Int = 3,
+    ): Libro {
+        val duenio = Usuario(
+            credencial = Credencial("ana@mail.com", "pass"),
+            nombre = "Ana García",
+            desc = "Publicadora",
+        ).also { it.id = propietarioId }
+
+        val data = LibroData(
+            duenio = duenio,
+            titulo = titulo,
+            autor = autor,
+            descripcion = "Buenas prácticas de programación",
+            genero = Genero.DISENO,
+            cantidadPaginas = paginas,
+            isbn = "9780132350884",
+            idioma = Idioma.INGLES,
+            editorial = "Prentice Hall",
+            estado = EstadoLibro.fromString(estado),
+            fechaPublicacion = LocalDate.of(2008, 8, 1),
+            imagenUrl = "https://example.com/cover.jpg",
+            fechaAgregado = LocalDate.now(),
+            disponibilidad = Disponibilidad.DISPONIBLE,
+        )
+
+        val libro = when (tipo) {
+            "Comun" -> LibroComun(data)
+            "ConDedicatoria" -> LibroConDedicatoria(data)
+            "Coleccionable" -> LibroColeccionable(data)
+            else -> LibroComun(data)
+        }
+        libro.id = id
+        return libro
+    }
 
     private fun libroDTO(
         id: Int = 1,
@@ -74,7 +125,7 @@ class LibroControllerEditarCrearTest(
     @DisplayName("POST /nuevo con datos válidos devuelve 200 y el DTO creado")
     fun crearLibro_ok() {
         val dto = libroDTO()
-        whenever(libroService.crearLibro(any(), any())).thenReturn(dto)
+        whenever(libroService.crearLibro(any(), any())).thenReturn(libroDominio())
 
         mockMvc.perform(
             post("/api/libros/nuevo")
@@ -95,7 +146,7 @@ class LibroControllerEditarCrearTest(
     @DisplayName("POST /nuevo invoca crearLibro con el usuarioId correcto")
     fun crearLibro_pasaUsuarioIdAlServicio() {
         val dto = libroDTO()
-        whenever(libroService.crearLibro(any(), eq(7))).thenReturn(dto)
+        whenever(libroService.crearLibro(any(), eq(7))).thenReturn(libroDominio(propietarioId = 7))
 
         mockMvc.perform(
             post("/api/libros/nuevo")
@@ -178,7 +229,7 @@ class LibroControllerEditarCrearTest(
     @DisplayName("POST /nuevo el DTO de respuesta incluye el id asignado")
     fun crearLibro_respuestaConId() {
         val dtoConId = libroDTO(id = 42)
-        whenever(libroService.crearLibro(any(), any())).thenReturn(dtoConId)
+        whenever(libroService.crearLibro(any(), any())).thenReturn(libroDominio(id = 42))
 
         mockMvc.perform(
             post("/api/libros/nuevo")
@@ -193,7 +244,7 @@ class LibroControllerEditarCrearTest(
     @DisplayName("PUT /{libroId} con datos válidos devuelve 200 y el DTO actualizado")
     fun editarLibro_ok() {
         val dtoActualizado = libroDTO(titulo = "Clean Code - Edición Revisada")
-        whenever(libroService.actualizarLibro(eq(1), any(),any())).thenReturn(dtoActualizado)
+        whenever(libroService.actualizarLibro(eq(1), any(),any())).thenReturn(libroDominio(titulo = "Clean Code - Edición Revisada"))
 
         mockMvc.perform(
             put("/api/libros/1")
@@ -211,7 +262,7 @@ class LibroControllerEditarCrearTest(
     @DisplayName("PUT /{libroId} refleja el autor actualizado en la respuesta")
     fun editarLibro_actualizaAutor() {
         val dto = libroDTO(autor = "Martin Fowler")
-        whenever(libroService.actualizarLibro(eq(1), any(),any())).thenReturn(dto)
+        whenever(libroService.actualizarLibro(eq(1), any(),any())).thenReturn(libroDominio(autor = "Martin Fowler"))
 
         mockMvc.perform(
             put("/api/libros/1")
@@ -226,7 +277,7 @@ class LibroControllerEditarCrearTest(
     @DisplayName("PUT /{libroId} refleja el estado actualizado en la respuesta")
     fun editarLibro_actualizaEstado() {
         val dto = libroDTO(estado = "MALO")
-        whenever(libroService.actualizarLibro(eq(1), any(), any())).thenReturn(dto)
+        whenever(libroService.actualizarLibro(eq(1), any(), any())).thenReturn(libroDominio(estado = "MALO"))
 
         mockMvc.perform(
             put("/api/libros/1")
@@ -241,7 +292,7 @@ class LibroControllerEditarCrearTest(
     @DisplayName("PUT /{libroId} refleja las páginas actualizadas en la respuesta")
     fun editarLibro_actualizaPaginas() {
         val dto = libroDTO(paginas = 999)
-        whenever(libroService.actualizarLibro(eq(1), any(),any())).thenReturn(dto)
+        whenever(libroService.actualizarLibro(eq(1), any(),any())).thenReturn(libroDominio(paginas = 999))
 
         mockMvc.perform(
             put("/api/libros/1")
@@ -256,7 +307,7 @@ class LibroControllerEditarCrearTest(
     @DisplayName("PUT /{libroId} pasa el id de ruta al servicio, no el del body")
     fun editarLibro_usaIdDeRuta() {
         val dto = libroDTO(id = 99)
-        whenever(libroService.actualizarLibro(eq(5), any(),any())).thenReturn(dto)
+        whenever(libroService.actualizarLibro(eq(5), any(),any())).thenReturn(libroDominio(id = 99))
 
         mockMvc.perform(
             put("/api/libros/5")
@@ -309,7 +360,7 @@ class LibroControllerEditarCrearTest(
     @Test
     @DisplayName("PUT /{libroId} invoca el servicio exactamente una vez")
     fun editarLibro_llamaAlServicioUnaVez() {
-        whenever(libroService.actualizarLibro(any(), any(),any())).thenReturn(libroDTO())
+        whenever(libroService.actualizarLibro(any(), any(),any())).thenReturn(libroDominio())
 
         mockMvc.perform(
             put("/api/libros/1")
