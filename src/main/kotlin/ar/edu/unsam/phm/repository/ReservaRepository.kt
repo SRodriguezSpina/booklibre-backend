@@ -21,7 +21,7 @@ class ReservaRepository(private val jpa: ReservaJpaRepository) {
     fun existeSuperposicion(libroId: Int, desde: LocalDate, hasta: LocalDate): Boolean =
         jpa.existsSuperposicion(libroId, desde, hasta)
 
-    fun save(reserva: Reserva): Reserva = jpa.save(reserva.toEntity(reserva.libro.toEntity(), reserva.usuario)).toDomain()
+    fun save(reserva: Reserva): Reserva = jpa.save(reserva.toEntity(reserva.libro, reserva.usuario)).toDomain()
 
     fun getReservasDeLibro(libroId: Int): List<Reserva> =
         jpa.findByLibroId(libroId).map { it.toDomain() }

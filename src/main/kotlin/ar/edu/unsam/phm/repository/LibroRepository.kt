@@ -4,8 +4,6 @@ import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.LibroFiltros
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.NotFoundException
-import ar.edu.unsam.phm.persistence.mappers.toDomain
-import ar.edu.unsam.phm.persistence.mappers.toEntity
 import org.springframework.stereotype.Component
 import kotlin.math.ceil
 
@@ -14,14 +12,13 @@ class LibroRepository(private val jpa: LibroJpaRepository) {
 
     fun getById(id: Int): Libro =
         jpa.findById(id).orElseThrow { NotFoundException("Libro $id no encontrado") }
-            .toDomain()
 
-    fun getLibros(): List<Libro> = jpa.findAll().map { it.toDomain() }
+    fun getLibros(): List<Libro> = jpa.findAll()
 
     fun getLibrosDeUsuario(usuarioId: Int): List<Libro> =
-        jpa.findByDuenioId(usuarioId).map { it.toDomain() }
+        jpa.findByDuenioId(usuarioId)
 
-    fun save(libro: Libro): Libro = jpa.save(libro.toEntity()).toDomain()
+    fun save(libro: Libro): Libro = jpa.save(libro)
 
     fun delete(libro: Libro) = jpa.deleteById(libro.id)
 
