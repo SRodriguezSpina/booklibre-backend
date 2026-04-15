@@ -2,10 +2,12 @@ package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.domain.Calificacion
 import ar.edu.unsam.phm.domain.Disponibilidad
 import ar.edu.unsam.phm.domain.EstadoLibro
+import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.LibroColeccionable
 import ar.edu.unsam.phm.domain.LibroComun
 import ar.edu.unsam.phm.domain.LibroConDedicatoria
 import ar.edu.unsam.phm.domain.LibroData
+import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
@@ -15,15 +17,14 @@ import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
-import ar.edu.unsam.phm.repository.EntityNotFoundException
 import org.springframework.stereotype.Service
-import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.mappers.toDetalleDTOs
 import java.time.LocalDate
 import kotlin.math.ceil
 
 @Service
 class LibroService(val libroRepository: LibroRepository, private val usuarioRepository: UsuarioRepository, private val reservaRepository: ReservaRepository) {
+
     fun search(query: String, generos: String, page: Int, size: Int, usuarioId: Int?, paginasMin: Int?, paginasMax: Int?,
                fechaDesde: String?, fechaHasta: String?, isbn: String?, prestadoPor: String?, sortBy: String?): PagedResponse<LibroHomeDTO> {
         //validaciones antes
@@ -95,21 +96,15 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
 
         return PagedResponse(content, page, totalPages)
     }
-    fun getLibro(id: Int): LibroDTO {
-        val libro = try {
-            libroRepository.getById(id)
-        } catch (_: EntityNotFoundException) {
-            throw NotFoundException("Libro $id no encontrado")
-        }
 
-        val reservasDelLibro = reservaRepository.findByLibroId(id)
-        val nombresUsuarios = usuarioRepository.resolverNombresCalificaciones(libro.calificaciones)
+    fun obtenerLibro(id: Int): Libro = libroRepository.getById(id)
 
-        return libro.toDTO(
-            todosLosRangos = reservasDelLibro,
-            nombresUsuarios = nombresUsuarios,
-        )
-    }
+    fun obtenerReservasDeLibro(libroId: Int): List<Reserva> =
+        reservaRepository.findByLibroId(libroId)
+
+    fun obtenerNombresUsuariosCalificaciones(libro: Libro): Map<Int, String> =
+        usuarioRepository.resolverNombresCalificaciones(libro.calificaciones)
+
     private fun nombreUsuarioResenia(calificaciones: List<Calificacion>): Map<Int, String> {
         return calificaciones
             .map { it.usuarioId }
@@ -118,23 +113,19 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
                 usuarioRepository.getById(idCalificador)?.nombre ?: "Usuario $idCalificador"
             }
     }
+    
     fun getRating(libroId: Int): Double {
-        val libro = try {
-            libroRepository.getById(libroId)
-        } catch (_: EntityNotFoundException) {
-            throw NotFoundException("Libro $libroId no encontrado")
-        }
+        val libro = libroRepository.getById(libroId)
         return libro.getCalificacion()
     }
+
+
     fun getCalificaciones(libroId: Int): List<CalificacionDTO> {
-        val libro = try {
-            libroRepository.getById(libroId)
-        } catch (_: EntityNotFoundException) {
-            throw NotFoundException("Libro $libroId no encontrado")
-        }
+        val libro = libroRepository.getById(libroId)
         return libro.calificaciones.toDetalleDTOs(nombreUsuarioResenia(libro.calificaciones))
     }
-    fun crearLibro(dto: LibroDTO, usuarioId: Int): LibroDTO {
+
+    fun crearLibro(dto: LibroDTO, usuarioId: Int): Libro {
         val duenio = usuarioRepository.getById(usuarioId)
             ?: throw NotFoundException("Usuario no encontrado")
 
@@ -149,7 +140,7 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
             idioma = dto.idioma,
             editorial = dto.editorial,
             fechaPublicacion = dto.fechaPublicacion,
-            estado = EstadoLibro.valueOf(dto.estado),
+            estado = EstadoLibro.fromString(dto.estado),
             imagenUrl = dto.imagenUrl,
             fechaAgregado = LocalDate.now(),
             disponibilidad = Disponibilidad.DISPONIBLE
@@ -162,42 +153,36 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
             else -> throw BusinessException("Tipo de libro inválido: ${dto.tipo}")
         }
         libroRepository.create(libro)
-        return libro.toDTO()
+        return libro
     }
 
-    fun actualizarLibro(id: Int, dto: LibroDTO, usuarioId: Int): LibroDTO {
-        val libroExistente = try {
-        libroRepository.getById(id)
-        } catch (_: EntityNotFoundException) {
-            throw NotFoundException("Libro $id no encontrado")
-        }
+    fun actualizarLibro(id: Int, dto: LibroDTO, usuarioId: Int): Libro {
+        val libroExistente = libroRepository.getById(id)
 
         if (libroExistente.duenio.id != usuarioId) {
             throw UnauthorizedException("No autorizado para editar este libro")
         }
 
-        libroExistente.titulo = dto.titulo
-        libroExistente.autor = dto.autor
-        libroExistente.descripcion = dto.descripcion
-        libroExistente.genero = dto.genero
-        libroExistente.cantidadPaginas = dto.paginas
-        libroExistente.isbn = dto.isbn
-        libroExistente.idioma = dto.idioma
-        libroExistente.editorial = dto.editorial
-        libroExistente.estado = EstadoLibro.valueOf(dto.estado)
-        libroExistente.fechaPublicacion = dto.fechaPublicacion
-        libroExistente.imagenUrl = dto.imagenUrl
+        libroExistente.actualizarDatos(
+            nuevoTitulo = dto.titulo,
+            nuevoAutor = dto.autor,
+            nuevaDescripcion = dto.descripcion,
+            nuevoGenero = dto.genero,
+            nuevasPaginas = dto.paginas,
+            nuevoIsbn = dto.isbn,
+            nuevoIdioma = dto.idioma,
+            nuevaEditorial = dto.editorial,
+            nuevoEstado = EstadoLibro.fromString(dto.estado),
+            nuevaFechaPublicacion = dto.fechaPublicacion,
+            nuevaImagenUrl = dto.imagenUrl,
+        )
 
         libroRepository.update(libroExistente)
-        return libroExistente.toDTO()
+        return libroExistente
     }
 
     fun agregarCalificacion(idLibro: Int, calificacion: Calificacion) {
-        val libro = try {
-            libroRepository.getById(idLibro)
-        } catch (_: EntityNotFoundException) {
-            throw NotFoundException("Libro $idLibro no encontrado")
-        }
+        val libro = libroRepository.getById(idLibro)
         usuarioRepository.getById(calificacion.usuarioId)
             ?: throw NotFoundException("Usuario ${calificacion.usuarioId} no encontrado")
         libro.agregarCalificacion(calificacion) // el BusinessException de duplicado ya está en el dominio
@@ -205,11 +190,7 @@ class LibroService(val libroRepository: LibroRepository, private val usuarioRepo
     }
 
     fun eliminarLibro(libroId: Int, usuarioId: Int) {
-        val libro = try {
-            libroRepository.getById(libroId)
-        } catch (_: EntityNotFoundException) {
-            throw NotFoundException("Libro no encontrado")
-        }
+        val libro = libroRepository.getById(libroId)
 
         if (libro.duenio.id != usuarioId) {
             throw UnauthorizedException("No autorizado para eliminar este libro")

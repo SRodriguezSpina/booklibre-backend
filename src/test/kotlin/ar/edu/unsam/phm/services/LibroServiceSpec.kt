@@ -6,7 +6,6 @@ import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
-import ar.edu.unsam.phm.repository.EntityNotFoundException
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
@@ -92,7 +91,7 @@ class LibroServiceSpec : DescribeSpec({
                 val resultado = service.crearLibro(libroDTOBase(tipo = "Comun"), duenio.id)
 
                 resultado.titulo shouldBe "Clean Code"
-                resultado.tipo shouldBe "Comun"
+                (resultado is LibroComun) shouldBe true
                 libroRepo.getLibros().size shouldBe 1
             }
 
@@ -102,7 +101,7 @@ class LibroServiceSpec : DescribeSpec({
 
                 val resultado = service.crearLibro(libroDTOBase(tipo = "ConDedicatoria"), duenio.id)
 
-                resultado.tipo shouldBe "ConDedicatoria"
+                (resultado is LibroConDedicatoria) shouldBe true
                 libroRepo.getLibros().size shouldBe 1
             }
 
@@ -112,7 +111,7 @@ class LibroServiceSpec : DescribeSpec({
 
                 val resultado = service.crearLibro(libroDTOBase(tipo = "Coleccionable"), duenio.id)
 
-                resultado.tipo shouldBe "Coleccionable"
+                (resultado is LibroColeccionable) shouldBe true
                 libroRepo.getLibros().size shouldBe 1
             }
 
@@ -374,14 +373,14 @@ class LibroServiceSpec : DescribeSpec({
         }
     }
 
-    describe("getLibro") {
+    describe("obtenerLibro") {
 
-        it("devuelve el DTO del libro cuando existe") {
+        it("devuelve el libro cuando existe") {
             val (libroRepo, usuarioRepo) = buildRepos()
             val service = buildService(libroRepo, usuarioRepo)
             val creado = service.crearLibro(libroDTOBase(titulo = "Domain-Driven Design"), duenio.id)
 
-            val resultado = service.getLibro(creado.id)
+            val resultado = service.obtenerLibro(creado.id)
 
             resultado.titulo shouldBe "Domain-Driven Design"
             resultado.id shouldBe creado.id
@@ -392,28 +391,8 @@ class LibroServiceSpec : DescribeSpec({
             val service = buildService(libroRepo, usuarioRepo)
 
             shouldThrow<NotFoundException> {
-                service.getLibro(9999)
+                service.obtenerLibro(9999)
             }
-        }
-
-        it("el DTO incluye el propietarioId correcto") {
-            val (libroRepo, usuarioRepo) = buildRepos()
-            val service = buildService(libroRepo, usuarioRepo)
-            val creado = service.crearLibro(libroDTOBase(), duenio.id)
-
-            val resultado = service.getLibro(creado.id)
-
-            resultado.propietarioId shouldBe duenio.id
-        }
-
-        it("el DTO devuelto refleja el estado correcto del libro") {
-            val (libroRepo, usuarioRepo) = buildRepos()
-            val service = buildService(libroRepo, usuarioRepo)
-            val creado = service.crearLibro(libroDTOBase(estado = "MALO"), duenio.id)
-
-            val resultado = service.getLibro(creado.id)
-
-            resultado.estado shouldBe "MALO"
         }
     }
 
@@ -428,15 +407,16 @@ class LibroServiceSpec : DescribeSpec({
                 duenio = duenio,
                 titulo = titulo,
                 autor = autor,
-                descripcion = "",
+                descripcion = "Descripción de prueba",
                 genero = Genero.DISENO,
                 cantidadPaginas = paginas,
                 isbn = "9780000000123",
                 idioma = Idioma.ESPANOL,
-                editorial = "",
+                editorial = "Editorial de prueba",
                 fechaPublicacion = LocalDate.of(2020, 1, 1),
                 estado = EstadoLibro.EXCELENTE,
-                imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
+                imagenUrl = "https://example.com/cover.jpg",
+                disponibilidad = Disponibilidad.DISPONIBLE
             )
         )
         describe("Validaciones de entrada"){
@@ -603,7 +583,7 @@ class LibroServiceSpec : DescribeSpec({
 
             service.eliminarLibro(libroCreado.id, duenio.id)
 
-            shouldThrow<EntityNotFoundException> {
+            shouldThrow<NotFoundException> {
                 libroRepo.getById(libroCreado.id)
             }
         }
