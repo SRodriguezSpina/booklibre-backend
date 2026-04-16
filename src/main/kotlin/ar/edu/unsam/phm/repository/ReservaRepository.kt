@@ -11,13 +11,18 @@ class ReservaRepository : CommonRepository<Reserva>() {
     fun findByLibroId(libroId: Int): List<Reserva> {
         return lista.filter { reserva -> reserva.libro.id == libroId }
     }
-
-    fun getReservasDeUsuario(usuarioId: Int): List<Reserva> {
-        return lista.filter { reserva ->
-            val esDuenio = reserva.libro.duenio.id == usuarioId
-            val esSolicitante = reserva.usuario.id == usuarioId
-            esDuenio || esSolicitante
-        }
+//    fun getReservasDeUsuario(usuarioId: Int): List<Reserva> {
+//        return lista.filter { reserva ->
+//            val esDuenio = reserva.libro.duenio.id == usuarioId
+//            val esSolicitante = reserva.usuario.id == usuarioId
+//            esDuenio || esSolicitante
+//        }
+//    }
+    fun getReservasHechas(usuarioId: Int): List<Reserva> {
+        return lista.filter {it.usuario.id == usuarioId }
+    }
+    fun getReservasRecibidas(usuarioId: Int): List<Reserva> {
+        return lista.filter {it.libro.duenio.id == usuarioId }
     }
 
     fun existeSuperposicion(libroId: Int, desde: LocalDate, hasta: LocalDate) {
