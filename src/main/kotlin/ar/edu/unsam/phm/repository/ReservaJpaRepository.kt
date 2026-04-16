@@ -9,12 +9,13 @@ import java.time.LocalDate
 
 interface ReservaJpaRepository : JpaRepository<ReservaEntity, Int> {
     fun findByLibroId(libroId: Int): List<ReservaEntity>
+    fun findByUsuarioId(usuarioId: Int): List<ReservaEntity>
+
     @Query("""
         SELECT r FROM ReservaEntity r
         WHERE r.libro.duenio.id = :usuarioId
-           OR r.usuario.id      = :usuarioId
     """)
-    fun findByUsuarioIdOrLibroDuenioId(@Param("usuarioId") usuarioId: Int): List<ReservaEntity>
+    fun findByLibroDuenioId(@Param("usuarioId") usuarioId: Int): List<ReservaEntity>
 
     @Query("""
         SELECT COUNT(r) > 0 FROM ReservaEntity r

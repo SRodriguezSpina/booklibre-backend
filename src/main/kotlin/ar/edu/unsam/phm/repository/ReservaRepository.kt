@@ -15,9 +15,6 @@ class ReservaRepository(private val jpa: ReservaJpaRepository) {
         jpa.findById(id).orElseThrow { NotFoundException("Reserva $id no encontrada") }
             .toDomain()
 
-    fun getReservasDeUsuario(usuarioId: Int): List<Reserva> =
-        jpa.findByUsuarioIdOrLibroDuenioId(usuarioId).map { it.toDomain() }
-
     fun existeSuperposicion(libroId: Int, desde: LocalDate, hasta: LocalDate): Boolean =
         jpa.existsSuperposicion(libroId, desde, hasta)
 

@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.domain.Reserva
+import ar.edu.unsam.phm.domain.TipoReserva
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
 import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
@@ -14,6 +15,7 @@ import ar.edu.unsam.phm.repository.ReservaJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.temporal.ChronoUnit
 
 @Service
 class ReservaService(
@@ -24,12 +26,16 @@ class ReservaService(
 
     private val locks = java.util.concurrent.ConcurrentHashMap<Int, Any>()
 
-    fun obtenerReservas(usuarioId: Int): List<Reserva> {
+    fun obtenerReservas(usuarioId: Int, tipo: TipoReserva): List<Reserva> {
         usuarioJpaRepository.findById(usuarioId)
             .orElseThrow { NotFoundException("Usuario $usuarioId no encontrado") }
 
-        val reservasDomain = reservaJpaRepository.findByUsuarioIdOrLibroDuenioId(usuarioId).map { it.toDomain() }
-        return reservasDomain
+        val reservas = when (tipo) {
+            TipoReserva.HECHAS -> reservaJpaRepository.findByUsuarioId(usuarioId)
+            TipoReserva.RECIBIDAS -> reservaJpaRepository.findByLibroDuenioId(usuarioId)
+        }
+
+        return reservas.map { it.toDomain() }
     }
 
     fun obtenerReservasAnuales(usuarioId: Int): List<ReservaAnualUsuarioDTO> {
