@@ -33,4 +33,7 @@ class ReservaEntity(
 
     @Column(nullable = false)
     var fechaHasta: LocalDate,
+
+    @Column(nullable = false)
+    var bibliokarmas: Int = 0
 )

@@ -11,6 +11,7 @@ fun ReservaEntity.toDomain(): Reserva {
         usuario   = usuario,
         fechaDesde = fechaDesde,
         fechaHasta = fechaHasta,
+        bibliokarma = bibliokarmas
     )
     reserva.id = id ?: 0
     return reserva
@@ -26,5 +27,6 @@ fun Reserva.toEntity(
         usuario    = usuario,
         fechaDesde = fechaDesde,
         fechaHasta = fechaHasta,
+        bibliokarmas = bibliokarma
     )
 }
