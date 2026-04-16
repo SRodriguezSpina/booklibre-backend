@@ -113,7 +113,7 @@ class LibroServiceInMemory(
         val libro = try {
             libroRepository.getById(id)
         } catch (_: EntityNotFoundException) {
-            throw NotFoundException("Libro $id no encontrado")
+            throw NotFoundException("Libro.kt $id no encontrado")
         }
 
         val reservasDelLibro = reservaRepository.findByLibroId(id)
@@ -138,7 +138,7 @@ class LibroServiceInMemory(
         val libro = try {
             libroRepository.getById(libroId)
         } catch (_: EntityNotFoundException) {
-            throw NotFoundException("Libro $libroId no encontrado")
+            throw NotFoundException("Libro.kt $libroId no encontrado")
         }
         return libro.getCalificacion()
     }
@@ -147,7 +147,7 @@ class LibroServiceInMemory(
         val libro = try {
             libroRepository.getById(libroId)
         } catch (_: EntityNotFoundException) {
-            throw NotFoundException("Libro $libroId no encontrado")
+            throw NotFoundException("Libro.kt $libroId no encontrado")
         }
         return libro.calificaciones.toDetalleDTOs(nombreUsuarioResenia(libro.calificaciones))
     }
@@ -187,7 +187,7 @@ class LibroServiceInMemory(
         val libroExistente = try {
             libroRepository.getById(id)
         } catch (_: EntityNotFoundException) {
-            throw NotFoundException("Libro $id no encontrado")
+            throw NotFoundException("Libro.kt $id no encontrado")
         }
 
         if (libroExistente.duenio.id != usuarioId) {
@@ -214,7 +214,7 @@ class LibroServiceInMemory(
         val libro = try {
             libroRepository.getById(idLibro)
         } catch (_: EntityNotFoundException) {
-            throw NotFoundException("Libro $idLibro no encontrado")
+            throw NotFoundException("Libro.kt $idLibro no encontrado")
         }
         usuarioRepository.findById(calificacion.usuarioId)
             ?: throw NotFoundException("Usuario ${calificacion.usuarioId} no encontrado")
@@ -226,7 +226,7 @@ class LibroServiceInMemory(
         val libro = try {
             libroRepository.getById(libroId)
         } catch (_: EntityNotFoundException) {
-            throw NotFoundException("Libro no encontrado")
+            throw NotFoundException("Libro.kt no encontrado")
         }
 
         if (libro.duenio.id != usuarioId) {

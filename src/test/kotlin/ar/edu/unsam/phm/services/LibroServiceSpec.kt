@@ -220,8 +220,8 @@ class LibroServiceSpec : DescribeSpec({
                 val (libroRepo, usuarioRepo) = buildRepos()
                 val service = buildService(libroRepo, usuarioRepo)
 
-                val a = service.crearLibro(libroDTOBase(titulo = "Libro A"), duenio.id)
-                val b = service.crearLibro(libroDTOBase(titulo = "Libro B"), duenio.id)
+                val a = service.crearLibro(libroDTOBase(titulo = "Libro.kt A"), duenio.id)
+                val b = service.crearLibro(libroDTOBase(titulo = "Libro.kt B"), duenio.id)
 
                 a.id shouldNotBe b.id
             }
@@ -365,12 +365,12 @@ class LibroServiceSpec : DescribeSpec({
             it("actualizar no modifica otros libros del repositorio") {
                 val (libroRepo, usuarioRepo) = buildRepos()
                 val service = buildService(libroRepo, usuarioRepo)
-                val idA = service.crearLibro(libroDTOBase(titulo = "Libro A"), duenio.id).id
-                val idB = service.crearLibro(libroDTOBase(titulo = "Libro B"), duenio.id).id
+                val idA = service.crearLibro(libroDTOBase(titulo = "Libro.kt A"), duenio.id).id
+                val idB = service.crearLibro(libroDTOBase(titulo = "Libro.kt B"), duenio.id).id
 
-                service.actualizarLibro(idA, libroDTOBase(titulo = "Libro A Actualizado"), duenio.id)
+                service.actualizarLibro(idA, libroDTOBase(titulo = "Libro.kt A Actualizado"), duenio.id)
 
-                libroRepo.getById(idB).titulo shouldBe "Libro B"
+                libroRepo.getById(idB).titulo shouldBe "Libro.kt B"
             }
         }
     }
@@ -493,7 +493,7 @@ class LibroServiceSpec : DescribeSpec({
             it("devuelve libros de otros usuarios") {
                 val (libroRepo, usuarioRepo) = buildRepos()
                 val service = buildService(libroRepo, usuarioRepo)
-                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "Libro de Ana"))
+                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "Libro.kt de Ana"))
 
                 val resultado = service.search("", "", 0, 6, otroUsuario.id, null, null, null, null, null, null, "titulo")
 
@@ -529,8 +529,8 @@ class LibroServiceSpec : DescribeSpec({
             it("query vacío devuelve todos los libros disponibles") {
                 val (libroRepo, usuarioRepo) = buildRepos()
                 val service = buildService(libroRepo, usuarioRepo)
-                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "Libro A"))
-                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "Libro B"))
+                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "Libro.kt A"))
+                libroRepo.create(buildLibroComun(duenio = duenio, titulo = "Libro.kt B"))
 
                 val resultado = service.search("", "", 0, 6, otroUsuario.id, null, null, null, null, null, null, "titulo")
 

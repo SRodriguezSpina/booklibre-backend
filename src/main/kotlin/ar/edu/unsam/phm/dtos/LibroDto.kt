@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.dtos
 import ar.edu.unsam.phm.domain.Idioma
 import ar.edu.unsam.phm.domain.Genero
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class RangoReservaDTO(
     val fechaDesde: String,
@@ -61,4 +62,11 @@ data class PagedResponse<T>(
     val content: List<T>,
     val page: Int,
     val totalPages: Int
+)
+
+data class HistorialPuntajeDTO(
+    val fecha: LocalDateTime,
+    val anterior: Int?,
+    val nuevo: Int,
+    val usuarioId: Int
 )

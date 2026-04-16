@@ -10,7 +10,7 @@ import java.time.LocalDate
 class LibroSpec : DescribeSpec({
     isolationMode = IsolationMode.InstancePerTest
 
-    describe("Compruebo Libro") {
+    describe("Compruebo Libro.kt") {
 
         val duenio = Usuario(
             "ana", "pass",

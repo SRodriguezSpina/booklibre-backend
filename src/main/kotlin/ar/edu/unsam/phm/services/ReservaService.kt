@@ -66,7 +66,7 @@ class ReservaService(
             }
 
             val libro = libroJpaRepository.findById(dto.libroId)
-                .orElseThrow { NotFoundException("Libro ${dto.libroId} no encontrado") }
+                .orElseThrow { NotFoundException("Libro.kt ${dto.libroId} no encontrado") }
 
             val solicitante = usuarioJpaRepository.findById(dto.usuarioId)
                 .orElseThrow { NotFoundException("Usuario ${dto.usuarioId} no encontrado") }

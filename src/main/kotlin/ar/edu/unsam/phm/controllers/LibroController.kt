@@ -2,11 +2,13 @@ package ar.edu.unsam.phm.controllers
 
 import ar.edu.unsam.phm.domain.Calificacion
 import ar.edu.unsam.phm.dtos.CalificacionDTO
+import ar.edu.unsam.phm.dtos.HistorialPuntajeDTO
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.mappers.toHomeDTO
+import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
 import ar.edu.unsam.phm.services.LibroService
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -70,4 +72,8 @@ class LibroController(val libroService: LibroService) {
     @PostMapping("/nuevo")
     fun crearLibro(@RequestParam usuarioId: Int, @RequestBody dto: LibroDTO): LibroDTO =
         libroService.crearLibro(dto, usuarioId).toDTO()
+
+    @GetMapping("/{id}/historial-puntajes")
+    fun getHistorial(@PathVariable id: Int): List<HistorialPuntaje> =
+        libroService.obtenerHistorialDePuntajes(id)
 }

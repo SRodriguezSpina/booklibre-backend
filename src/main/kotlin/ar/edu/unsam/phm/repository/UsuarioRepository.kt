@@ -3,12 +3,11 @@ package ar.edu.unsam.phm.repository
 import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
+import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Component
 
 @Component
-class UsuarioRepository(
-    private val jpa: UsuarioJpaRepository
-) {
+class UsuarioRepository: JpaRepository<Usuario, Int>() {
     fun getById(id: Int): Usuario =
         jpa.findById(id).orElseThrow { NotFoundException("Usuario $id no encontrado") }
 
