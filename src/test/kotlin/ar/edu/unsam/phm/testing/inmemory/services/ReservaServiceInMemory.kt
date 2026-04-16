@@ -24,16 +24,7 @@ class ReservaServiceInMemory(
         usuarioRepository.findById(usuarioId)
             ?: throw NotFoundException("Usuario $usuarioId no encontrado")
         val reservas = reservaRepository.getReservasDeUsuario(usuarioId)
-        return reservas.map {
-            val cantidadReservasDelLibro = reservaRepository.findByLibroId(it.libro.id).size
-            val bibliokarma = it.libro.calcularBiblioKarmaTotal(
-                usuario = it.usuario,
-                desde = it.fechaDesde,
-                hasta = it.fechaHasta,
-                cantidadReservasDelLibro = cantidadReservasDelLibro,
-            )
-            it.toDTO(bibliokarma)
-        }
+        return reservas.map { it.toDTO() }
     }
 
     fun obtenerReservasAnuales(usuarioId: Int): List<ReservaAnualUsuarioDTO> {

@@ -16,8 +16,8 @@ class ReservaSpec : DescribeSpec({
         val libro = LibroComun(
             LibroData(
                 duenio = duenio, titulo = "1984", autor = "Orwell",
-                descripcion = "", genero = Genero.DRAMA, cantidadPaginas = 300,
-                isbn = "9780000000006", idioma = Idioma.ESPANOL, editorial = "",
+                descripcion = "Novela distópica", genero = Genero.DRAMA, cantidadPaginas = 300,
+                isbn = "9780000000006", idioma = Idioma.ESPANOL, editorial = "Debolsillo",
                 fechaPublicacion = LocalDate.now(), estado = EstadoLibro.BUENO, imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
             )
         ).apply { id = 10 }

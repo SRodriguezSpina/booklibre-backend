@@ -1,10 +1,15 @@
 package ar.edu.unsam.phm.controllers
 
 import ar.edu.unsam.phm.domain.Calificacion
+import ar.edu.unsam.phm.domain.Disponibilidad
+import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
+import ar.edu.unsam.phm.domain.LibroComun
+import ar.edu.unsam.phm.domain.LibroData
+import ar.edu.unsam.phm.domain.Libro
+import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.LibroDTO
-import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.NotFoundException
@@ -15,6 +20,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.hamcrest.Matchers.nullValue
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -33,12 +39,48 @@ class LibroControllerTest(
 ) {
     @MockBean lateinit var libroService: LibroService
 
+    private fun duenioUsuario() = Usuario(
+        email = "ana@example.com",
+        password = "123",
+        nombre = "Ana García",
+        desc = "Publicadora",
+        celular = "+5412345678",
+        ciudad = "CABA",
+        bibliokarmas = 1200,
+    ).apply { id = 3 }
+
+    private fun sampleLibro(
+        id: Int = 1,
+        titulo: String = "1984",
+        autor: String = "George Orwell",
+    ): Libro {
+        val u = duenioUsuario()
+        return LibroComun(
+            LibroData(
+                duenio = u,
+                titulo = titulo,
+                autor = autor,
+                descripcion = "Distopía",
+                genero = Genero.LITERATURA_CLASICA,
+                cantidadPaginas = 300,
+                isbn = "9780000000001",
+                idioma = Idioma.ESPANOL,
+                editorial = "Debolsillo",
+                fechaPublicacion = LocalDate.of(1949, 6, 8),
+                estado = EstadoLibro.EXCELENTE,
+                imagenUrl = "",
+                fechaAgregado = LocalDate.now(),
+                disponibilidad = Disponibilidad.DISPONIBLE,
+            ),
+        ).apply { this.id = id }
+    }
+
     private fun libroDTO(
         id: Int = 1,
         titulo: String = "1984",
         autor: String = "George Orwell"
     ) = LibroDTO(
-        id = id, titulo = titulo, tipo = "LibroComun", descripcion = "Distopía",
+        id = id, titulo = titulo, tipo = "Comun", descripcion = "Distopía",
         genero = Genero.LITERATURA_CLASICA, autor = autor, paginas = 300,
         isbn = "9780000000001", idioma = Idioma.ESPANOL, editorial = "Debolsillo",
         estado = "EXCELENTE", fechaPublicacion = LocalDate.of(1949, 6, 8),
@@ -53,18 +95,12 @@ class LibroControllerTest(
         cantidadCalificaciones = 0
     )
 
-    private fun libroHomeDTO() = LibroHomeDTO(
-        id = 1, imagenUrl = "", genero = Genero.LITERATURA_CLASICA,
-        titulo = "1984", autor = "George Orwell", calificacion = 4.5,
-        isbn = "9780000000001", idioma = Idioma.ESPANOL, tipo = "LibroComun",
-        bibliokarma = 1550, estado = "EXCELENTE", duenio = "Ana García"
-    )
-
     @Test
     @DisplayName("cuando se buscan libros con parámetros mínimos, devuelve 200 con la respuesta paginada")
     fun search_ok() {
-        val paged = PagedResponse(content = listOf(libroHomeDTO()), totalPages = 1, page = 0)
+        val paged = PagedResponse(content = listOf(sampleLibro()), totalPages = 1, page = 0)
         whenever(libroService.search("1984", "", 0, 6, 1, null, null, null, null, null, null, "titulo")).thenReturn(paged)
+        whenever(libroService.calcularBiblioKarma(any(), eq(1))).thenReturn(1550)
 
         mockMvc.perform(
             get("/api/libros/home")
@@ -80,7 +116,7 @@ class LibroControllerTest(
     @Test
     @DisplayName("cuando se buscan libros con filtros opcionales, los pasa correctamente al service")
     fun search_conFiltros() {
-        val paged = PagedResponse(content = emptyList<LibroHomeDTO>(), totalPages = 0, page = 0)
+        val paged = PagedResponse(content = emptyList<Libro>(), totalPages = 0, page = 0)
         whenever(libroService.search("", "", 0, 6, 1, 100, 500, "2026-01-01", "2026-12-31", null, null, "titulo")).thenReturn(paged)
 
         mockMvc.perform(
@@ -99,7 +135,7 @@ class LibroControllerTest(
     @Test
     @DisplayName("cuando se busca sin resultados, devuelve 200 con lista vacía")
     fun search_sinResultados() {
-        val paged = PagedResponse(content = emptyList<LibroHomeDTO>(), totalPages = 0, page = 0)
+        val paged = PagedResponse(content = emptyList<Libro>(), totalPages = 0, page = 0)
         whenever(libroService.search("", "", 0, 6, 1, null, null, null, null, null, null, "titulo")).thenReturn(paged)
 
         mockMvc.perform(get("/api/libros/home").param("usuarioId", "1"))
@@ -110,26 +146,32 @@ class LibroControllerTest(
     @Test
     @DisplayName("cuando se consulta un libro existente, devuelve 200 con el DTO")
     fun getLibro_ok() {
-        whenever(libroService.getLibro(1)).thenReturn(libroDTO())
+        val libro = sampleLibro()
+        whenever(libroService.obtenerLibro(1)).thenReturn(libro)
+        whenever(libroService.obtenerReservasDeLibro(1)).thenReturn(emptyList())
+        whenever(libroService.obtenerNombresUsuariosCalificaciones(libro)).thenReturn(emptyMap())
 
         mockMvc.perform(get("/api/libros/1").param("usuarioId", "1"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.titulo").value("1984"))
             .andExpect(jsonPath("$.autor").value("George Orwell"))
-            .andExpect(jsonPath("$.bibliokarma").value(1550))
+            .andExpect(jsonPath("$.tipo").value("Comun"))
+            .andExpect(jsonPath("$.bibliokarma").value(nullValue()))
 
-        verify(libroService).getLibro(1)
+        verify(libroService).obtenerLibro(1)
+        verify(libroService).obtenerReservasDeLibro(1)
+        verify(libroService).obtenerNombresUsuariosCalificaciones(libro)
     }
 
     @Test
     @DisplayName("cuando se consulta un libro inexistente, devuelve 404 Not Found")
     fun getLibro_inexistente() {
-        whenever(libroService.getLibro(999)).thenThrow(NotFoundException("Libro no encontrado"))
+        whenever(libroService.obtenerLibro(999)).thenThrow(NotFoundException("Libro no encontrado"))
 
         mockMvc.perform(get("/api/libros/999").param("usuarioId", "1"))
             .andExpect(status().isNotFound)
 
-        verify(libroService).getLibro(999)
+        verify(libroService).obtenerLibro(999)
     }
 
     @Test
@@ -197,27 +239,29 @@ class LibroControllerTest(
     @DisplayName("cuando se actualiza un libro existente, devuelve 200 con el DTO actualizado")
     fun updateLibro_ok() {
         val dto = libroDTO(titulo = "1984 - Edición revisada")
-        whenever(libroService.actualizarLibro(eq(1), any(), any())).thenReturn(dto)
+        val libroActualizado = sampleLibro(titulo = "1984 - Edición revisada")
+        whenever(libroService.actualizarLibro(eq(1), any(), eq(1))).thenReturn(libroActualizado)
         mockMvc.perform(
             put("/api/libros/1")
-                .param("usuarioId", "1") // <--- ¡AÑADIDO AQUÍ!
+                .param("usuarioId", "1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto))
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.titulo").value("1984 - Edición revisada"))
+            .andExpect(jsonPath("$.tipo").value("Comun"))
 
-        verify(libroService).actualizarLibro(eq(1), any(), any())
+        verify(libroService).actualizarLibro(eq(1), any(), eq(1))
     }
 
     @Test
     @DisplayName("cuando se actualiza un libro inexistente, devuelve 404 Not Found")
     fun updateLibro_inexistente() {
         val dto = libroDTO()
-        whenever(libroService.actualizarLibro(eq(999), any(), any())).thenThrow(NotFoundException("Libro no encontrado"))
+        whenever(libroService.actualizarLibro(eq(999), any(), eq(1))).thenThrow(NotFoundException("Libro no encontrado"))
         mockMvc.perform(
             put("/api/libros/999")
-                .param("usuarioId", "1") // <--- ¡AÑADIDO AQUÍ!
+                .param("usuarioId", "1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto))
         ).andExpect(status().isNotFound)
@@ -227,7 +271,7 @@ class LibroControllerTest(
     @DisplayName("cuando se crea un libro con datos válidos, devuelve 200 con el DTO creado")
     fun crearLibro_ok() {
         val dto = libroDTO()
-        whenever(libroService.crearLibro(any(), any())).thenReturn(dto)
+        whenever(libroService.crearLibro(any(), eq(3))).thenReturn(sampleLibro())
 
         mockMvc.perform(
             post("/api/libros/nuevo")
@@ -237,8 +281,9 @@ class LibroControllerTest(
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.titulo").value("1984"))
+            .andExpect(jsonPath("$.tipo").value("Comun"))
 
-        verify(libroService).crearLibro(any(), any())
+        verify(libroService).crearLibro(any(), eq(3))
     }
 
     @Test
