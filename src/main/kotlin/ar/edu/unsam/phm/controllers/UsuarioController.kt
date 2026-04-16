@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*
 @CrossOrigin(origins = ["*"])
 @RequestMapping("/api/usuarios")
 class UsuarioController(val usuarioService: UsuarioService) {
-
     @GetMapping("/{id}")
     fun getUsuario(@PathVariable id: Int): UsuarioResponse =
         usuarioService.obtenerUsuario(id).toResponse()

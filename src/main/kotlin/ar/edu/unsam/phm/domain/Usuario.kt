@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm.domain
 
 import ar.edu.unsam.phm.exceptions.BusinessException
+import ar.edu.unsam.phm.helpers.parseTipoUsuario
 import ar.edu.unsam.phm.repository.BaseEntity
 import java.time.LocalDate
 
@@ -48,7 +49,7 @@ class Usuario(
         nuevaDesc: String,
         nuevoCelular: String,
         nuevaCiudad: String,
-        nuevoTipo: TipoUsuario,
+        nuevoTipo: String,
         nuevaImagenUrl: String?,
         nuevoEmail: String,
         nuevaPassword: String = credencial.password,
@@ -57,7 +58,7 @@ class Usuario(
         desc = nuevaDesc
         celular = nuevoCelular
         ciudad = nuevaCiudad
-        tipoUsuario = nuevoTipo
+        tipoUsuario = parseTipoUsuario(nuevoTipo)
         imagenUrl = nuevaImagenUrl ?: imagenUrl
         credencial = Credencial(nuevoEmail, nuevaPassword)
     }

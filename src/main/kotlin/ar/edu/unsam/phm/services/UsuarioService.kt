@@ -39,22 +39,12 @@ class UsuarioService(
             nuevaDesc     = request.desc,
             nuevoCelular  = celular,
             nuevaCiudad   = request.ciudad,
-            nuevoTipo     = parseTipoUsuario(request.tipoUsuario),
+            nuevoTipo     = request.tipoUsuario,
             nuevaImagenUrl = request.imagenUrl,
             nuevoEmail    = email,
         )
 
         usuarioRepository.update(usuario)
         return usuario
-    }
-
-    private fun parseTipoUsuario(value: String): TipoUsuario {
-        val normalized = value.trim().uppercase().replace(" ", "_")
-        return when (normalized) {
-            "LECTOR"                              -> UsuarioLector()
-            "PUBLICADOR"                          -> UsuarioPublicador()
-            "LECTOR_PUBLICADOR", "LECTORPUBLICADOR" -> UsuarioLectorPublicador()
-            else -> throw BusinessException("Tipo de usuario inválido: $value")
-        }
     }
 }
