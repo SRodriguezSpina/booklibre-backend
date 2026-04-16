@@ -63,7 +63,7 @@ class ReservaServiceSpec : DescribeSpec({
             usuario = solicitante,
             fechaDesde = LocalDate.of(2026, 3, 1),
             fechaHasta = LocalDate.of(2026, 3, 10),
-        ).apply { id = 500 }
+        ).apply { id = 500 }.also { it.confirmar() }
 
         val usuarioSinReservas = Usuario(
             "vacio", "123",

@@ -73,14 +73,16 @@ class LibroSpec : DescribeSpec({
 
             describe("LibroComun — validaciones") {
                 it("LANZA BusinessException SI LA CANTIDAD DE PAGINAS ES 0") {
-                    val libroSinPaginas = LibroComun(LibroData(
-                        duenio = duenio, titulo = "Test", autor = "Test",
-                        descripcion = "", genero = Genero.DRAMA, cantidadPaginas = 0,
-                        isbn = "9780000000005", idioma = Idioma.ESPANOL, editorial = "",
-                        fechaPublicacion = LocalDate.now(), estado = EstadoLibro.BUENO, imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
-                    ))
                     assertThrows<BusinessException> {
-                        libroSinPaginas.plusBiblioKarma(usuarioPobre)
+                        LibroComun(
+                            LibroData(
+                                duenio = duenio, titulo = "Test", autor = "Test",
+                                descripcion = "Descripción de prueba", genero = Genero.DRAMA, cantidadPaginas = 0,
+                                isbn = "9780000000005", idioma = Idioma.ESPANOL, editorial = "Editorial de prueba",
+                                fechaPublicacion = LocalDate.now(), estado = EstadoLibro.BUENO, imagenUrl = "",
+                                disponibilidad = Disponibilidad.DISPONIBLE,
+                            ),
+                        )
                     }
                 }
             }
@@ -228,12 +230,12 @@ class LibroSpec : DescribeSpec({
                             duenio = duenio,
                             titulo = "Test",
                             autor = "Test",
-                            descripcion = "",
+                            descripcion = "Descripción de prueba",
                             genero = Genero.DRAMA,
                             cantidadPaginas = 10,
                             isbn = "9780ABC000001",
                             idioma = Idioma.ESPANOL,
-                            editorial = "",
+                            editorial = "Editorial de prueba",
                             fechaPublicacion = LocalDate.now(),
                             estado = EstadoLibro.BUENO,
                             imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
@@ -249,12 +251,12 @@ class LibroSpec : DescribeSpec({
                             duenio = duenio,
                             titulo = "Test",
                             autor = "Test",
-                            descripcion = "",
+                            descripcion = "Descripción de prueba",
                             genero = Genero.DRAMA,
                             cantidadPaginas = 10,
                             isbn = "123456789012",
                             idioma = Idioma.ESPANOL,
-                            editorial = "",
+                            editorial = "Editorial de prueba",
                             fechaPublicacion = LocalDate.now(),
                             estado = EstadoLibro.BUENO,
                             imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE

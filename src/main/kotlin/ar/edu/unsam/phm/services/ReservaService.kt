@@ -59,31 +59,28 @@ class ReservaService(
                 throw ConflictException("El libro ya está reservado para esas fechas.")
             }
 
-            val libroEntity = libroJpaRepository.findById(dto.libroId)
+            val libro = libroJpaRepository.findById(dto.libroId)
                 .orElseThrow { NotFoundException("Libro ${dto.libroId} no encontrado") }
 
             val solicitante = usuarioJpaRepository.findById(dto.usuarioId)
                 .orElseThrow { NotFoundException("Usuario ${dto.usuarioId} no encontrado") }
 
-            val libroDomain = libroEntity.toDomain()
-
             val reservaDomain = Reserva(
-                libro = libroDomain,
+                libro = libro,
                 usuario = solicitante,
                 fechaDesde = dto.fechaDesde,
                 fechaHasta = dto.fechaHasta,
             )
 
             reservaDomain.confirmar()
-            libroDomain.actualizoDisponibilidad(false)
+            libro.actualizoDisponibilidad(false)
 
-            libroEntity.disponibilidad = libroDomain.disponibilidad.name
-            libroJpaRepository.save(libroEntity)
+            libroJpaRepository.save(libro)
 
             solicitante.bibliokarmas = solicitante.bibliokarmas
             usuarioJpaRepository.save(solicitante)
 
-            val reservaEntity = reservaDomain.toEntity(libroEntity, solicitante)
+            val reservaEntity = reservaDomain.toEntity(libro, solicitante)
             val savedReserva = reservaJpaRepository.save(reservaEntity)
 
             return savedReserva.toDomain()

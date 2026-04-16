@@ -1,5 +1,6 @@
 package ar.edu.unsam.phm.persistence.entities
 
+import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.Usuario
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -21,7 +22,7 @@ class ReservaEntity(
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "libro_id", nullable = false)
-    var libro: LibroEntity,
+    var libro: Libro,
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)

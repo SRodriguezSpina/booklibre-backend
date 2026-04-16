@@ -1,8 +1,8 @@
 package ar.edu.unsam.phm.persistence.mappers
 
 import ar.edu.unsam.phm.domain.Calificacion
+import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.persistence.entities.CalificacionEntity
-import ar.edu.unsam.phm.persistence.entities.LibroEntity
 
 fun CalificacionEntity.toDomain(): Calificacion = Calificacion(
     usuarioId = usuarioId,
@@ -10,8 +10,8 @@ fun CalificacionEntity.toDomain(): Calificacion = Calificacion(
     comentario = comentario,
 )
 
-fun Calificacion.toEntity(libroEntity: LibroEntity): CalificacionEntity = CalificacionEntity(
-    libro = libroEntity,
+fun Calificacion.toEntity(libro: Libro): CalificacionEntity = CalificacionEntity(
+    libro = libro,
     usuarioId = usuarioId,
     valor = valor,
     comentario = comentario,

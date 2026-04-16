@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.mappers
 import ar.edu.unsam.phm.domain.*
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
+import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.dtos.RangoReservaDTO
 import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
@@ -62,7 +63,7 @@ fun Libro.toDTO(
         fechaPublicacion = this.fechaPublicacion,
         fechaAgregado = this.fechaAgregado,
         propietarioId = this.duenio.id,
-        imagenUrl = this.imagenUrl,
+        imagenUrl = this.imagenUrl ?: "",
         rating = this.getCalificacion(),
         cantidadReservas = todosLosRangos.size,
         estoyReservado = reservaPrincipal != null,
@@ -91,7 +92,7 @@ fun Reserva.toDTO(): ReservaDTO {
         autor = this.libro.autor,
         estado = this.libro.estado.name,
         propietarioId = this.libro.duenio.id,
-        imagenUrl = this.libro.imagenUrl,
+        imagenUrl = this.libro.imagenUrl ?: "",
         alquiladoPorId = usuario.id,
         fechaDesde = fechaDesde.format(DateTimeFormatter.ISO_DATE),
         fechaHasta = fechaHasta.format(DateTimeFormatter.ISO_DATE),
@@ -100,10 +101,13 @@ fun Reserva.toDTO(): ReservaDTO {
     )
 }
 
+fun PagedResponse<Libro>.toHomeDTO(bibliokarma: (Libro) -> Int?): PagedResponse<LibroHomeDTO> =
+    PagedResponse(content.map { it.toHomeDTO(bibliokarma(it)) }, page, totalPages)
+
 fun Libro.toHomeDTO(bibliokarma: Int?): LibroHomeDTO {
     return LibroHomeDTO(
         id = this.id,
-        imagenUrl = this.imagenUrl,
+        imagenUrl = this.imagenUrl ?: "",
         genero = this.genero,
         titulo = this.titulo,
         autor = this.autor,

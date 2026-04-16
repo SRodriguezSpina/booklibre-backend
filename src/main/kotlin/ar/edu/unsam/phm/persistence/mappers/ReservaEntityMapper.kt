@@ -1,17 +1,14 @@
 package ar.edu.unsam.phm.persistence.mappers
 
+import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.domain.Usuario
-import ar.edu.unsam.phm.persistence.entities.LibroEntity
 import ar.edu.unsam.phm.persistence.entities.ReservaEntity
 
 fun ReservaEntity.toDomain(): Reserva {
-    val libroDomain  = libro.toDomain()
-    val usuarioDomain = usuario
-
     val reserva = Reserva(
-        libro     = libroDomain,
-        usuario   = usuarioDomain,
+        libro     = libro,
+        usuario   = usuario,
         fechaDesde = fechaDesde,
         fechaHasta = fechaHasta,
     )
@@ -20,12 +17,12 @@ fun ReservaEntity.toDomain(): Reserva {
 }
 
 fun Reserva.toEntity(
-    libroEntity: LibroEntity,
+    libro: Libro,
     usuario: Usuario,
 ): ReservaEntity {
     return ReservaEntity(
         id         = id,
-        libro      = libroEntity,
+        libro      = libro,
         usuario    = usuario,
         fechaDesde = fechaDesde,
         fechaHasta = fechaHasta,

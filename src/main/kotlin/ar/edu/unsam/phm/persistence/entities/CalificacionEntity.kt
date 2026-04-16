@@ -1,5 +1,6 @@
 package ar.edu.unsam.phm.persistence.entities
 
+import ar.edu.unsam.phm.domain.Libro
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -19,7 +20,7 @@ class CalificacionEntity(
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "libro_id", nullable = false)
-    var libro: LibroEntity,
+    var libro: Libro,
 
     @Column(name = "usuario_id", nullable = false)
     var usuarioId: Int,
