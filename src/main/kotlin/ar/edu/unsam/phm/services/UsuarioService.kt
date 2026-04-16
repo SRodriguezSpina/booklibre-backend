@@ -29,7 +29,7 @@ class UsuarioService(
             nuevaDesc      = request.desc,
             nuevoCelular   = celular,
             nuevaCiudad    = request.ciudad,
-            nuevoTipo      = parseTipoUsuario(request.tipoUsuario),
+            nuevoTipo      = request.tipoUsuario,
             nuevaImagenUrl = request.imagenUrl,
             nuevoEmail     = email,
         )
@@ -39,14 +39,4 @@ class UsuarioService(
 
     fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> =
         libroRepository.getLibrosDeUsuario(usuarioId)
-
-    private fun parseTipoUsuario(value: String): String {
-        val normalized = value.trim().uppercase().replace(" ", "_")
-        return when (normalized) {
-            "LECTOR"                                -> "LECTOR"
-            "PUBLICADOR"                            -> "PUBLICADOR"
-            "LECTOR_PUBLICADOR", "LECTORPUBLICADOR" -> "LECTOR_PUBLICADOR"
-            else -> throw BusinessException("Tipo de usuario inválido: $value")
-        }
-    }
 }

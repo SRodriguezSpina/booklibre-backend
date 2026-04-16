@@ -8,6 +8,7 @@ import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.mappers.toDetalleDTOs
+import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
@@ -119,5 +120,8 @@ class LibroService(
         if (reservaRepository.existeReservaActiva(libroId, LocalDate.now()))
             throw ConflictException("El libro tiene una reserva activa y no puede eliminarse")
         libroRepository.delete(libro)
+    }
+    fun obtenerHistorialDePuntajes(libroId: Int): List<HistorialPuntaje> {
+        return libroRepository.getHistorialPuntajes(libroId)
     }
 }

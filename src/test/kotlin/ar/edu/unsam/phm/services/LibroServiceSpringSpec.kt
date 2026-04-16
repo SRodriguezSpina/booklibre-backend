@@ -175,7 +175,7 @@ class LibroServiceSpringSpec : DescribeSpec({
         }
 
         it("obtenerLibro propaga NotFoundException del repositorio") {
-            every { libroRepository.getById(999) } throws NotFoundException("Libro 999 no encontrado")
+            every { libroRepository.getById(999) } throws NotFoundException("Libro.kt 999 no encontrado")
             shouldThrow<NotFoundException> { service.obtenerLibro(999) }
         }
     }

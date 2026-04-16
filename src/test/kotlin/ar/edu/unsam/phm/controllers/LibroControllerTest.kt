@@ -166,7 +166,7 @@ class LibroControllerTest(
     @Test
     @DisplayName("cuando se consulta un libro inexistente, devuelve 404 Not Found")
     fun getLibro_inexistente() {
-        whenever(libroService.obtenerLibro(999)).thenThrow(NotFoundException("Libro no encontrado"))
+        whenever(libroService.obtenerLibro(999)).thenThrow(NotFoundException("Libro.kt no encontrado"))
 
         mockMvc.perform(get("/api/libros/999").param("usuarioId", "1"))
             .andExpect(status().isNotFound)
@@ -204,7 +204,7 @@ class LibroControllerTest(
     @DisplayName("cuando se califica un libro inexistente, devuelve 404 Not Found")
     fun agregarCalificacion_libroInexistente() {
         val calificacion = Calificacion(usuarioId = 1, valor = 4, comentario = "Bueno")
-        whenever(libroService.agregarCalificacion(999, calificacion)).thenThrow(NotFoundException("Libro no encontrado"))
+        whenever(libroService.agregarCalificacion(999, calificacion)).thenThrow(NotFoundException("Libro.kt no encontrado"))
 
         mockMvc.perform(
             post("/api/libros/999/calificar")
@@ -258,7 +258,7 @@ class LibroControllerTest(
     @DisplayName("cuando se actualiza un libro inexistente, devuelve 404 Not Found")
     fun updateLibro_inexistente() {
         val dto = libroDTO()
-        whenever(libroService.actualizarLibro(eq(999), any(), eq(1))).thenThrow(NotFoundException("Libro no encontrado"))
+        whenever(libroService.actualizarLibro(eq(999), any(), eq(1))).thenThrow(NotFoundException("Libro.kt no encontrado"))
         mockMvc.perform(
             put("/api/libros/999")
                 .param("usuarioId", "1")

@@ -51,7 +51,7 @@ fun Libro.toDTO(
     return LibroDTO(
         id = this.id,
         titulo = this.titulo,
-        tipo = this.javaClass.simpleName.replace("Libro", ""),
+        tipo = this.javaClass.simpleName.replace("Libro.kt", ""),
         descripcion = this.descripcion,
         genero = this.genero,
         autor = this.autor,
@@ -114,7 +114,7 @@ fun Libro.toHomeDTO(bibliokarma: Int?): LibroHomeDTO {
         calificacion = this.getCalificacion(),
         isbn = this.isbn,
         idioma = this.idioma,
-        tipo = this.javaClass.simpleName.replace("Libro", ""),
+        tipo = this.javaClass.simpleName.replace("Libro.kt", ""),
         bibliokarma = bibliokarma,
         estado = this.estado.name,
         duenio = this.duenio.nombre,

@@ -4,14 +4,16 @@ import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.LibroFiltros
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.NotFoundException
+import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
 import org.springframework.stereotype.Component
 import kotlin.math.ceil
 
 @Component
-class LibroRepository(private val jpa: LibroJpaRepository) {
+class LibroRepository(private val jpa: LibroJpaRepository,
+                      private val historialJpa: HistorialPuntajeJpaRepository) {
 
     fun getById(id: Int): Libro =
-        jpa.findById(id).orElseThrow { NotFoundException("Libro $id no encontrado") }
+        jpa.findById(id).orElseThrow { NotFoundException("Libro.kt $id no encontrado") }
 
     fun getLibros(): List<Libro> = jpa.findAll()
 
@@ -39,4 +41,6 @@ class LibroRepository(private val jpa: LibroJpaRepository) {
         val totalPages = ceil(filtrados.size.toDouble() / size).toInt()
         return PagedResponse(filtrados.drop(page * size).take(size), page, totalPages)
     }
+    fun getHistorialPuntajes(libroId: Int): List<HistorialPuntaje> =
+        historialJpa.findByLibroIdOrderByFechaActualizacionDesc(libroId)
 }

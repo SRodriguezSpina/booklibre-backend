@@ -59,7 +59,7 @@ class ReservaServiceInMemory(
             val libro = try {
                 libroRepository.getById(dto.libroId)
             } catch (_: EntityNotFoundException) {
-                throw NotFoundException("Libro ${dto.libroId} no encontrado")
+                throw NotFoundException("Libro.kt ${dto.libroId} no encontrado")
             }
             val solicitante = usuarioRepository.getById(dto.usuarioId)
             val reserva = reservaRepository.create(

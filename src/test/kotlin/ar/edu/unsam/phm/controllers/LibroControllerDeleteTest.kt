@@ -40,7 +40,7 @@ class LibroControllerDeleteTest {
         val libroId = 999
         val usuarioId = 1
 
-        Mockito.doThrow(NotFoundException("Libro no encontrado"))
+        Mockito.doThrow(NotFoundException("Libro.kt no encontrado"))
             .`when`(libroService).eliminarLibro(libroId, usuarioId)
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/libros/$libroId").param("usuarioId", usuarioId.toString()))

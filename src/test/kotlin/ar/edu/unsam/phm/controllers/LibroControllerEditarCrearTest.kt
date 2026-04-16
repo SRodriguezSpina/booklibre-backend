@@ -317,7 +317,7 @@ class LibroControllerEditarCrearTest(
     @DisplayName("PUT /{libroId} con libro inexistente devuelve 404")
     fun editarLibro_inexistente() {
         whenever(libroService.actualizarLibro(eq(9999), any(), any()))
-            .thenThrow(NotFoundException("Libro no encontrado"))
+            .thenThrow(NotFoundException("Libro.kt no encontrado"))
 
         mockMvc.perform(
             put("/api/libros/9999")
