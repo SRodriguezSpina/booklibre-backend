@@ -14,6 +14,8 @@ import ar.edu.unsam.phm.testing.inmemory.repository.LibroRepository
 import ar.edu.unsam.phm.testing.inmemory.repository.ReservaRepository
 import ar.edu.unsam.phm.testing.inmemory.repository.UsuarioRepository
 import ar.edu.unsam.phm.testing.inmemory.services.ReservaServiceInMemory
+import ar.edu.unsam.phm.domain.TipoReserva
+import ar.edu.unsam.phm.mappers.toDTO
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -82,7 +84,7 @@ class ReservaServiceSpec : DescribeSpec({
         it("OBTENER RESERVAS DEVUELVE LOS DTOs DEL USUARIO SOLICITANTE") {
             every { reservaRepository.getReservasDeUsuario(1) } returns listOf(reserva)
 
-            val resultado = reservaService.obtenerReservas(1)
+            val resultado = reservaService.obtenerReservas(1, TipoReserva.HECHAS).map { it.toDTO() }
 
             resultado shouldHaveSize 1
             resultado[0].titulo shouldBe "1984"
@@ -98,7 +100,7 @@ class ReservaServiceSpec : DescribeSpec({
         it("OBTENER RESERVAS DEVUELVE LOS DTOs CUANDO EL USUARIO ES DUENIO") {
             every { reservaRepository.getReservasDeUsuario(3) } returns listOf(reserva)
 
-            val resultado = reservaService.obtenerReservas(3)
+            val resultado = reservaService.obtenerReservas(3, TipoReserva.RECIBIDAS).map { it.toDTO() }
 
             resultado shouldHaveSize 1
             resultado[0].propietarioId shouldBe 3
@@ -109,7 +111,7 @@ class ReservaServiceSpec : DescribeSpec({
         it("OBTENER RESERVAS DEVUELVE LISTA VACIA SI NO HAY RESERVAS") {
             every { reservaRepository.getReservasDeUsuario(99) } returns emptyList()
 
-            val resultado = reservaService.obtenerReservas(99)
+            val resultado = reservaService.obtenerReservas(99, TipoReserva.HECHAS).map { it.toDTO() }
 
             resultado.shouldBeEmpty()
             verify { reservaRepository.getReservasDeUsuario(99) }
@@ -118,7 +120,7 @@ class ReservaServiceSpec : DescribeSpec({
         it("OBTENER RESERVAS MAPEA EL BIBLIOKARMA CORRECTAMENTE") {
             every { reservaRepository.getReservasDeUsuario(1) } returns listOf(reserva)
 
-            val resultado = reservaService.obtenerReservas(1)
+            val resultado = reservaService.obtenerReservas(1, TipoReserva.HECHAS).map { it.toDTO() }
 
             // (5 * 10 días) + plusBiblioKarma(500 karma → multiplicador 5 → 300*5=1500) = 1550
             resultado[0].bibliokarma shouldBe 1550
@@ -127,7 +129,7 @@ class ReservaServiceSpec : DescribeSpec({
         it("OBTENER RESERVAS MAPEA EL RATING CORRECTAMENTE CUANDO NO HAY CALIFICACIONES") {
             every { reservaRepository.getReservasDeUsuario(1) } returns listOf(reserva)
 
-            val resultado = reservaService.obtenerReservas(1)
+            val resultado = reservaService.obtenerReservas(1, TipoReserva.HECHAS).map { it.toDTO() }
 
             resultado[0].rating shouldBe 0.0
         }
@@ -136,7 +138,7 @@ class ReservaServiceSpec : DescribeSpec({
             libro.agregarCalificacion(Calificacion(usuarioId = 2, valor = 4))
             every { reservaRepository.getReservasDeUsuario(1) } returns listOf(reserva)
 
-            val resultado = reservaService.obtenerReservas(1)
+            val resultado = reservaService.obtenerReservas(1, TipoReserva.HECHAS).map { it.toDTO() }
 
             resultado[0].rating shouldBe 4.0
         }
@@ -166,7 +168,7 @@ class ReservaServiceSpec : DescribeSpec({
                 listOf(reserva, reserva2).filter { it.libro.id == libroId }
             }
 
-            val resultado = reservaService.obtenerReservas(1)
+            val resultado = reservaService.obtenerReservas(1, TipoReserva.HECHAS).map { it.toDTO() }
 
             resultado shouldHaveSize 2
             resultado[0].titulo shouldBe "1984"
