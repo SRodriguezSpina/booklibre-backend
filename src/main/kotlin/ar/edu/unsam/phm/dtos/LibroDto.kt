@@ -16,6 +16,11 @@ data class CalificacionDTO(
     val valor: Int,
     val comentario: String
 )
+data class NewCalificacionDTO(
+    val usuarioId: Int,
+    val valor: Int,
+    val comentario: String
+)
 
 data class LibroDTO(
     val id: Int = 0,

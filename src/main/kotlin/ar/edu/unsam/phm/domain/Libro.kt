@@ -1,7 +1,6 @@
 package ar.edu.unsam.phm.domain
 
 import ar.edu.unsam.phm.exceptions.BusinessException
-import ar.edu.unsam.phm.persistence.entities.CalificacionEntity
 import jakarta.persistence.*
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -135,10 +134,7 @@ abstract class Libro() : BaseEntity() {
 
     @OneToMany(mappedBy = "libro", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     @OrderBy("id ASC")
-    var calificacionesJpa: MutableList<CalificacionEntity> = mutableListOf()
-
-    val calificaciones: List<Calificacion>
-        get() = calificacionesJpa.map { Calificacion(it.usuarioId, it.valor, it.comentario) }
+    var calificaciones: MutableList<Calificacion> = mutableListOf()
 
     constructor(data: LibroData) : this() {
         duenio          = data.duenio
@@ -170,16 +166,16 @@ abstract class Libro() : BaseEntity() {
 
     fun agregarCalificacion(nueva: Calificacion) {
         if (nueva.valor !in 1..5) throw BusinessException("La calificación debe estar entre 1 y 5")
-        if (calificacionesJpa.any { it.usuarioId == nueva.usuarioId })
+        if (calificaciones.any { it.usuarioId == nueva.usuarioId })
             throw BusinessException("Usuario ${nueva.usuarioId} ya calificó este libro")
-        calificacionesJpa.add(
-            CalificacionEntity(libro = this, usuarioId = nueva.usuarioId, valor = nueva.valor, comentario = nueva.comentario),
+        calificaciones.add(
+            Calificacion(libro = this, usuarioId = nueva.usuarioId, valor = nueva.valor, comentario = nueva.comentario),
         )
     }
 
     fun getCalificacion(): Double {
-        if (calificacionesJpa.isEmpty()) return 0.0
-        val promedio = calificacionesJpa.map { it.valor }.average()
+        if (calificaciones.isEmpty()) return 0.0
+        val promedio = calificaciones.map { it.valor }.average()
         return (promedio * 10.0).roundToInt() / 10.0
     }
 
