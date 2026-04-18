@@ -136,6 +136,9 @@ abstract class Libro() : BaseEntity() {
     @OrderBy("id ASC")
     var calificaciones: MutableList<Calificacion> = mutableListOf()
 
+    @Column(nullable = false)
+    var calificacion: Double = 0.0
+
     constructor(data: LibroData) : this() {
         duenio          = data.duenio
         titulo          = validarTextoObligatorio(data.titulo, "título")
@@ -171,13 +174,18 @@ abstract class Libro() : BaseEntity() {
         calificaciones.add(
             Calificacion(libro = this, usuarioId = nueva.usuarioId, valor = nueva.valor, comentario = nueva.comentario),
         )
+        actualizarPromedioCalificacion()
     }
 
-    fun getCalificacion(): Double {
-        if (calificaciones.isEmpty()) return 0.0
-        val promedio = calificaciones.map { it.valor }.average()
-        return (promedio * 10.0).roundToInt() / 10.0
+    private fun actualizarPromedioCalificacion() {
+        if (calificaciones.isEmpty()) {
+            calificacion = 0.0
+        } else {
+            val promedio = calificaciones.map { it.valor }.average()
+            calificacion = (promedio * 10.0).roundToInt() / 10.0
+        }
     }
+
 
     fun estaDisponible() = disponibilidad == Disponibilidad.DISPONIBLE
 
