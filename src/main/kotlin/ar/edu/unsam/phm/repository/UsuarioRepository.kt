@@ -1,5 +1,6 @@
 package ar.edu.unsam.phm.repository
 
+import ar.edu.unsam.phm.domain.Calificacion
 import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
@@ -33,7 +34,7 @@ class UsuarioRepository(
 
     fun save(usuario: Usuario): Usuario = jpa.save(usuario)
 
-    fun resolverNombresCalificaciones(calificaciones: List<ar.edu.unsam.phm.domain.Calificacion>): Map<Int, String> =
+    fun resolverNombresCalificaciones(calificaciones: List<Calificacion>): Map<Int, String> =
         calificaciones.map { it.usuarioId }.toSet()
             .associateWith { id -> findById(id)?.nombre ?: "Usuario $id" }
 }

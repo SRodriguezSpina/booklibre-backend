@@ -3,8 +3,6 @@ package ar.edu.unsam.phm.repository
 import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.NotFoundException
-import ar.edu.unsam.phm.persistence.mappers.toDomain
-import ar.edu.unsam.phm.persistence.mappers.toEntity
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 

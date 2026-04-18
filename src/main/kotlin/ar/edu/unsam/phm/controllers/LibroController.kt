@@ -1,11 +1,7 @@
 package ar.edu.unsam.phm.controllers
 
 import ar.edu.unsam.phm.domain.Calificacion
-import ar.edu.unsam.phm.dtos.CalificacionDTO
-import ar.edu.unsam.phm.dtos.HistorialPuntajeDTO
-import ar.edu.unsam.phm.dtos.LibroDTO
-import ar.edu.unsam.phm.dtos.LibroHomeDTO
-import ar.edu.unsam.phm.dtos.PagedResponse
+import ar.edu.unsam.phm.dtos.*
 import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
@@ -51,7 +47,7 @@ class LibroController(val libroService: LibroService) {
         libroService.getCalificaciones(libroId)
 
     @PostMapping("/{libroId}/calificar")
-    fun agregarCalificacion(@PathVariable libroId: Int, @RequestBody dto: Calificacion): Map<String, Double> {
+    fun agregarCalificacion(@PathVariable libroId: Int, @RequestBody dto: NewCalificacionDTO): Map<String, Double> {
         libroService.agregarCalificacion(libroId, dto)
         return mapOf("rating" to libroService.getRating(libroId))
     }

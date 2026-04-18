@@ -4,11 +4,8 @@ import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.AuthResponseUsuario
 import ar.edu.unsam.phm.dtos.LoginRequest
 import ar.edu.unsam.phm.dtos.RegisterRequest
-import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.mappers.toResponse
-import ar.edu.unsam.phm.persistence.mappers.toDomain
-import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import org.springframework.stereotype.Service
 
