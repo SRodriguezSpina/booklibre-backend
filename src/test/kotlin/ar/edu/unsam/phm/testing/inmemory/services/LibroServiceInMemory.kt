@@ -9,6 +9,7 @@ import ar.edu.unsam.phm.domain.LibroConDedicatoria
 import ar.edu.unsam.phm.domain.LibroData
 import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroDTO
+import ar.edu.unsam.phm.dtos.NewCalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.BusinessException
@@ -210,14 +211,20 @@ class LibroServiceInMemory(
         return libroExistente.toDTO()
     }
 
-    fun agregarCalificacion(idLibro: Int, calificacion: Calificacion) {
+    fun agregarCalificacion(idLibro: Int, dto: NewCalificacionDTO) {
         val libro = try {
             libroRepository.getById(idLibro)
         } catch (_: EntityNotFoundException) {
             throw NotFoundException("Libro.kt $idLibro no encontrado")
         }
-        usuarioRepository.findById(calificacion.usuarioId)
-            ?: throw NotFoundException("Usuario ${calificacion.usuarioId} no encontrado")
+        usuarioRepository.findById(dto.usuarioId)
+            ?: throw NotFoundException("Usuario ${dto.usuarioId} no encontrado")
+        val calificacion = Calificacion(
+            libro = libro,
+            usuarioId = dto.usuarioId,
+            valor = dto.valor,
+            comentario = dto.comentario
+        )
         libro.agregarCalificacion(calificacion)
         libroRepository.update(libro)
     }

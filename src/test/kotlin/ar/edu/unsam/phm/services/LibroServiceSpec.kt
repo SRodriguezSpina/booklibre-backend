@@ -2,6 +2,7 @@ package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.domain.*
 import ar.edu.unsam.phm.dtos.LibroDTO
+import ar.edu.unsam.phm.dtos.NewCalificacionDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
@@ -648,7 +649,7 @@ class LibroServiceSpec : DescribeSpec({
 
             service.agregarCalificacion(
                 libroCreado.id,
-                Calificacion(usuarioId = otroUsuario.id, valor = 5, comentario = "Genial")
+                NewCalificacionDTO(usuarioId = otroUsuario.id, valor = 5, comentario = "Genial")
             )
 
             service.getRating(libroCreado.id) shouldBe 5.0
@@ -659,7 +660,7 @@ class LibroServiceSpec : DescribeSpec({
             val service = buildService(libroRepo, usuarioRepo)
 
             shouldThrow<NotFoundException> {
-                service.agregarCalificacion(999, Calificacion(usuarioId = otroUsuario.id, valor = 5))
+                service.agregarCalificacion(999, NewCalificacionDTO(usuarioId = otroUsuario.id, valor = 5, comentario = ""))
             }
         }
 
@@ -669,7 +670,7 @@ class LibroServiceSpec : DescribeSpec({
             val libroCreado = service.crearLibro(libroDTOBase(), duenio.id)
 
             shouldThrow<NotFoundException> {
-                service.agregarCalificacion(libroCreado.id, Calificacion(usuarioId = 999, valor = 5))
+                service.agregarCalificacion(libroCreado.id, NewCalificacionDTO(usuarioId = 999, valor = 5, comentario = ""))
             }
         }
     }

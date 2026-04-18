@@ -1,6 +1,6 @@
 package ar.edu.unsam.phm.controllers
 
-import ar.edu.unsam.phm.domain.Calificacion
+import ar.edu.unsam.phm.dtos.*
 import ar.edu.unsam.phm.domain.Disponibilidad
 import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.Genero
@@ -184,7 +184,7 @@ class LibroControllerTest(
     @Test
     @DisplayName("cuando se califica un libro correctamente, devuelve 200 OK y el nuevo rating")
     fun agregarCalificacion_ok() {
-        val calificacion = Calificacion(usuarioId = 1, valor = 5, comentario = "Excelente")
+        val calificacion = NewCalificacionDTO(usuarioId = 1, valor = 5, comentario = "Excelente")
 
         whenever(libroService.getRating(1)).thenReturn(5.0)
 
@@ -203,7 +203,7 @@ class LibroControllerTest(
     @Test
     @DisplayName("cuando se califica un libro inexistente, devuelve 404 Not Found")
     fun agregarCalificacion_libroInexistente() {
-        val calificacion = Calificacion(usuarioId = 1, valor = 4, comentario = "Bueno")
+        val calificacion = NewCalificacionDTO(usuarioId = 1, valor = 4, comentario = "Bueno")
         whenever(libroService.agregarCalificacion(999, calificacion)).thenThrow(NotFoundException("Libro.kt no encontrado"))
 
         mockMvc.perform(
@@ -216,7 +216,7 @@ class LibroControllerTest(
     @Test
     @DisplayName("cuando un usuario intenta calificar dos veces el mismo libro, devuelve 400 Bad Request")
     fun agregarCalificacion_duplicada() {
-        val calificacion = Calificacion(usuarioId = 1, valor = 3, comentario = "Ya califiqué")
+        val calificacion = NewCalificacionDTO(usuarioId = 1, valor = 3, comentario = "Ya califiqué")
         whenever(libroService.agregarCalificacion(1, calificacion)).thenThrow(BusinessException("Usuario ya calificó este libro"))
 
         mockMvc.perform(
