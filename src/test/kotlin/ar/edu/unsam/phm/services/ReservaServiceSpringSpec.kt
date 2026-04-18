@@ -1,16 +1,9 @@
 package ar.edu.unsam.phm.services
 
-import ar.edu.unsam.phm.domain.Disponibilidad
-import ar.edu.unsam.phm.domain.EstadoLibro
-import ar.edu.unsam.phm.domain.Genero
-import ar.edu.unsam.phm.domain.Idioma
-import ar.edu.unsam.phm.domain.LibroComun
-import ar.edu.unsam.phm.domain.LibroData
-import ar.edu.unsam.phm.domain.Usuario
+import ar.edu.unsam.phm.domain.*
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
-import ar.edu.unsam.phm.persistence.entities.ReservaEntity
 import ar.edu.unsam.phm.repository.LibroJpaRepository
 import ar.edu.unsam.phm.repository.ReservaJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioJpaRepository
@@ -112,7 +105,7 @@ class ReservaServiceSpringSpec : DescribeSpec({
             every { usuarioJpaRepository.save(any()) } answers { firstArg() }
 
             every { reservaJpaRepository.save(any()) } answers {
-                firstArg<ReservaEntity>().apply { id = 500 }
+                firstArg<Reserva>().apply { id = 500 }
             }
 
             val reserva = service.crearReserva(dto)

@@ -34,8 +34,7 @@ class ReservaService(
             TipoReserva.HECHAS -> reservaJpaRepository.findByUsuarioId(usuarioId)
             TipoReserva.RECIBIDAS -> reservaJpaRepository.findByLibroDuenioId(usuarioId)
         }
-
-        return reservas.map { it.toDomain() }
+        return reservas
     }
 
     fun obtenerReservasAnuales(usuarioId: Int): List<ReservaAnualUsuarioDTO> {
@@ -71,25 +70,21 @@ class ReservaService(
             val solicitante = usuarioJpaRepository.findById(dto.usuarioId)
                 .orElseThrow { NotFoundException("Usuario ${dto.usuarioId} no encontrado") }
 
-            val reservaDomain = Reserva(
+            val reserva = Reserva(
                 libro = libro,
                 usuario = solicitante,
                 fechaDesde = dto.fechaDesde,
                 fechaHasta = dto.fechaHasta,
             )
 
-            reservaDomain.confirmar()
+            reserva.confirmar()
             libro.actualizoDisponibilidad(false)
 
             libroJpaRepository.save(libro)
-
-            solicitante.bibliokarmas = solicitante.bibliokarmas
             usuarioJpaRepository.save(solicitante)
+            reservaJpaRepository.save(reserva)
 
-            val reservaEntity = reservaDomain.toEntity(libro, solicitante)
-            val savedReserva = reservaJpaRepository.save(reservaEntity)
-
-            return savedReserva.toDomain()
+            return reserva
         }
     }
 }

@@ -97,7 +97,7 @@ fun Reserva.toDTO(): ReservaDTO {
         fechaDesde = fechaDesde.format(DateTimeFormatter.ISO_DATE),
         fechaHasta = fechaHasta.format(DateTimeFormatter.ISO_DATE),
         rating = this.libro.getCalificacion(),
-        bibliokarma = bibliokarma,
+        bibliokarma = bibliokarmas,
     )
 }
 

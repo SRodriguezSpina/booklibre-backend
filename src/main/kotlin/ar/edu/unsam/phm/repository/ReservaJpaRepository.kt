@@ -1,24 +1,24 @@
 package ar.edu.unsam.phm.repository
 
-import ar.edu.unsam.phm.persistence.entities.ReservaEntity
+import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.readmodels.ReservaAnualUsuarioView
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.time.LocalDate
 
-interface ReservaJpaRepository : JpaRepository<ReservaEntity, Int> {
-    fun findByLibroId(libroId: Int): List<ReservaEntity>
-    fun findByUsuarioId(usuarioId: Int): List<ReservaEntity>
+interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
+    fun findByLibroId(libroId: Int): List<Reserva>
+    fun findByUsuarioId(usuarioId: Int): List<Reserva>
 
     @Query("""
-        SELECT r FROM ReservaEntity r
+        SELECT r FROM Reserva r
         WHERE r.libro.duenio.id = :usuarioId
     """)
-    fun findByLibroDuenioId(@Param("usuarioId") usuarioId: Int): List<ReservaEntity>
+    fun findByLibroDuenioId(@Param("usuarioId") usuarioId: Int): List<Reserva>
 
     @Query("""
-        SELECT COUNT(r) > 0 FROM ReservaEntity r
+        SELECT COUNT(r) > 0 FROM Reserva r
         WHERE r.libro.id      = :libroId
           AND r.fechaDesde   <= :hasta
           AND r.fechaHasta   >= :desde
@@ -30,7 +30,7 @@ interface ReservaJpaRepository : JpaRepository<ReservaEntity, Int> {
     ): Boolean
 
     @Query("""
-        SELECT r.libro.id FROM ReservaEntity r
+        SELECT r.libro.id FROM Reserva r
         WHERE r.fechaDesde <= :hasta
           AND r.fechaHasta >= :desde
     """)
