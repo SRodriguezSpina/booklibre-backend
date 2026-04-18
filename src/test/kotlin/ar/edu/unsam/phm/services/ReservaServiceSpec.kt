@@ -135,7 +135,7 @@ class ReservaServiceSpec : DescribeSpec({
         }
 
         it("OBTENER RESERVAS MAPEA EL RATING CUANDO HAY CALIFICACIONES") {
-            libro.agregarCalificacion(Calificacion(usuarioId = 2, valor = 4))
+            libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 2, valor = 4, comentario = ""))
             every { reservaRepository.getReservasDeUsuario(1) } returns listOf(reserva)
 
             val resultado = reservaService.obtenerReservas(1, TipoReserva.HECHAS).map { it.toDTO() }

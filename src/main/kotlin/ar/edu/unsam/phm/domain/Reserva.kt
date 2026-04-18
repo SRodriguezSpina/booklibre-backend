@@ -6,11 +6,11 @@ import java.time.LocalDate
 @Table(name = "reservas")
 
 class Reserva (
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "libro_id", nullable = false)
     var libro: Libro,
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
     var usuario: Usuario,
 

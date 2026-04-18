@@ -82,7 +82,7 @@ class ReservaControllerTest(
         karma: Int,
     ) = Reserva(libro, lector, desde, hasta).apply {
         id = prestamoId
-        bibliokarma = karma
+        bibliokarmas = karma
     }
 
     @Test

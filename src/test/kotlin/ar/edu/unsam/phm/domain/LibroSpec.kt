@@ -175,27 +175,27 @@ class LibroSpec : DescribeSpec({
             }
 
             it("AGREGA UNA CALIFICACION Y CALCULA EL PROMEDIO CORRECTAMENTE") {
-                libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 4))
+                libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 4, comentario = ""))
                 libro.getCalificacion() shouldBe 4.0
             }
 
             it("PROMEDIO CON MULTIPLES CALIFICACIONES ES CORRECTO") {
-                libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 4))
-                libro.agregarCalificacion(Calificacion(usuarioId = 2, valor = 2))
+                libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 4, comentario = ""))
+                libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 2, valor = 2, comentario = ""))
                 libro.getCalificacion() shouldBe 3.0
             }
 
             it("NO SE PUEDE CALIFICAR DOS VECES CON EL MISMO USUARIO") {
-                libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 5))
+                libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 5, comentario = ""))
                 assertThrows<BusinessException> {
-                    libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 3))
+                    libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 3, comentario = ""))
                 }
             }
 
             it("LA CALIFICACION NO CAMBIA TRAS UN INTENTO DUPLICADO") {
-                libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 5))
+                libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 5, comentario = ""))
                 assertThrows<BusinessException> {
-                    libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 1))
+                    libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 1, comentario = ""))
                 }
                 libro.getCalificacion() shouldBe 5.0
             }
@@ -203,20 +203,20 @@ class LibroSpec : DescribeSpec({
             describe("Calificaciones — casos borde") {
                 it("AGREGAR CALIFICACION CON VALOR MENOR A 1 LANZA BusinessException") {
                     assertThrows<BusinessException> {
-                        libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 0))
+                        libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 0, comentario = ""))
                     }
                 }
 
                 it("AGREGAR CALIFICACION CON VALOR MAYOR A 5 LANZA BusinessException") {
                     assertThrows<BusinessException> {
-                        libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 6))
+                        libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 6, comentario = ""))
                     }
                 }
 
                 it("GETCLASIFICACION REDONDEA A 1 DECIMAL CORRECTAMENTE") {
-                    libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 4))
-                    libro.agregarCalificacion(Calificacion(usuarioId = 2, valor = 3))
-                    libro.agregarCalificacion(Calificacion(usuarioId = 3, valor = 5))
+                    libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 4, comentario = ""))
+                    libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 2, valor = 3, comentario = ""))
+                    libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 3, valor = 5, comentario = ""))
                     libro.getCalificacion() shouldBe 4.0
                 }
             }

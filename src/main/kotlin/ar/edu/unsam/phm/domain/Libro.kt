@@ -85,7 +85,7 @@ abstract class Libro() : BaseEntity() {
         }
     }
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "duenio_id", nullable = false)
     lateinit var duenio: Usuario
 
@@ -132,7 +132,7 @@ abstract class Libro() : BaseEntity() {
     @Column(nullable = false)
     var disponibilidad: Disponibilidad = Disponibilidad.DISPONIBLE
 
-    @OneToMany(mappedBy = "libro", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "libro", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     @OrderBy("id ASC")
     var calificaciones: MutableList<Calificacion> = mutableListOf()
 

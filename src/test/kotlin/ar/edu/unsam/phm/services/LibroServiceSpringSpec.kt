@@ -13,6 +13,7 @@ import ar.edu.unsam.phm.domain.LibroData
 import ar.edu.unsam.phm.domain.LibroFiltros
 import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.LibroDTO
+import ar.edu.unsam.phm.dtos.NewCalificacionDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.NotFoundException
@@ -142,7 +143,7 @@ class LibroServiceSpringSpec : DescribeSpec({
             every { usuarioRepository.getById(2) } returns calificador
             every { libroRepository.save(libro) } returns libro
 
-            service.agregarCalificacion(10, Calificacion(usuarioId = 2, valor = 5, comentario = "Bien"))
+            service.agregarCalificacion(10, NewCalificacionDTO(usuarioId = 2, valor = 5, comentario = "Bien"))
 
             libro.calificaciones.size shouldBe 1
             verify(exactly = 1) { libroRepository.save(libro) }
@@ -169,7 +170,7 @@ class LibroServiceSpringSpec : DescribeSpec({
 
         it("getRating delega en getById del libro") {
             val libro = libroComunPersistido()
-            libro.agregarCalificacion(Calificacion(usuarioId = 2, valor = 4, comentario = "ok"))
+            libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 2, valor = 4, comentario = "ok"))
             every { libroRepository.getById(10) } returns libro
             service.getRating(10) shouldBe 4.0
         }
