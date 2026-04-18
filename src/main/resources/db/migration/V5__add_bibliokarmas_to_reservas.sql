@@ -1,2 +1,0 @@
-ALTER TABLE reservas
-    ADD COLUMN IF NOT EXISTS bibliokarmas INT NOT NULL DEFAULT 0;
