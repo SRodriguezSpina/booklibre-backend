@@ -1,6 +1,14 @@
 package ar.edu.unsam.phm.services
 
-import ar.edu.unsam.phm.domain.*
+import ar.edu.unsam.phm.domain.Disponibilidad
+import ar.edu.unsam.phm.domain.EstadoLibro
+import ar.edu.unsam.phm.domain.Genero
+import ar.edu.unsam.phm.domain.Idioma
+import ar.edu.unsam.phm.domain.LibroComun
+import ar.edu.unsam.phm.domain.LibroData
+import ar.edu.unsam.phm.domain.Reserva
+import ar.edu.unsam.phm.domain.TipoReserva
+import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
@@ -120,7 +128,7 @@ class ReservaServiceSpringSpec : DescribeSpec({
 
         it("obtenerReservas lanza NotFoundException si el usuario no existe") {
             every { usuarioJpaRepository.findById(99) } returns Optional.empty()
-            shouldThrow<NotFoundException> { service.obtenerReservas(99) }
+            shouldThrow<NotFoundException> { service.obtenerReservas(99, TipoReserva.HECHAS) }
         }
     }
 })

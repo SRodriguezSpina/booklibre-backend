@@ -51,7 +51,7 @@ fun Libro.toDTO(
     return LibroDTO(
         id = this.id,
         titulo = this.titulo,
-        tipo = this.javaClass.simpleName.replace("Libro.kt", ""),
+        tipo = this.javaClass.simpleName.replace("Libro", ""),
         descripcion = this.descripcion,
         genero = this.genero,
         autor = this.autor,
@@ -98,6 +98,7 @@ fun Reserva.toDTO(): ReservaDTO {
         fechaHasta = fechaHasta.format(DateTimeFormatter.ISO_DATE),
         rating = this.libro.getCalificacion(),
         bibliokarma = bibliokarmas,
+        disponibilidad = this.libro.estaDisponible()
     )
 }
 
@@ -114,7 +115,7 @@ fun Libro.toHomeDTO(bibliokarma: Int?): LibroHomeDTO {
         calificacion = this.getCalificacion(),
         isbn = this.isbn,
         idioma = this.idioma,
-        tipo = this.javaClass.simpleName.replace("Libro.kt", ""),
+        tipo = this.javaClass.simpleName.replace("Libro", ""),
         bibliokarma = bibliokarma,
         estado = this.estado.name,
         duenio = this.duenio.nombre,

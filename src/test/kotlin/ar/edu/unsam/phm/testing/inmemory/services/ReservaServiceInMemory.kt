@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm.testing.inmemory.services
 
 import ar.edu.unsam.phm.domain.Reserva
+import ar.edu.unsam.phm.domain.TipoReserva
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
 import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
@@ -20,11 +21,14 @@ class ReservaServiceInMemory(
 ) {
     private val locks = java.util.concurrent.ConcurrentHashMap<Int, Any>()
 
-    fun obtenerReservas(usuarioId: Int): List<ReservaDTO> {
+    fun obtenerReservas(usuarioId: Int, tipo: TipoReserva): List<Reserva> {
         usuarioRepository.findById(usuarioId)
             ?: throw NotFoundException("Usuario $usuarioId no encontrado")
         val reservas = reservaRepository.getReservasDeUsuario(usuarioId)
-        return reservas.map { it.toDTO() }
+        return when (tipo) {
+            TipoReserva.HECHAS -> reservas.filter { it.usuario.id == usuarioId }
+            TipoReserva.RECIBIDAS -> reservas.filter { it.libro.duenio.id == usuarioId }
+        }
     }
 
     fun obtenerReservasAnuales(usuarioId: Int): List<ReservaAnualUsuarioDTO> {

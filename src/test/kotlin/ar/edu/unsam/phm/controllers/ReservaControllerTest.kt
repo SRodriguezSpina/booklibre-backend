@@ -9,6 +9,7 @@ import ar.edu.unsam.phm.domain.LibroComun
 import ar.edu.unsam.phm.domain.LibroData
 import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.domain.Usuario
+import ar.edu.unsam.phm.domain.TipoReserva
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.services.ReservaService
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -96,38 +97,38 @@ class ReservaControllerTest(
             reservaDominio(501, libro2, lector, LocalDate.of(2026, 3, 15), LocalDate.of(2026, 3, 25), 1200),
         )
 
-        whenever(reservaService.obtenerReservas(1)).thenReturn(reservas)
+        whenever(reservaService.obtenerReservas(1, TipoReserva.HECHAS)).thenReturn(reservas)
 
-        mockMvc.perform(get("/api/reservas/1"))
+        mockMvc.perform(get("/api/reservas?usuarioId=1&tipo=HECHAS"))
             .andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$[0].id").value(1))
             .andExpect(jsonPath("$[1].id").value(2))
 
-        verify(reservaService).obtenerReservas(1)
+        verify(reservaService).obtenerReservas(1, TipoReserva.HECHAS)
     }
 
     @Test
     @DisplayName("cuando el usuario no tiene reservas, devuelve 200 con lista vacía")
     fun getReservas_listaVacia() {
-        whenever(reservaService.obtenerReservas(99)).thenReturn(emptyList())
+        whenever(reservaService.obtenerReservas(99, TipoReserva.HECHAS)).thenReturn(emptyList())
 
-        mockMvc.perform(get("/api/reservas/99"))
+        mockMvc.perform(get("/api/reservas?usuarioId=99&tipo=HECHAS"))
             .andExpect(status().isOk)
             .andExpect(content().json("[]"))
 
-        verify(reservaService).obtenerReservas(99)
+        verify(reservaService).obtenerReservas(99, TipoReserva.HECHAS)
     }
 
     @Test
     @DisplayName("cuando el usuario no existe, devuelve 404 Not Found")
     fun getReservas_usuarioInexistente() {
-        whenever(reservaService.obtenerReservas(999)).thenThrow(NotFoundException("Usuario no encontrado"))
+        whenever(reservaService.obtenerReservas(999, TipoReserva.HECHAS)).thenThrow(NotFoundException("Usuario no encontrado"))
 
-        mockMvc.perform(get("/api/reservas/999"))
+        mockMvc.perform(get("/api/reservas?usuarioId=999&tipo=HECHAS"))
             .andExpect(status().isNotFound)
 
-        verify(reservaService).obtenerReservas(999)
+        verify(reservaService).obtenerReservas(999, TipoReserva.HECHAS)
     }
 
     @Test

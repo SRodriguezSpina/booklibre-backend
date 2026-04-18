@@ -18,7 +18,7 @@ data class CalificacionDTO(
 )
 
 data class LibroDTO(
-    val id: Int,
+    val id: Int = 0,
     val titulo: String,
     val tipo: String,
     val descripcion: String,
@@ -31,16 +31,16 @@ data class LibroDTO(
     val estado: String,
     val fechaPublicacion: LocalDate,
     val fechaAgregado: LocalDate = LocalDate.now(),
-    val propietarioId: Int,
-    val imagenUrl: String,
-    val estoyReservado: Boolean,
-    val rating: Double,
-    val cantidadReservas: Int,
-    val alquiladoPorId: Int?,
-    val bibliokarma: Int?,
-    val reservas: List<RangoReservaDTO>,
-    val cantidadCalificaciones: Int,
-    val ultimasCalificaciones: List<CalificacionDTO>
+    val propietarioId: Int = 0,
+    val imagenUrl: String = "",
+    val estoyReservado: Boolean = false,
+    val rating: Double = 0.0,
+    val cantidadReservas: Int = 0,
+    val alquiladoPorId: Int? = null,
+    val bibliokarma: Int? = null,
+    val reservas: List<RangoReservaDTO> = emptyList(),
+    val cantidadCalificaciones: Int = 0,
+    val ultimasCalificaciones: List<CalificacionDTO> = emptyList()
 )
 
 data class LibroHomeDTO(
