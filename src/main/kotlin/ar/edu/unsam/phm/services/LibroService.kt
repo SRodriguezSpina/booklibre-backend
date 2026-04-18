@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.domain.*
 import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroDTO
+import ar.edu.unsam.phm.dtos.NewCalificacionDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
@@ -106,9 +107,16 @@ class LibroService(
         return libroRepository.save(libro)
     }
 
-    fun agregarCalificacion(idLibro: Int, calificacion: Calificacion) {
+    fun agregarCalificacion(idLibro: Int, dto: NewCalificacionDTO) {
         val libro = libroRepository.getById(idLibro)
-        usuarioRepository.getById(calificacion.usuarioId)
+        usuarioRepository.getById(dto.usuarioId)
+
+        val calificacion = Calificacion(
+            libro = libro,
+            usuarioId = dto.usuarioId,
+            valor = dto.valor,
+            comentario = dto.comentario
+        )
         libro.agregarCalificacion(calificacion)
         libroRepository.save(libro)
     }
