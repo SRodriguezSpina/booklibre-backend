@@ -186,7 +186,6 @@ abstract class Libro() : BaseEntity() {
         }
     }
 
-
     fun estaDisponible() = disponibilidad == Disponibilidad.DISPONIBLE
 
     fun actualizoDisponibilidad(estaDisponible: Boolean) {

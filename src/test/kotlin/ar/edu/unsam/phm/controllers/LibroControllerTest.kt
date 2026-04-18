@@ -95,6 +95,17 @@ class LibroControllerTest(
         cantidadCalificaciones = 0
     )
 
+    private fun sampleHomeDTO(
+        id: Int = 1,
+        titulo: String = "1984",
+        autor: String = "George Orwell"
+    ) = LibroHomeDTO(
+        id = id, imagenUrl = "", genero = Genero.LITERATURA_CLASICA,
+        titulo = titulo, autor = autor, calificacion = 0.0,
+        isbn = "9780000000001", idioma = Idioma.ESPANOL, tipo = "Comun",
+        bibliokarma = 1550, estado = "EXCELENTE", duenio = "Ana García"
+    )
+
     @Test
     @DisplayName("cuando se buscan libros con parámetros mínimos, devuelve 200 con la respuesta paginada")
     fun search_ok() {

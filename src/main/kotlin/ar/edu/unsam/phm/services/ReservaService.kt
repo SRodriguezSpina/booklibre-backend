@@ -25,11 +25,10 @@ class ReservaService(
         usuarioJpaRepository.findById(usuarioId)
             .orElseThrow { NotFoundException("Usuario $usuarioId no encontrado") }
 
-        val reservas = when (tipo) {
+        return when (tipo) {
             TipoReserva.HECHAS -> reservaJpaRepository.findByUsuarioId(usuarioId)
             TipoReserva.RECIBIDAS -> reservaJpaRepository.findByLibroDuenioId(usuarioId)
         }
-        return reservas
     }
 
     fun obtenerReservasAnuales(usuarioId: Int): List<ReservaAnualUsuarioDTO> {

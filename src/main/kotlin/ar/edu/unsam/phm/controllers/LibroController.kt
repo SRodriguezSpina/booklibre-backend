@@ -7,6 +7,7 @@ import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
 import ar.edu.unsam.phm.services.LibroService
 import org.springframework.http.HttpStatus
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/libros")
 class LibroController(val libroService: LibroService) {
 
+    @Transactional(readOnly = true)
     @GetMapping("/home")
     fun search(
         @RequestParam(defaultValue = "") query: String,
