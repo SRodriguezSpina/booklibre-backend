@@ -109,6 +109,7 @@ class ReservaServiceSpringSpec : DescribeSpec({
             every { reservaJpaRepository.existsSuperposicion(10, dto.fechaDesde, dto.fechaHasta) } returns false
             every { libroJpaRepository.findById(10) } answers { Optional.of(libro) }
             every { usuarioJpaRepository.findById(1) } answers { Optional.of(user) }
+            every { reservaJpaRepository.findByLibroId(10) } returns emptyList()
             every { libroJpaRepository.save(any()) } answers { firstArg() }
             every { usuarioJpaRepository.save(any()) } answers { firstArg() }
 

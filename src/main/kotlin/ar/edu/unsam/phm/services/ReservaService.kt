@@ -25,11 +25,10 @@ class ReservaService(
         usuarioJpaRepository.findById(usuarioId)
             .orElseThrow { NotFoundException("Usuario $usuarioId no encontrado") }
 
-        val reservas = when (tipo) {
+        return when (tipo) {
             TipoReserva.HECHAS -> reservaJpaRepository.findByUsuarioId(usuarioId)
             TipoReserva.RECIBIDAS -> reservaJpaRepository.findByLibroDuenioId(usuarioId)
         }
-        return reservas
     }
 
     fun obtenerReservasAnuales(usuarioId: Int): List<ReservaAnualUsuarioDTO> {
@@ -74,6 +73,20 @@ class ReservaService(
 
             reserva.confirmar()
             libro.actualizoDisponibilidad(false)
+
+            val reservasDelLibro = reservaJpaRepository.findByLibroId(libro.id).size
+            val karmaGanado = libro.calcularBiblioKarmaTotal(
+                usuario = solicitante,
+                desde = dto.fechaDesde,
+                hasta = dto.fechaHasta,
+                cantidadReservasDelLibro = reservasDelLibro
+            )
+
+            solicitante.bibliokarmas += karmaGanado
+            if (solicitante.id != libro.duenio.id) {
+                libro.duenio.bibliokarmas += karmaGanado
+                usuarioJpaRepository.save(libro.duenio)
+            }
 
             libroJpaRepository.save(libro)
             usuarioJpaRepository.save(solicitante)

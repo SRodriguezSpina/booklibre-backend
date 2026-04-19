@@ -52,7 +52,7 @@ class LibroService(
         usuarioRepository.resolverNombresCalificaciones(libro.calificaciones)
 
     fun getRating(libroId: Int): Double =
-        libroRepository.getById(libroId).getCalificacion()
+        libroRepository.getById(libroId).calificacion
 
     fun getCalificaciones(libroId: Int): List<CalificacionDTO> {
         val libro = libroRepository.getById(libroId)

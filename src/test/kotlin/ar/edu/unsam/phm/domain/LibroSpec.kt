@@ -171,18 +171,18 @@ class LibroSpec : DescribeSpec({
             ).apply { id = 4 }
 
             it("CALIFICACION INICIAL ES 0.0 CUANDO NO HAY CALIFICACIONES") {
-                libro.getCalificacion() shouldBe 0.0
+                libro.calificacion shouldBe 0.0
             }
 
             it("AGREGA UNA CALIFICACION Y CALCULA EL PROMEDIO CORRECTAMENTE") {
                 libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 4, comentario = ""))
-                libro.getCalificacion() shouldBe 4.0
+                libro.calificacion shouldBe 4.0
             }
 
             it("PROMEDIO CON MULTIPLES CALIFICACIONES ES CORRECTO") {
                 libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 4, comentario = ""))
                 libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 2, valor = 2, comentario = ""))
-                libro.getCalificacion() shouldBe 3.0
+                libro.calificacion shouldBe 3.0
             }
 
             it("NO SE PUEDE CALIFICAR DOS VECES CON EL MISMO USUARIO") {
@@ -197,7 +197,7 @@ class LibroSpec : DescribeSpec({
                 assertThrows<BusinessException> {
                     libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 1, comentario = ""))
                 }
-                libro.getCalificacion() shouldBe 5.0
+                libro.calificacion shouldBe 5.0
             }
 
             describe("Calificaciones — casos borde") {
@@ -217,7 +217,7 @@ class LibroSpec : DescribeSpec({
                     libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 4, comentario = ""))
                     libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 2, valor = 3, comentario = ""))
                     libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 3, valor = 5, comentario = ""))
-                    libro.getCalificacion() shouldBe 4.0
+                    libro.calificacion shouldBe 4.0
                 }
             }
         }

@@ -64,7 +64,7 @@ fun Libro.toDTO(
         fechaAgregado = this.fechaAgregado,
         propietarioId = this.duenio.id,
         imagenUrl = this.imagenUrl ?: "",
-        rating = this.getCalificacion(),
+        rating = this.calificacion,
         cantidadReservas = todosLosRangos.size,
         estoyReservado = reservaPrincipal != null,
         alquiladoPorId = reservaPrincipal?.usuario?.id,
@@ -96,7 +96,7 @@ fun Reserva.toDTO(): ReservaDTO {
         alquiladoPorId = usuario.id,
         fechaDesde = fechaDesde.format(DateTimeFormatter.ISO_DATE),
         fechaHasta = fechaHasta.format(DateTimeFormatter.ISO_DATE),
-        rating = this.libro.getCalificacion(),
+        rating = this.libro.calificacion,
         bibliokarma = bibliokarmas,
         disponibilidad = this.libro.estaDisponible()
     )
@@ -112,7 +112,7 @@ fun Libro.toHomeDTO(bibliokarma: Int?): LibroHomeDTO {
         genero = this.genero,
         titulo = this.titulo,
         autor = this.autor,
-        calificacion = this.getCalificacion(),
+        calificacion = this.calificacion,
         isbn = this.isbn,
         idioma = this.idioma,
         tipo = this.javaClass.simpleName.replace("Libro", ""),

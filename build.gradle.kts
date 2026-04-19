@@ -3,9 +3,16 @@ plugins {
     id("io.spring.dependency-management") version "1.1.5"
     kotlin("jvm") version "1.9.24"
     kotlin("plugin.spring") version "1.9.24"
+    kotlin("plugin.allopen") version "1.9.24"
     kotlin("plugin.jpa") version "1.9.24"
     jacoco
     war
+}
+
+allOpen {
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.MappedSuperclass")
+    annotation("jakarta.persistence.Embeddable")
 }
 
 group = "ar.edu.unsam"

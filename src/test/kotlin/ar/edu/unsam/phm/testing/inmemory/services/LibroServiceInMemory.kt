@@ -141,7 +141,7 @@ class LibroServiceInMemory(
         } catch (_: EntityNotFoundException) {
             throw NotFoundException("Libro.kt $libroId no encontrado")
         }
-        return libro.getCalificacion()
+        return libro.calificacion
     }
 
     fun getCalificaciones(libroId: Int): List<CalificacionDTO> {
