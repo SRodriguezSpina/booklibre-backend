@@ -22,7 +22,6 @@ class LibroService(
     private val usuarioRepository: UsuarioRepository,
     private val reservaRepository: ReservaRepository,
 ) {
-
     fun search(
         query: String, generos: String, page: Int, size: Int,
         usuarioId: Int?, paginasMin: Int?, paginasMax: Int?,
@@ -38,7 +37,7 @@ class LibroService(
     }
 
     fun calcularBiblioKarma(libro: Libro, usuarioId: Int?): Int {
-        val usuario = usuarioId?.let { usuarioRepository.getById(it) } ?: return 0
+        val usuario = usuarioId?.let { usuarioRepository.findById(it) } ?: return 0
         val cantidadReservas = reservaRepository.findByLibroId(libro.id).size
         return libro.plusBiblioKarma(usuario, cantidadReservas)
     }
@@ -89,8 +88,7 @@ class LibroService(
 
     fun actualizarLibro(id: Int, dto: LibroDTO, usuarioId: Int): Libro {
         val libro = libroRepository.getById(id)
-        if (libro.duenio.id != usuarioId)
-            throw UnauthorizedException("No autorizado para editar este libro")
+        evaluarPermiso(libro, usuarioId)
         libro.actualizarDatos(
             nuevoTitulo           = dto.titulo,
             nuevoAutor            = dto.autor,
@@ -123,13 +121,17 @@ class LibroService(
 
     fun eliminarLibro(libroId: Int, usuarioId: Int) {
         val libro = libroRepository.getById(libroId)
-        if (libro.duenio.id != usuarioId)
-            throw UnauthorizedException("No autorizado para eliminar este libro")
-        if (reservaRepository.existeReservaActiva(libroId, LocalDate.now()))
-            throw ConflictException("El libro tiene una reserva activa y no puede eliminarse")
+        evaluarPermiso(libro, usuarioId)
+        reservaRepository.existeReservaActiva(libroId, LocalDate.now())
         libroRepository.delete(libro)
     }
+
     fun obtenerHistorialDePuntajes(libroId: Int): List<HistorialPuntaje> {
         return libroRepository.getHistorialPuntajes(libroId)
     }
+
+    private fun evaluarPermiso(libro: Libro, usuarioId: Int) {
+        if (libro.duenio.id != usuarioId)
+            throw UnauthorizedException("Acción no autorizada")
+    } //chequea si el usuario puede eliminar/editar libro si es dueño
 }

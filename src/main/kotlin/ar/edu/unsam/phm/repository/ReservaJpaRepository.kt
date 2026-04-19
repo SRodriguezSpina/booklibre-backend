@@ -23,7 +23,7 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
           AND r.fechaDesde   <= :hasta
           AND r.fechaHasta   >= :desde
     """)
-    fun existsSuperposicion(
+    fun existeSuperposicion(
         @Param("libroId") libroId: Int,
         @Param("desde")   desde: LocalDate,
         @Param("hasta")   hasta: LocalDate,
