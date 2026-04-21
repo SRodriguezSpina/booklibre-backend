@@ -14,7 +14,6 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
     fun countByLibroId(libroId: Int): Long
 
     fun findTopByLibroIdOrderByIdDesc(libroId: Int): Optional<Reserva>
-
     @Query("""
         SELECT r FROM Reserva r
         WHERE r.libro.duenio.id = :usuarioId
