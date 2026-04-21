@@ -47,15 +47,17 @@ class ReservaService(
     fun crearReserva(dto: CrearReservaDTO): Reserva {
         val lock = locks.computeIfAbsent(dto.libroId) { Any() }
         synchronized(lock) {
-            reservaRepository.existeSuperposicion(dto.libroId, dto.fechaDesde, dto.fechaHasta)
-
             val libro = libroRepository.getById(dto.libroId)
             val solicitante = usuarioRepository.getById(dto.usuarioId)
 
             if (libro.duenio.id == solicitante.id) {
                 throw BusinessException("No podés reservar tu propio libro")
             }
-            
+
+            if (!libro.estaDisponible()) {
+                throw BusinessException("El libro no está disponible para préstamo")
+            }
+
             val reserva = Reserva(
                 libro = libro,
                 usuario = solicitante,

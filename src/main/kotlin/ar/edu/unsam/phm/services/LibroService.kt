@@ -15,7 +15,6 @@ import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import org.springframework.stereotype.Service
-import java.time.LocalDate
 
 @Service
 class LibroService(
@@ -132,7 +131,7 @@ class LibroService(
     fun eliminarLibro(libroId: Int, usuarioId: Int) {
         val libro = libroRepository.getById(libroId)
         evaluarPermiso(libro, usuarioId)
-        reservaRepository.existeReservaActiva(libroId, LocalDate.now())
+        if (!libro.estaDisponible()) throw ConflictException("El libro tiene una reserva activa y no puede eliminarse")
         libroRepository.delete(libro)
     }
 
