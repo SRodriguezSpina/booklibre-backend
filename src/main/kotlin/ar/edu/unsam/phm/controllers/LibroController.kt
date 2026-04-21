@@ -36,6 +36,7 @@ class LibroController(val libroService: LibroService) {
             fechaDesde, fechaHasta, isbn, prestadoPor, sortBy,
         ).toHomeDTO { libro -> libroService.calcularBiblioKarma(libro, usuarioId) }
 
+    @Transactional(readOnly = true)
     @GetMapping("/{libroId}")
     fun getLibro(@PathVariable libroId: Int): LibroDTO {
         val libro = libroService.obtenerLibro(libroId)
