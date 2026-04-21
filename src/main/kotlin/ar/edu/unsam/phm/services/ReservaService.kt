@@ -2,6 +2,7 @@ package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.domain.TipoReserva
+import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
 import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
 import ar.edu.unsam.phm.repository.*
@@ -50,6 +51,11 @@ class ReservaService(
 
             val libro = libroRepository.getById(dto.libroId)
             val solicitante = usuarioRepository.getById(dto.usuarioId)
+
+            if (libro.duenio.id == solicitante.id) {
+                throw BusinessException("No podés reservar tu propio libro")
+            }
+            
             val reserva = Reserva(
                 libro = libro,
                 usuario = solicitante,
