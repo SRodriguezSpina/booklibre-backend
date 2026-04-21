@@ -5,6 +5,7 @@ import ar.edu.unsam.phm.domain.LibroFiltros
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
+import ar.edu.unsam.phm.readmodels.CalificacionDetalleView
 import org.springframework.stereotype.Component
 import kotlin.math.ceil
 
@@ -43,4 +44,7 @@ class LibroRepository(private val jpa: LibroJpaRepository,
     }
     fun getHistorialPuntajes(libroId: Int): List<HistorialPuntaje> =
         historialJpa.findByLibroIdOrderByFechaActualizacionDesc(libroId)
+
+    fun getCalificacionesDetalle(libroId: Int, limite: Int = 2): List<CalificacionDetalleView> =
+        jpa.findCalificacionesDetalle(libroId, limite)
 }

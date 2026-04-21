@@ -9,6 +9,7 @@ import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
+import ar.edu.unsam.phm.readmodels.CalificacionDetalleView
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.collections.sortedByDescending
@@ -81,6 +82,45 @@ fun Libro.toDTO(
                     comentario    = calificacion.comentario
                 )
             }
+    )
+}
+
+fun Libro.toDTO(
+    alquiladoPorId: Int?,
+    calificaciones: List<CalificacionDetalleView>,
+    totalReservas: Int,
+): LibroDTO {
+    return LibroDTO(
+        id               = this.id,
+        titulo           = this.titulo,
+        tipo             = this.javaClass.simpleName.replace("Libro", ""),
+        descripcion      = this.descripcion,
+        genero           = this.genero,
+        autor            = this.autor,
+        paginas          = this.cantidadPaginas,
+        isbn             = this.isbn,
+        idioma           = this.idioma,
+        editorial        = this.editorial,
+        estado           = this.estado.name,
+        fechaPublicacion = this.fechaPublicacion,
+        fechaAgregado    = this.fechaAgregado,
+        propietarioId    = this.duenio.id,
+        imagenUrl        = this.imagenUrl ?: "",
+        rating           = this.calificacion,
+        cantidadReservas = totalReservas,
+        estoyReservado   = !this.estaDisponible(),
+        alquiladoPorId   = alquiladoPorId,
+        bibliokarma      = null,
+        reservas         = emptyList(),
+        cantidadCalificaciones = calificaciones.firstOrNull()?.totalCalificaciones?.toInt() ?: 0,
+        ultimasCalificaciones  = calificaciones.map { c ->
+            CalificacionDTO(
+                usuarioId     = c.usuarioId,
+                nombreUsuario = c.nombreUsuario,
+                valor         = c.valor,
+                comentario    = c.comentario,
+            )
+        },
     )
 }
 

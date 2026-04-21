@@ -40,9 +40,10 @@ class LibroController(val libroService: LibroService) {
     @GetMapping("/{libroId}")
     fun getLibro(@PathVariable libroId: Int): LibroDTO {
         val libro = libroService.obtenerLibro(libroId)
-        val reservas = libroService.obtenerReservasDeLibro(libroId)
-        val nombresUsuarios = libroService.obtenerNombresUsuariosCalificaciones(libro)
-        return libro.toDTO(todosLosRangos = reservas, nombresUsuarios = nombresUsuarios)
+        val alquiladoPorId = if (!libro.estaDisponible()) libroService.obtenerPrestatarioActual(libroId) else null
+        val totalReservas = libroService.contarReservasPorLibro(libroId)
+        val calificaciones = libroService.getCalificacionesDetalle(libroId)
+        return libro.toDTO(alquiladoPorId = alquiladoPorId, calificaciones = calificaciones, totalReservas = totalReservas)
     }
 
     @GetMapping("/{libroId}/calificaciones")
