@@ -21,7 +21,8 @@ data class ReservaDTO(
     val fechaHasta: String?,
     val rating: Double,
     val bibliokarma: Int?,
-    val disponibilidad: Boolean?
+    val disponibilidad: Boolean?,
+    val libroActivo: Boolean
 )
 
 data class ReservaAnualUsuarioDTO(

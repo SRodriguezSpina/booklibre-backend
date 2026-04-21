@@ -139,6 +139,9 @@ abstract class Libro() : BaseEntity() {
     @Column(nullable = false)
     var calificacion: Double = 0.0
 
+    @Column(nullable = false)
+    var activo : Boolean = true
+
     constructor(data: LibroData) : this() {
         duenio          = data.duenio
         titulo          = validarTextoObligatorio(data.titulo, "título")
