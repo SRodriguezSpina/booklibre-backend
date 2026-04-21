@@ -36,6 +36,7 @@ class LibroController(val libroService: LibroService) {
             fechaDesde, fechaHasta, isbn, prestadoPor, sortBy,
         ).toHomeDTO { libro -> libroService.calcularBiblioKarma(libro, usuarioId) }
 
+    @Transactional(readOnly = true)
     @GetMapping("/{libroId}")
     fun getLibro(@PathVariable libroId: Int): LibroDTO {
         val libro = libroService.obtenerLibro(libroId)
@@ -74,4 +75,16 @@ class LibroController(val libroService: LibroService) {
     @GetMapping("/{id}/historial-puntajes")
     fun getHistorial(@PathVariable id: Int): List<HistorialPuntaje> =
         libroService.obtenerHistorialDePuntajes(id)
+
+    @PutMapping("/{libroId}/baja")
+    fun darDeBaja(
+        @PathVariable libroId: Int,
+        @RequestParam usuarioId: Int
+    ) = libroService.darDeBaja(libroId, usuarioId)
+
+    @PutMapping("/{libroId}/reactivar")
+    fun reactivar(
+        @PathVariable libroId: Int,
+        @RequestParam usuarioId: Int
+    ) = libroService.reactivar(libroId, usuarioId)
 }

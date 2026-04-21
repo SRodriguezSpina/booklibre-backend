@@ -13,12 +13,17 @@ class LibroRepository(private val jpa: LibroJpaRepository,
                       private val historialJpa: HistorialPuntajeJpaRepository) {
 
     fun getById(id: Int): Libro =
-        jpa.findById(id).orElseThrow { NotFoundException("Libro.kt $id no encontrado") }
+        jpa.findByIdAndActivoTrue(id)
+            .orElseThrow { NotFoundException("Libro $id no encontrado") }
 
-    fun getLibros(): List<Libro> = jpa.findAll()
+    fun getByIdIncluyendoInactivos(id: Int): Libro =
+        jpa.findById(id)
+            .orElseThrow { NotFoundException("Libro $id no encontrado") }
+
+    fun getLibros(): List<Libro> = jpa.findAllByActivoTrue()
 
     fun getLibrosDeUsuario(usuarioId: Int): List<Libro> =
-        jpa.findByDuenioId(usuarioId)
+        jpa.findByDuenioIdAndActivoTrue(usuarioId)
 
     fun save(libro: Libro): Libro = jpa.save(libro)
 
