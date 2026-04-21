@@ -14,6 +14,7 @@ import ar.edu.unsam.phm.readmodels.CalificacionDetalleView
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
@@ -134,6 +135,19 @@ class LibroService(
         evaluarPermiso(libro, usuarioId)
         if (!libro.estaDisponible()) throw ConflictException("El libro tiene una reserva activa y no puede eliminarse")
         libroRepository.delete(libro)
+    }
+
+    fun darDeBaja(libroId: Int, usuarioId: Int) {
+        val libro = libroRepository.getByIdIncluyendoInactivos(libroId)
+        evaluarPermiso(libro, usuarioId)
+        libro.activo = false
+        libroRepository.save(libro)
+    }
+    fun reactivar(libroId: Int, usuarioId: Int) {
+        val libro = libroRepository.getByIdIncluyendoInactivos(libroId)
+        evaluarPermiso(libro, usuarioId)
+        libro.activo = true
+        libroRepository.save(libro)
     }
 
     fun obtenerHistorialDePuntajes(libroId: Int): List<HistorialPuntaje> {

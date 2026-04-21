@@ -138,7 +138,8 @@ fun Reserva.toDTO(): ReservaDTO {
         fechaHasta = fechaHasta.format(DateTimeFormatter.ISO_DATE),
         rating = this.libro.calificacion,
         bibliokarma = bibliokarmas,
-        disponibilidad = this.libro.estaDisponible()
+        disponibilidad = this.libro.estaDisponible(),
+        libroActivo = this.libro.activo
     )
 }
 

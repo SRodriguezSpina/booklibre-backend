@@ -50,6 +50,7 @@ class LibroController(val libroService: LibroService) {
     fun getCalificaciones(@PathVariable libroId: Int): List<CalificacionDTO> =
         libroService.getCalificaciones(libroId)
 
+    @Transactional
     @PostMapping("/{libroId}/calificar")
     fun agregarCalificacion(@PathVariable libroId: Int, @RequestBody dto: NewCalificacionDTO): Map<String, Double> {
         libroService.agregarCalificacion(libroId, dto)
@@ -63,6 +64,7 @@ class LibroController(val libroService: LibroService) {
         @RequestBody dto: LibroDTO,
     ): LibroDTO = libroService.actualizarLibro(libroId, dto, usuarioId).toDTO()
 
+    // baja física, discutir si dejarlo o no (nos manejamos con baja lógica +abajo)
     @DeleteMapping("/{libroId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun eliminarLibro(@PathVariable libroId: Int, @RequestParam usuarioId: Int) {
@@ -76,4 +78,16 @@ class LibroController(val libroService: LibroService) {
     @GetMapping("/{id}/historial-puntajes")
     fun getHistorial(@PathVariable id: Int): List<HistorialPuntaje> =
         libroService.obtenerHistorialDePuntajes(id)
+
+    @PutMapping("/{libroId}/baja")
+    fun darDeBaja(
+        @PathVariable libroId: Int,
+        @RequestParam usuarioId: Int
+    ) = libroService.darDeBaja(libroId, usuarioId)
+
+    @PutMapping("/{libroId}/reactivar")
+    fun reactivar(
+        @PathVariable libroId: Int,
+        @RequestParam usuarioId: Int
+    ) = libroService.reactivar(libroId, usuarioId)
 }

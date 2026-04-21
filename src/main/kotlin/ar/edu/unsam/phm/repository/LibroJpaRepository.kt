@@ -5,9 +5,13 @@ import ar.edu.unsam.phm.readmodels.CalificacionDetalleView
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
+import java.util.Optional
 
 interface LibroJpaRepository : JpaRepository<Libro, Int> {
     fun findByDuenioId(duenioId: Int): List<Libro>
+    fun findAllByActivoTrue(): List<Libro>
+    fun findByIdAndActivoTrue(id: Int): Optional<Libro>
+    fun findByDuenioIdAndActivoTrue(usuarioId: Int): List<Libro>
 
     @Query(
         value = """
