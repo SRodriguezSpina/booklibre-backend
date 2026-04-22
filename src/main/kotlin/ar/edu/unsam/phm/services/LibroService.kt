@@ -64,6 +64,7 @@ class LibroService(
     fun getRating(libroId: Int): Double =
         libroRepository.getById(libroId).calificacion
 
+    @Transactional(readOnly = true)
     fun getCalificaciones(libroId: Int): List<CalificacionDTO> {
         val libro = libroRepository.getById(libroId)
         val nombres = usuarioRepository.resolverNombresCalificaciones(libro.calificaciones)
