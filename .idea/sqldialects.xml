@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/src/main/resources/db/migration/V6__create_view_rangos_reserva_and_fn_calificaciones.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/db/migration/V7__usuarios_con_mas_de_2_reservas_devueltas.sql" dialect="GenericSQL" />
+  </component>
+</project>

@@ -36,3 +36,9 @@ data class ReservaAnualUsuarioDTO(
     val fechaHasta: LocalDate,
     val anioReserva: Int,
 )
+
+data class UsuarioReservasDevueltasDTO(
+    val usuarioId: Int,
+    val usuarioNombre: String,
+    val cantidadReservasDevueltas: Int?
+)
