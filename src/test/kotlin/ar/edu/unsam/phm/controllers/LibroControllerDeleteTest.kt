@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.controllers
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
+import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.services.LibroService
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -10,17 +11,21 @@ import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 
 @WebMvcTest(LibroController::class)
+@WithMockUser(roles = ["PUBLICADOR"])
 @DisplayName("Dado un LibroController")
 class LibroControllerDeleteTest {
     @Autowired
     lateinit var mockMvc: MockMvc
     @MockBean
     lateinit var libroService: LibroService
+    @MockBean
+    lateinit var jwtTokenUtils: JwtTokenUtils
 
     @Test
     @DisplayName("cuando elimina ok, DELETE /api/libros/{id} devuelve 204")

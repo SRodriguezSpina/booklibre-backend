@@ -13,6 +13,7 @@ import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.NotFoundException
+import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.services.LibroService
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.DisplayName
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
@@ -32,12 +34,14 @@ import java.time.LocalDate
 import kotlin.test.Test
 
 @WebMvcTest(LibroController::class)
+@WithMockUser(roles = ["PUBLICADOR"])
 @DisplayName("Dado un LibroController")
 class LibroControllerTest(
     @Autowired val mockMvc: MockMvc,
     @Autowired val objectMapper: ObjectMapper,
 ) {
     @MockBean lateinit var libroService: LibroService
+    @MockBean lateinit var jwtTokenUtils: JwtTokenUtils
 
     private fun duenioUsuario() = Usuario(
         email = "ana@example.com",

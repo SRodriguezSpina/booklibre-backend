@@ -11,8 +11,9 @@ data class RegisterRequest(
     val password: String
 )
 
-data class AuthResponseUsuario (
-     val success: Boolean,
-     val message: String? = null,
-     val usuario: UsuarioResponse? = null
+data class AuthResponseUsuario(
+    val success: Boolean,
+    val message: String? = null,
+    val usuario: UsuarioResponse? = null,
+    val token: String? = null,
 )

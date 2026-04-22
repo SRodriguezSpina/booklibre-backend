@@ -1,0 +1,102 @@
+package ar.edu.unsam.phm.config
+
+import ar.edu.unsam.phm.exceptions.ErrorResponse
+import ar.edu.unsam.phm.security.JwtAuthFilter
+import com.fasterxml.jackson.databind.ObjectMapper
+import jakarta.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
+import org.springframework.http.MediaType
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
+
+/**
+ * Configuración de seguridad stateless con JWT.
+ *
+ * Encoder: BCrypt (incluido en spring-security-crypto, sin dependencias extra).
+ * CORS: configurable vía la propiedad cors.allowed-origins o la variable de entorno
+ *       CORS_ALLOWED_ORIGINS (lista separada por comas).
+ *
+ * Roles: hasRole("X") verifica la authority "ROLE_X". Las authorities se almacenan
+ * con el prefijo ROLE_ tanto en UserDetailsServiceImpl como en el claim "roles" del JWT.
+ * La convención es uniforme en toda la aplicación.
+ */
+@Configuration
+@EnableWebSecurity
+class SecurityConfig(
+    private val jwtAuthFilter: JwtAuthFilter,
+    @Value("\${cors.allowed-origins}") private val allowedOriginsRaw: String,
+) {
+    private val objectMapper = ObjectMapper()
+
+    @Bean
+    fun filterChain(http: HttpSecurity): SecurityFilterChain {
+        http
+            .csrf { it.disable() }
+            .cors { it.configurationSource(corsConfigurationSource()) }
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+            .authorizeHttpRequests { auth ->
+                auth
+                    .requestMatchers(HttpMethod.POST, "/api/login", "/api/register").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/libros/home").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/libros/*").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/libros/*/calificaciones").permitAll()
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .requestMatchers("/error").permitAll()
+                    // hasRole("PUBLICADOR") verifica ROLE_PUBLICADOR.
+                    // Tanto PUBLICADOR como LECTOR_PUBLICADOR tienen esta authority.
+                    .requestMatchers(HttpMethod.POST, "/api/libros/nuevo").hasRole("PUBLICADOR")
+                    .requestMatchers(HttpMethod.PUT, "/api/libros/**").hasRole("PUBLICADOR")
+                    .requestMatchers(HttpMethod.DELETE, "/api/libros/**").hasRole("PUBLICADOR")
+                    .anyRequest().authenticated()
+            }
+            .exceptionHandling { ex ->
+                ex.authenticationEntryPoint { request, response, _ ->
+                    response.status = HttpServletResponse.SC_UNAUTHORIZED
+                    response.contentType = MediaType.APPLICATION_JSON_VALUE
+                    response.writer.write(
+                        objectMapper.writeValueAsString(
+                            ErrorResponse(status = 401, error = "Unauthorized", message = "Autenticación requerida", path = request.requestURI)
+                        )
+                    )
+                }
+                ex.accessDeniedHandler { request, response, _ ->
+                    response.status = HttpServletResponse.SC_FORBIDDEN
+                    response.contentType = MediaType.APPLICATION_JSON_VALUE
+                    response.writer.write(
+                        objectMapper.writeValueAsString(
+                            ErrorResponse(status = 403, error = "Forbidden", message = "No tenés permisos para realizar esta acción", path = request.requestURI)
+                        )
+                    )
+                }
+            }
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
+
+        return http.build()
+    }
+
+    @Bean
+    fun corsConfigurationSource(): CorsConfigurationSource {
+        val config = CorsConfiguration()
+        config.allowedOriginPatterns = allowedOriginsRaw.split(",").map { it.trim() }
+        config.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+        config.allowedHeaders = listOf("*")
+        config.allowCredentials = true
+        val source = UrlBasedCorsConfigurationSource()
+        source.registerCorsConfiguration("/**", config)
+        return source
+    }
+
+    @Bean
+    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
+}

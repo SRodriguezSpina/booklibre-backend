@@ -13,6 +13,7 @@ import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.NotFoundException
+import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.services.LibroService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -26,18 +27,22 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import java.time.LocalDate
 
 @WebMvcTest(LibroController::class)
+@WithMockUser(roles = ["PUBLICADOR"])
 @DisplayName("LibroController — crear y editar libros")
 class LibroControllerEditarCrearTest(
     @Autowired val mockMvc: MockMvc,
 ) {
     @MockBean
     lateinit var libroService: LibroService
+    @MockBean
+    lateinit var jwtTokenUtils: JwtTokenUtils
     private val mapper = ObjectMapper().registerModule(JavaTimeModule())
 
     // ── Fixtures ──────────────────────────────────────────────────────────────
