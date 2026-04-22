@@ -159,8 +159,8 @@ class LibroControllerTest(
     fun getLibro_ok() {
         val libro = sampleLibro()
         whenever(libroService.obtenerLibro(1)).thenReturn(libro)
-        whenever(libroService.obtenerReservasDeLibro(1)).thenReturn(emptyList())
-        whenever(libroService.obtenerNombresUsuariosCalificaciones(libro)).thenReturn(emptyMap())
+        whenever(libroService.contarReservasPorLibro(1)).thenReturn(0)
+        whenever(libroService.getCalificacionesDetalle(1)).thenReturn(emptyList())
 
         mockMvc.perform(get("/api/libros/1").param("usuarioId", "1"))
             .andExpect(status().isOk)
@@ -170,8 +170,8 @@ class LibroControllerTest(
             .andExpect(jsonPath("$.bibliokarma").value(nullValue()))
 
         verify(libroService).obtenerLibro(1)
-        verify(libroService).obtenerReservasDeLibro(1)
-        verify(libroService).obtenerNombresUsuariosCalificaciones(libro)
+        verify(libroService).contarReservasPorLibro(1)
+        verify(libroService).getCalificacionesDetalle(1)
     }
 
     @Test

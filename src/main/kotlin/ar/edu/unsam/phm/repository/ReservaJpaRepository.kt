@@ -6,28 +6,19 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.time.LocalDate
+import java.util.Optional
 
 interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
     fun findByLibroId(libroId: Int): List<Reserva>
     fun findByUsuarioId(usuarioId: Int): List<Reserva>
+    fun countByLibroId(libroId: Int): Long
 
+    fun findTopByLibroIdOrderByIdDesc(libroId: Int): Optional<Reserva>
     @Query("""
         SELECT r FROM Reserva r
         WHERE r.libro.duenio.id = :usuarioId
     """)
     fun findByLibroDuenioId(@Param("usuarioId") usuarioId: Int): List<Reserva>
-
-    @Query("""
-        SELECT COUNT(r) > 0 FROM Reserva r
-        WHERE r.libro.id      = :libroId
-          AND r.fechaDesde   <= :hasta
-          AND r.fechaHasta   >= :desde
-    """)
-    fun existeSuperposicion(
-        @Param("libroId") libroId: Int,
-        @Param("desde")   desde: LocalDate,
-        @Param("hasta")   hasta: LocalDate,
-    ): Boolean
 
     @Query("""
         SELECT r.libro.id FROM Reserva r

@@ -10,6 +10,7 @@ import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.mappers.toDetalleDTOs
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
+import ar.edu.unsam.phm.readmodels.CalificacionDetalleView
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
@@ -47,6 +48,15 @@ class LibroService(
 
     fun obtenerReservasDeLibro(libroId: Int): List<Reserva> =
         reservaRepository.getReservasDeLibro(libroId)
+
+    fun obtenerPrestatarioActual(libroId: Int): Int? =
+        reservaRepository.obtenerPrestatarioActual(libroId)
+
+    fun contarReservasPorLibro(libroId: Int): Int =
+        reservaRepository.contarReservasPorLibro(libroId)
+
+    fun getCalificacionesDetalle(libroId: Int, limite: Int = 2) =
+        libroRepository.getCalificacionesDetalle(libroId, limite)
 
     fun obtenerNombresUsuariosCalificaciones(libro: Libro): Map<Int, String> =
         usuarioRepository.resolverNombresCalificaciones(libro.calificaciones)
@@ -123,7 +133,7 @@ class LibroService(
     fun eliminarLibro(libroId: Int, usuarioId: Int) {
         val libro = libroRepository.getById(libroId)
         evaluarPermiso(libro, usuarioId)
-        reservaRepository.existeReservaActiva(libroId, LocalDate.now())
+        if (!libro.estaDisponible()) throw ConflictException("El libro tiene una reserva activa y no puede eliminarse")
         libroRepository.delete(libro)
     }
 
