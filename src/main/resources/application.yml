@@ -9,3 +9,10 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:local}
   jpa:
     open-in-view: false
+
+jwt:
+  secret: ${JWT_SECRET:booklibre-clave-secreta-de-al-menos-32-caracteres-cambiar-en-produccion}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}

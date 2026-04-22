@@ -7,6 +7,7 @@ import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.exceptions.AuthExceptionHandler
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
+import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.services.AuthService
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.DisplayName
@@ -36,6 +37,9 @@ class AuthControllerTest {
 
     @MockBean
     lateinit var authService: AuthService
+
+    @MockBean
+    lateinit var jwtTokenUtils: JwtTokenUtils
 
     // ── Fixtures ──────────────────────────────────────────────────────────
 

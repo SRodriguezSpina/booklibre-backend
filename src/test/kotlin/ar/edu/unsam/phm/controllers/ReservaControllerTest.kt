@@ -11,6 +11,7 @@ import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.domain.TipoReserva
 import ar.edu.unsam.phm.exceptions.NotFoundException
+import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.services.ReservaService
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.mockk
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
@@ -29,12 +31,14 @@ import java.time.LocalDate
 import kotlin.test.Test
 
 @WebMvcTest(ReservaController::class)
+@WithMockUser
 @DisplayName("Dado un ReservaController")
 class ReservaControllerTest(
     @Autowired val mockMvc: MockMvc,
     @Autowired val objectMapper: ObjectMapper,
 ) {
     @MockBean lateinit var reservaService: ReservaService
+    @MockBean lateinit var jwtTokenUtils: JwtTokenUtils
 
     private fun usuario(id: Int, nombre: String = "User$id") = Usuario(
         email = "u$id@example.com",

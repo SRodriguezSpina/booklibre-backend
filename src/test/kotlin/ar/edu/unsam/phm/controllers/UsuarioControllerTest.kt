@@ -8,6 +8,7 @@ import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.exceptions.NotFoundException
+import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.services.ReservaService
 import ar.edu.unsam.phm.services.UsuarioService
 import org.junit.jupiter.api.DisplayName
@@ -17,11 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 
 @WebMvcTest(UsuarioController::class)
+@WithMockUser
 @DisplayName("Dado un UsuarioController")
 class UsuarioControllerTest {
     @Autowired
@@ -32,6 +35,9 @@ class UsuarioControllerTest {
 
     @MockBean
     lateinit var reservaService: ReservaService
+
+    @MockBean
+    lateinit var jwtTokenUtils: JwtTokenUtils
 
     // Helper para crear un usuario de dominio rápidamente
     private fun crearUsuarioFake(id: Int, nombre: String): Usuario {
