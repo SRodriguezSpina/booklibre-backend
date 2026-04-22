@@ -1,7 +1,9 @@
 package ar.edu.unsam.phm.repository
 
 import ar.edu.unsam.phm.domain.Reserva
+import ar.edu.unsam.phm.dtos.UsuarioReservasDevueltasDTO
 import ar.edu.unsam.phm.readmodels.ReservaAnualUsuarioView
+import ar.edu.unsam.phm.readmodels.UsuarioConReservasDevueltasView
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -49,4 +51,16 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
         nativeQuery = true,
     )
     fun findReservasAnualesByUsuarioId(@Param("usuarioId") usuarioId: Int): List<ReservaAnualUsuarioView>
+
+    @Query(
+        value = """
+        SELECT
+            usuario_id AS usuarioId,
+            usuario_nombre AS usuarioNombre,
+            cantidad_reservas_devueltas AS cantidadReservasDevueltas
+        FROM vw_usuarios_con_reservas_devueltas
+    """,
+        nativeQuery = true
+    )
+    fun findUsuariosConReservasDevueltas(): List<UsuarioConReservasDevueltasView>
 }

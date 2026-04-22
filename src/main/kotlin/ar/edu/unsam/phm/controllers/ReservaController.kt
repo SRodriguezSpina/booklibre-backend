@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.controllers
 import ar.edu.unsam.phm.domain.TipoReserva
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
+import ar.edu.unsam.phm.dtos.UsuarioReservasDevueltasDTO
 import ar.edu.unsam.phm.services.ReservaService
 import ar.edu.unsam.phm.mappers.toDTO
 import org.springframework.transaction.annotation.Transactional
@@ -23,4 +24,8 @@ class ReservaController(val reservaService: ReservaService) {
     fun crearReserva(@RequestBody body: CrearReservaDTO) {
         reservaService.crearReserva(body)
     }
+
+    @GetMapping("/usuarios-con-devoluciones")
+    fun getUsuariosConDevoluciones() : List<UsuarioReservasDevueltasDTO> =
+        reservaService.obtenerUsuariosConReservasDevueltas()
 }

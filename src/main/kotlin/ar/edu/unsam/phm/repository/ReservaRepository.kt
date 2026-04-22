@@ -38,4 +38,5 @@ class ReservaRepository(private val jpa: ReservaJpaRepository) {
     }
 
     fun findReservasAnualesByUsuarioId(usuarioId: Int) = jpa.findReservasAnualesByUsuarioId(usuarioId)
+    fun findUsuariosConReservasDevueltas() = jpa.findUsuariosConReservasDevueltas()
 }

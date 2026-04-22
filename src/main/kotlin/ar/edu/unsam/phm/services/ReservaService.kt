@@ -5,6 +5,7 @@ import ar.edu.unsam.phm.domain.TipoReserva
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
 import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
+import ar.edu.unsam.phm.dtos.UsuarioReservasDevueltasDTO
 import ar.edu.unsam.phm.repository.*
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -39,6 +40,16 @@ class ReservaService(
                 fechaDesde = it.fechaDesde,
                 fechaHasta = it.fechaHasta,
                 anioReserva = it.anioReserva,
+            )
+        }
+    }
+
+    fun obtenerUsuariosConReservasDevueltas(): List<UsuarioReservasDevueltasDTO> {
+        return reservaRepository.findUsuariosConReservasDevueltas().map {
+            UsuarioReservasDevueltasDTO(
+                usuarioId = it.usuarioId,
+                usuarioNombre = it.usuarioNombre,
+                cantidadReservasDevueltas = it.cantidadReservasDevueltas
             )
         }
     }
