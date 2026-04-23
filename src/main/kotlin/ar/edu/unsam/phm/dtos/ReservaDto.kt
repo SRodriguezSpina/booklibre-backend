@@ -42,3 +42,9 @@ data class UsuarioReservasDevueltasDTO(
     val usuarioNombre: String,
     val cantidadReservasDevueltas: Int?
 )
+
+data class UsuarioConMasReservasDTO(
+    val usuarioId: Int,
+    val usuarioNombre: String,
+    val cantidadReservas: Long
+)
