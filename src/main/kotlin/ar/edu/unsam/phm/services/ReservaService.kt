@@ -5,6 +5,7 @@ import ar.edu.unsam.phm.domain.TipoReserva
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
 import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
+import ar.edu.unsam.phm.dtos.UsuarioConMasReservasDTO
 import ar.edu.unsam.phm.dtos.UsuarioReservasDevueltasDTO
 import ar.edu.unsam.phm.repository.*
 import org.springframework.stereotype.Service
@@ -53,6 +54,15 @@ class ReservaService(
             )
         }
     }
+
+    fun obtenerUsuariosConMasDeNReservas(minReservas: Int): List<UsuarioConMasReservasDTO> =
+        reservaRepository.findUsuariosConMasDeNReservas(minReservas).map {
+            UsuarioConMasReservasDTO(
+                usuarioId = it.usuarioId,
+                usuarioNombre = it.usuarioNombre,
+                cantidadReservas = it.cantidadReservas
+            )
+        }
 
     @Transactional
     fun crearReserva(dto: CrearReservaDTO): Reserva {

@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.repository
 import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.dtos.UsuarioReservasDevueltasDTO
 import ar.edu.unsam.phm.readmodels.ReservaAnualUsuarioView
+import ar.edu.unsam.phm.readmodels.UsuarioConMasReservasView
 import ar.edu.unsam.phm.readmodels.UsuarioConReservasDevueltasView
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -63,4 +64,16 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
         nativeQuery = true
     )
     fun findUsuariosConReservasDevueltas(): List<UsuarioConReservasDevueltasView>
+
+    @Query(
+        value = """
+            SELECT
+                usuario_id AS usuarioId,
+                usuario_nombre AS usuarioNombre,
+                cantidad_reservas AS cantidadReservas
+            FROM fn_usuarios_con_mas_de_n_reservas(:minReservas)
+        """,
+        nativeQuery = true
+    )
+    fun findUsuariosConMasDeNReservas(@Param("minReservas") minReservas: Int): List<UsuarioConMasReservasView>
 }
