@@ -11,7 +11,8 @@ CREATE TABLE usuarios (
     imagen_url VARCHAR(255),
     fecha_registro DATE NOT NULL,
     CONSTRAINT uk_usuarios_email UNIQUE (email),
-    CONSTRAINT uk_usuarios_celular UNIQUE (celular)
+    CONSTRAINT uk_usuarios_celular UNIQUE (celular),
+    CONSTRAINT ck_usuarios_bibliokarmas CHECK (bibliokarmas >= 0)
 );
 
 CREATE TABLE libros (
