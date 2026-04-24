@@ -30,23 +30,27 @@ class LibroRepository(private val jpa: LibroJpaRepository,
 
     fun delete(libro: Libro) = jpa.deleteById(libro.id)
 
-    fun buscar(filtros: LibroFiltros): List<Libro> =
-        getLibros()
-            .filter { filtros.excluirDuenioId == null || it.duenio.id != filtros.excluirDuenioId }
-            .filter { it.cumpleFiltros(filtros) }
-            .sortedBy { libro ->
-                when (filtros.sortBy) {
-                    "autor"  -> libro.autor.lowercase()
-                    "duenio" -> libro.duenio.nombre.lowercase()
-                    else     -> libro.titulo.lowercase()
-                }
-            }
-
     fun buscarPaginado(filtros: LibroFiltros, page: Int, size: Int): PagedResponse<Libro> {
-        val filtrados = buscar(filtros)
-        val totalPages = ceil(filtrados.size.toDouble() / size).toInt()
-        return PagedResponse(filtrados.drop(page * size).take(size), page, totalPages)
+        val resultados = jpa.buscarIdsPaginados(
+            query       = filtros.query,
+            generos     = filtros.generos.takeIf { it.isNotEmpty() }?.toTypedArray(),
+            paginasMin  = filtros.paginasMin,
+            paginasMax  = filtros.paginasMax,
+            isbn        = filtros.isbn,
+            prestadoPor = filtros.prestadoPor,
+            excluirId   = filtros.excluirDuenioId,
+            excluirIds  = filtros.libroIdsReservados?.toTypedArray(),
+            sortBy      = filtros.sortBy,
+            limit       = size,
+            offset      = page * size,
+        )
+        val total       = resultados.firstOrNull()?.total ?: 0L
+        val totalPages  = ceil(total.toDouble() / size).toInt()
+        val ids         = resultados.map { it.libroId }
+        val librosPorId = jpa.findAllById(ids).associateBy { it.id }
+        return PagedResponse(ids.mapNotNull { librosPorId[it] }, page, totalPages)
     }
+
     fun getHistorialPuntajes(libroId: Int): List<HistorialPuntaje> =
         historialJpa.findByLibroIdOrderByFechaActualizacionDesc(libroId)
 
