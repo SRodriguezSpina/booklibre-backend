@@ -45,8 +45,7 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
                 fecha_desde AS fechaDesde,
                 fecha_hasta AS fechaHasta,
                 anio_reserva AS anioReserva
-            FROM vw_reservas_anuales_usuario
-            WHERE usuario_id = :usuarioId
+            FROM fn_reservas_anuales_usuario(:usuarioId)
             ORDER BY fecha_desde ASC
         """,
         nativeQuery = true,

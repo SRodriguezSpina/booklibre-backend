@@ -11,8 +11,7 @@ interface TipoUsuario {
 @Table(
     name = "usuarios",
     uniqueConstraints = [
-        UniqueConstraint(name = "uk_usuarios_email",   columnNames = ["email"]),
-        UniqueConstraint(name = "uk_usuarios_celular", columnNames = ["celular"]),
+        UniqueConstraint(name = "uk_usuarios_email", columnNames = ["email"]),
     ]
 )
 class Usuario(
