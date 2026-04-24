@@ -197,20 +197,6 @@ abstract class Libro() : BaseEntity() {
 
     abstract fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int = 0): Int
 
-    fun cumpleFiltros(filtros: LibroFiltros): Boolean {
-        val matchQuery = filtros.query.isBlank() ||
-            titulo.contains(filtros.query, ignoreCase = true) ||
-            autor.contains(filtros.query, ignoreCase = true)
-        val matchGenero = filtros.generos.isEmpty() || filtros.generos.contains(genero.name)
-        val matchPaginasMin = filtros.paginasMin == null || cantidadPaginas >= filtros.paginasMin
-        val matchPaginasMax = filtros.paginasMax == null || cantidadPaginas <= filtros.paginasMax
-        val matchIsbn = filtros.isbn.isNullOrBlank() || isbn.contains(filtros.isbn, ignoreCase = true)
-        val matchPrestadoPor = filtros.prestadoPor.isNullOrBlank() ||
-            duenio.nombre.contains(filtros.prestadoPor, ignoreCase = true)
-        val matchDisponibilidad = filtros.libroIdsReservados == null || id !in filtros.libroIdsReservados
-        return matchQuery && matchGenero && matchPaginasMin && matchPaginasMax &&
-            matchIsbn && matchPrestadoPor && matchDisponibilidad
-    }
 
     fun actualizarDatos(
         nuevoTitulo: String,
