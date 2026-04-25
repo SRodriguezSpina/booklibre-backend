@@ -117,6 +117,7 @@ class LibroService(
         return libroRepository.save(libro)
     }
 
+    @Transactional
     fun agregarCalificacion(idLibro: Int, dto: NewCalificacionDTO) {
         val libro = libroRepository.getById(idLibro)
         usuarioRepository.getById(dto.usuarioId)
@@ -129,13 +130,6 @@ class LibroService(
         )
         libro.agregarCalificacion(calificacion)
         libroRepository.save(libro)
-    }
-
-    fun eliminarLibro(libroId: Int, usuarioId: Int) {
-        val libro = libroRepository.getById(libroId)
-        evaluarPermiso(libro, usuarioId)
-        if (!libro.estaDisponible()) throw ConflictException("El libro tiene una reserva activa y no puede eliminarse")
-        libroRepository.delete(libro)
     }
 
     fun darDeBaja(libroId: Int, usuarioId: Int) {
