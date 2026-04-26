@@ -23,6 +23,9 @@ class LibroRepository(private val jpa: LibroJpaRepository,
 
     fun getLibros(): List<Libro> = jpa.findAllByActivoTrue()
 
+    fun getTodosLosLibrosDeUsuario(usuarioId: Int): List<Libro> =
+        jpa.findByDuenioId(usuarioId)
+
     fun getLibrosDeUsuario(usuarioId: Int): List<Libro> =
         jpa.findByDuenioIdAndActivoTrue(usuarioId)
 

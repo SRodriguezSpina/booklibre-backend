@@ -5,6 +5,7 @@ import jakarta.persistence.*
 import java.time.LocalDate
 
 interface TipoUsuario {
+    fun puedePublicar(): Boolean
 }
 
 @Entity
@@ -69,11 +70,17 @@ class Usuario(
 
     fun tipoUsuarioDomain(): TipoUsuario = when (tipoUsuario.trim().uppercase().replace(" ", "_")) {
         "PUBLICADOR"                              -> UsuarioPublicador()
-        "LECTOR_PUBLICADOR", "LECTORPUBLICADOR"  -> UsuarioLectorPublicador()
+        "LECTOR_PUBLICADOR", "LECTORPUBLICADOR"   -> UsuarioLectorPublicador()
         else                                      -> UsuarioLector()
     }
 }
 
-class UsuarioLector() : TipoUsuario {}
-class UsuarioPublicador() : TipoUsuario {}
-class UsuarioLectorPublicador() : TipoUsuario {}
+class UsuarioLector() : TipoUsuario {
+    override fun puedePublicar(): Boolean = false
+}
+class UsuarioPublicador() : TipoUsuario {
+    override fun puedePublicar(): Boolean = true
+}
+class UsuarioLectorPublicador() : TipoUsuario {
+    override fun puedePublicar(): Boolean = true
+}
