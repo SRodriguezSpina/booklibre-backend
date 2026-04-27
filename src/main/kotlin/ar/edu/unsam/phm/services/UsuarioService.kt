@@ -6,17 +6,26 @@ import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
+import ar.edu.unsam.phm.security.JwtTokenUtils
+import ar.edu.unsam.phm.security.UserDetailsServiceImpl
 
 import org.springframework.stereotype.Service
+
+data class UsuarioActualizadoConToken(
+    val usuario: Usuario,
+    val token: String,
+)
+
 @Service
 class UsuarioService(
     private val usuarioRepository: UsuarioRepository,
     private val libroRepository: LibroRepository,
+    private val jwtTokenUtils: JwtTokenUtils,
 ) {
     fun obtenerUsuario(id: Int): Usuario =
         usuarioRepository.getById(id)
 
-    fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): Usuario {
+    fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioActualizadoConToken {
         val usuario = usuarioRepository.getById(id)
         val email   = Usuario.normalizarYValidarEmail(request.email)
         val celular = Usuario.normalizarYValidarCelular(request.celular)
@@ -39,7 +48,14 @@ class UsuarioService(
 
         manejarCambioDeTipo(usuario, tipoAnterior, tipoActual)
 
-        return usuarioRepository.save(usuario)
+        val actualizado = usuarioRepository.save(usuario)
+        val roles = UserDetailsServiceImpl.rolesParaTipo(actualizado.tipoUsuario).map { it.authority }
+        val nuevoToken = jwtTokenUtils.generateToken(actualizado.email, roles)
+
+        return UsuarioActualizadoConToken(
+            usuario = actualizado,
+            token = nuevoToken,
+        )
     }
 
     fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> =
