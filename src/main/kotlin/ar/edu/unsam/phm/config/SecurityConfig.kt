@@ -69,6 +69,14 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.POST, "/api/libros/nuevo").hasRole("PUBLICADOR")
                     .requestMatchers(HttpMethod.PUT, "/api/libros/baja").hasRole("PUBLICADOR")
                     .requestMatchers(HttpMethod.PUT, "/api/libros/reactivar").hasRole("PUBLICADOR")
+                    // usuario controller
+                    .requestMatchers(HttpMethod.GET, "/api/usuarios/*").permitAll()
+                    .requestMatchers(HttpMethod.PUT, "/api/usuarios/*").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/usuarios/*").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/usuarios/*").hasRole("PUBLICADOR")
+
+
+
                     .anyRequest().authenticated()
             }
             .exceptionHandling { ex ->
