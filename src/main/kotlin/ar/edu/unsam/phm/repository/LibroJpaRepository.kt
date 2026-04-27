@@ -63,6 +63,6 @@ interface LibroJpaRepository : JpaRepository<Libro, Int> {
     )
     fun findCalificacionesDetalle(
         @Param("libroId") libroId: Int,
-        @Param("limite")  limite: Int,
+        @Param("limite")  limite: Int?,
     ): List<CalificacionDetalleView>
 }
