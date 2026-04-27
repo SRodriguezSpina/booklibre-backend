@@ -90,6 +90,9 @@ class ReservaService(
             libro.actualizoDisponibilidad(false)
 
             libroRepository.save(libro)
+            libro.duenio.sumaLibroReservado()
+            solicitante.sumaLibroLeido()
+            usuarioRepository.save(libro.duenio)
             usuarioRepository.save(solicitante)
             reservaRepository.save(reserva)
             return reserva
