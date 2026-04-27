@@ -51,6 +51,7 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.GET, "/api/libros/home").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/*").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/*/calificaciones").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/reservas").permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/error").permitAll()
                     // hasRole("PUBLICADOR") verifica ROLE_PUBLICADOR.
@@ -58,6 +59,16 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.POST, "/api/libros/nuevo").hasRole("PUBLICADOR")
                     .requestMatchers(HttpMethod.PUT, "/api/libros/**").hasRole("PUBLICADOR")
                     .requestMatchers(HttpMethod.DELETE, "/api/libros/**").hasRole("PUBLICADOR")
+                    //reserva controller
+                    .requestMatchers(HttpMethod.POST, "/api/reservas/crear").hasRole("LECTOR")
+                    .requestMatchers(HttpMethod.GET, "/api/reservas/usuarios-con-devoluciones").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/reservas/usuarios-con-mas-de-n-reservas").hasRole("ADMIN")
+                    //libro controller
+                    .requestMatchers(HttpMethod.POST, "/api/libros/*/calificar").hasRole("LECTOR")
+                    .requestMatchers(HttpMethod.PUT, "/api/libros/*").hasRole("PUBLICADOR")
+                    .requestMatchers(HttpMethod.POST, "/api/libros/nuevo").hasRole("PUBLICADOR")
+                    .requestMatchers(HttpMethod.PUT, "/api/libros/baja").hasRole("PUBLICADOR")
+                    .requestMatchers(HttpMethod.PUT, "/api/libros/reactivar").hasRole("PUBLICADOR")
                     .anyRequest().authenticated()
             }
             .exceptionHandling { ex ->
