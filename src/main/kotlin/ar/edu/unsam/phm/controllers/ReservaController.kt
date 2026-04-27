@@ -21,7 +21,7 @@ class ReservaController(val reservaService: ReservaService) {
         @RequestParam tipo: TipoReserva
     ): List<ReservaDTO> = reservaService.obtenerReservas(usuarioId, tipo).map { it.toDTO() }
 
-    @PostMapping
+    @PostMapping("/crear")
     fun crearReserva(@RequestBody body: CrearReservaDTO) {
         reservaService.crearReserva(body)
     }
@@ -30,7 +30,6 @@ class ReservaController(val reservaService: ReservaService) {
     fun getUsuariosConDevoluciones() : List<UsuarioReservasDevueltasDTO> =
         reservaService.obtenerUsuariosConReservasDevueltas()
 
-    @Transactional(readOnly = true)
     @GetMapping("/usuarios-con-mas-de-n-reservas")
     fun getUsuariosConMasDeNReservas(@RequestParam minReservas: Int): List<UsuarioConMasReservasDTO> =
         reservaService.obtenerUsuariosConMasDeNReservas(minReservas)

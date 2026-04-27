@@ -55,6 +55,7 @@ class ReservaService(
         }
     }
 
+    @Transactional(readOnly = true)
     fun obtenerUsuariosConMasDeNReservas(minReservas: Int): List<UsuarioConMasReservasDTO> =
         reservaRepository.findUsuariosConMasDeNReservas(minReservas).map {
             UsuarioConMasReservasDTO(

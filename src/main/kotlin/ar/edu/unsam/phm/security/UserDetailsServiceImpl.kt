@@ -20,6 +20,7 @@ class UserDetailsServiceImpl(private val usuarioRepository: UsuarioRepository) :
     companion object {
         fun rolesParaTipo(tipoUsuario: String): List<SimpleGrantedAuthority> =
             when (tipoUsuario.trim().uppercase().replace(" ", "_")) {
+                "ADMIN" -> listOf(SimpleGrantedAuthority("ROLE_ADMIN"))
                 "PUBLICADOR" -> listOf(SimpleGrantedAuthority("ROLE_PUBLICADOR"))
                 "LECTOR_PUBLICADOR", "LECTORPUBLICADOR" -> listOf(
                     SimpleGrantedAuthority("ROLE_LECTOR"),
