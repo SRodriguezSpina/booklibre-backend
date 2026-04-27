@@ -31,6 +31,8 @@ fun Usuario.toResponse(): UsuarioResponse {
         tipoUsuario = tipoStr,
         bibliokarmas = bibliokarmas,
         imagenUrl   = imagenUrl,
+        leidos = leidos,
+        reservados = reservados
     )
 }
 

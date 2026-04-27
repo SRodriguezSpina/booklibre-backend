@@ -11,6 +11,8 @@ data class UsuarioResponse(
     val tipoUsuario: String,
     val bibliokarmas: Int,
     val imagenUrl: String? = null,
+    val reservados: Int,
+    val leidos: Int,
 )
 
 data class UsuarioUpdateResponse(
