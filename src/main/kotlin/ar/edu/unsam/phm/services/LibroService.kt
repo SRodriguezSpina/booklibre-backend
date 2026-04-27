@@ -8,9 +8,7 @@ import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
-import ar.edu.unsam.phm.mappers.toDetalleDTOs
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
-import ar.edu.unsam.phm.readmodels.CalificacionDetalleView
 import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
@@ -55,7 +53,7 @@ class LibroService(
     fun contarReservasPorLibro(libroId: Int): Int =
         reservaRepository.contarReservasPorLibro(libroId)
 
-    fun getCalificacionesDetalle(libroId: Int, limite: Int = 2) =
+    fun getCalificacionesDetalle(libroId: Int, limite: Int? = 2) =
         libroRepository.getCalificacionesDetalle(libroId, limite)
 
     fun obtenerNombresUsuariosCalificaciones(libro: Libro): Map<Int, String> =
@@ -64,12 +62,9 @@ class LibroService(
     fun getRating(libroId: Int): Double =
         libroRepository.getById(libroId).calificacion
 
-    @Transactional(readOnly = true)
-    fun getCalificaciones(libroId: Int): List<CalificacionDTO> {
-        val libro = libroRepository.getById(libroId)
-        val nombres = usuarioRepository.resolverNombresCalificaciones(libro.calificaciones)
-        return libro.calificaciones.toDetalleDTOs(nombres)
-    }
+    fun getCalificaciones(libroId: Int): List<CalificacionDTO> =
+        libroRepository.getCalificacionesDetalle(libroId, null)
+            .map { CalificacionDTO(it.usuarioId, it.nombreUsuario, it.valor, it.comentario) }
 
     fun crearLibro(dto: LibroDTO, usuarioId: Int): Libro {
         val duenio = usuarioRepository.getById(usuarioId)

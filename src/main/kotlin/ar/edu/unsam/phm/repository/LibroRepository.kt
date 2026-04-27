@@ -57,6 +57,6 @@ class LibroRepository(private val jpa: LibroJpaRepository,
     fun getHistorialPuntajes(libroId: Int): List<HistorialPuntaje> =
         historialJpa.findByLibroIdOrderByFechaActualizacionDesc(libroId)
 
-    fun getCalificacionesDetalle(libroId: Int, limite: Int = 2): List<CalificacionDetalleView> =
+    fun getCalificacionesDetalle(libroId: Int, limite: Int? = 2): List<CalificacionDetalleView> =
         jpa.findCalificacionesDetalle(libroId, limite)
 }
