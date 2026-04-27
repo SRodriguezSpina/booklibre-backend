@@ -26,6 +26,8 @@ class Usuario(
     @Column(nullable = false) var bibliokarmas: Int = 0,
     @Column(nullable = true)  var imagenUrl: String? = null,
     @Column(nullable = false) var fechaRegistro: LocalDate = LocalDate.now(),
+    @Column(nullable = false) var leidos: Int = 0,
+    @Column(nullable = false) var reservados: Int = 0,
 ) : BaseEntity() {
 
     companion object {
@@ -72,6 +74,12 @@ class Usuario(
         "PUBLICADOR"                              -> UsuarioPublicador()
         "LECTOR_PUBLICADOR", "LECTORPUBLICADOR"   -> UsuarioLectorPublicador()
         else                                      -> UsuarioLector()
+    }
+    fun sumaLibroReservado() {
+        this.reservados += 1
+    }
+    fun sumaLibroLeido() {
+        this.leidos += 1
     }
 }
 

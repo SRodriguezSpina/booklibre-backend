@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$PROJECT_DIR$/src/main/resources/db/migration/V8__fix_calificacion_promedio_bootstrap.sql" value="3de1c425-715c-4324-b019-27233d58551f" />
+  </component>
+</project>
