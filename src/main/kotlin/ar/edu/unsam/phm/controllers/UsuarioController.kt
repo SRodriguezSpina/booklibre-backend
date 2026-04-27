@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.controllers
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
+import ar.edu.unsam.phm.dtos.UsuarioUpdateResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.mappers.toLibroUsuarioItemDTO
 import ar.edu.unsam.phm.mappers.toResponse
@@ -23,8 +24,13 @@ class UsuarioController(
         usuarioService.obtenerUsuario(id).toResponse()
 
     @PutMapping("/{id}")
-    fun actualizarUsuario(@PathVariable id: Int, @RequestBody request: UsuarioUpdateRequest): UsuarioResponse =
-        usuarioService.actualizarUsuario(id, request).toResponse()
+    fun actualizarUsuario(@PathVariable id: Int, @RequestBody request: UsuarioUpdateRequest): UsuarioUpdateResponse {
+        val resultado = usuarioService.actualizarUsuario(id, request)
+        return UsuarioUpdateResponse(
+            usuario = resultado.usuario.toResponse(),
+            token = resultado.token,
+        )
+    }
 
     @GetMapping("/{id}/libros")
     fun getLibrosDeUsuario(@PathVariable id: Int): List<LibroUsuarioItemDTO> =
