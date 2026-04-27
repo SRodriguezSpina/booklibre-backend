@@ -13,6 +13,11 @@ data class UsuarioResponse(
     val imagenUrl: String? = null,
 )
 
+data class UsuarioUpdateResponse(
+    val usuario: UsuarioResponse,
+    val token: String,
+)
+
 data class UsuarioUpdateRequest(
     val nombre: String,
     val desc: String,

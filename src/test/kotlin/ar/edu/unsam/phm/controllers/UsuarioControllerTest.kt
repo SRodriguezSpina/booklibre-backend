@@ -9,6 +9,7 @@ import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.security.JwtTokenUtils
+import ar.edu.unsam.phm.services.UsuarioActualizadoConToken
 import ar.edu.unsam.phm.services.ReservaService
 import ar.edu.unsam.phm.services.UsuarioService
 import org.junit.jupiter.api.DisplayName
@@ -104,7 +105,12 @@ class UsuarioControllerTest {
             tipoUsuario = "PUBLICADOR"
         ).apply { this.id = id }
 
-        Mockito.`when`(usuarioService.actualizarUsuario(id, request)).thenReturn(usuarioActualizado)
+        Mockito.`when`(usuarioService.actualizarUsuario(id, request)).thenReturn(
+            UsuarioActualizadoConToken(
+                usuario = usuarioActualizado,
+                token = "nuevo-jwt",
+            )
+        )
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/api/usuarios/$id")
@@ -121,8 +127,9 @@ class UsuarioControllerTest {
                 """.trimIndent())
         )
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.nombre").value("Juan Actualizado"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.ciudad").value("Rosario"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.usuario.nombre").value("Juan Actualizado"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.usuario.ciudad").value("Rosario"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.token").value("nuevo-jwt"))
 
         Mockito.verify(usuarioService).actualizarUsuario(id, request)
     }
