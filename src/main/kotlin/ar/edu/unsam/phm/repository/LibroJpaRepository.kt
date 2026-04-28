@@ -4,6 +4,7 @@ import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.readmodels.CalificacionDetalleView
 import ar.edu.unsam.phm.readmodels.LibroPaginadoView
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.util.Optional
@@ -65,4 +66,15 @@ interface LibroJpaRepository : JpaRepository<Libro, Int> {
         @Param("libroId") libroId: Int,
         @Param("limite")  limite: Int?,
     ): List<CalificacionDetalleView>
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        UPDATE Libro l 
+        SET l.activo = :activo 
+        WHERE l.duenio.id = :usuarioId
+    """)
+    fun actualizarActivoPorDuenio(
+        @Param("usuarioId") usuarioId: Int,
+        @Param("activo") activo: Boolean,
+    ): Int
 }

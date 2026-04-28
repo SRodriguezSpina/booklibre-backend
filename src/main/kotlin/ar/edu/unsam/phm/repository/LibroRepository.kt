@@ -59,4 +59,8 @@ class LibroRepository(private val jpa: LibroJpaRepository,
 
     fun getCalificacionesDetalle(libroId: Int, limite: Int? = 2): List<CalificacionDetalleView> =
         jpa.findCalificacionesDetalle(libroId, limite)
+
+    fun actualizarActivoPorDuenio(usuarioId: Int, activo: Boolean) {
+        jpa.actualizarActivoPorDuenio(usuarioId, activo)
+    }
 }
