@@ -72,8 +72,8 @@ class SecurityConfig(
                     // usuario controller
                     .requestMatchers(HttpMethod.GET, "/api/usuarios/*").permitAll()
                     .requestMatchers(HttpMethod.PUT, "/api/usuarios/*").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/usuarios/*").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.GET, "/api/usuarios/*").hasRole("PUBLICADOR")
+                    .requestMatchers(HttpMethod.GET, "/api/usuarios/*/reservas/anuales").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/usuarios/*/libros").hasRole("PUBLICADOR")
 
 
 
