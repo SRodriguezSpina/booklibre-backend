@@ -27,6 +27,12 @@ class ReservaRepository(private val jpa: ReservaJpaRepository) {
     fun findByUsuarioId(usuarioId: Int) = jpa.findByUsuarioId(usuarioId)
     fun findByLibroDuenioId(usuarioId: Int) = jpa.findByLibroDuenioId(usuarioId)
 
+    fun tieneReservasActivas(usuarioId: Int): Boolean {
+        val now = java.time.LocalDateTime.now()
+        return jpa.existsByUsuarioIdAndFechaHastaAfter(usuarioId, now)
+            || jpa.existsByLibroDuenioIdAndFechaHastaAfter(usuarioId, now)
+    }
+
     fun findByLibroId(libroId: Int): List<Reserva> = getReservasDeLibro(libroId)
 
     fun obtenerIdsLibrosReservados(fechaDesdeStr: String?, fechaHastaStr: String?): Set<Int>? {

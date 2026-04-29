@@ -126,7 +126,7 @@ abstract class Libro() : BaseEntity() {
     @Column(nullable = false)
     var estado: EstadoLibro = EstadoLibro.BUENO
 
-    @Column(nullable = true)
+    @Column(nullable = true, length = 2000)
     var imagenUrl: String? = null
 
     @Enumerated(EnumType.STRING)
