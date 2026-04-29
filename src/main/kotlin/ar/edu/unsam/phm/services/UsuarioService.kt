@@ -10,6 +10,7 @@ import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.security.UserDetailsServiceImpl
 
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 data class UsuarioActualizadoConToken(
     val usuario: Usuario,
@@ -25,6 +26,7 @@ class UsuarioService(
     fun obtenerUsuario(id: Int): Usuario =
         usuarioRepository.getById(id)
 
+    @Transactional
     fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioActualizadoConToken {
         val usuario = usuarioRepository.getById(id)
         val email   = Usuario.normalizarYValidarEmail(request.email)
@@ -71,11 +73,6 @@ class UsuarioService(
 
         if (eraPublicador == ahoraEsPublicador) return
 
-        val libros = libroRepository.getTodosLosLibrosDeUsuario(usuario.id)
-
-        libros.forEach {
-            it.activo = ahoraEsPublicador
-            libroRepository.save(it)
-        }
+        libroRepository.actualizarActivoPorDuenio(usuario.id, ahoraEsPublicador)
     }
 }
