@@ -124,6 +124,7 @@ class LibroService(
             comentario = dto.comentario
         )
         libro.agregarCalificacion(calificacion)
+        libro.actualizoDisponibilidad(true)
         libroRepository.save(libro)
     }
 

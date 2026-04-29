@@ -144,7 +144,8 @@ fun Reserva.toDTO(): ReservaDTO {
         rating = this.libro.calificacion,
         bibliokarma = bibliokarmas,
         disponibilidad = this.libro.estaDisponible(),
-        libroActivo = this.libro.activo
+        libroActivo = this.libro.activo,
+        yaCalificadoPorUsuario = this.libro.calificaciones.any { it.usuarioId == this.usuario.id },
     )
 }
 
