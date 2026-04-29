@@ -1,6 +1,6 @@
 package ar.edu.unsam.phm.readmodels
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 interface ReservaAnualUsuarioView {
     val reservaId: Int
@@ -9,7 +9,7 @@ interface ReservaAnualUsuarioView {
     val libroId: Int
     val libroTitulo: String
     val libroAutor: String
-    val fechaDesde: LocalDate
-    val fechaHasta: LocalDate
+    val fechaDesde: LocalDateTime
+    val fechaHasta: LocalDateTime
     val anioReserva: Int
 }

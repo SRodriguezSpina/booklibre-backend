@@ -8,7 +8,7 @@ import ar.edu.unsam.phm.readmodels.UsuarioConReservasDevueltasView
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.Optional
 
 interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
@@ -29,8 +29,8 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
           AND r.fechaHasta >= :desde
     """)
     fun findLibroIdsBySuperposicion(
-        @Param("desde") desde: LocalDate,
-        @Param("hasta") hasta: LocalDate,
+        @Param("desde") desde: LocalDateTime,
+        @Param("hasta") hasta: LocalDateTime,
     ): List<Int>
 
     @Query(

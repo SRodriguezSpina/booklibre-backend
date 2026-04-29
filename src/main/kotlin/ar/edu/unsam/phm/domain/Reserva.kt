@@ -1,6 +1,6 @@
 package ar.edu.unsam.phm.domain
 import jakarta.persistence.*
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "reservas")
@@ -15,23 +15,23 @@ class Reserva (
     var usuario: Usuario,
 
     @Column(nullable = false)
-    var fechaDesde: LocalDate,
+    var fechaDesde: LocalDateTime,
 
     @Column(nullable = false)
-    var fechaHasta: LocalDate,
+    var fechaHasta: LocalDateTime,
 
     @Column(nullable = false)
     var bibliokarmas: Int = 0
 
 ) : BaseEntity() {
-    fun sePisaCon(otraFechaDesde: LocalDate, otraFechaHasta: LocalDate): Boolean {
+    fun sePisaCon(otraFechaDesde: LocalDateTime, otraFechaHasta: LocalDateTime): Boolean {
         return this.fechaDesde <= otraFechaHasta && this.fechaHasta >= otraFechaDesde
     }
     fun confirmar() {
         asignarKarma()
     }
     private fun asignarKarma() {
-        val bibliokarmasASumar = libro.calcularBiblioKarmaTotal(usuario,fechaDesde, fechaHasta)
+        val bibliokarmasASumar = libro.calcularBiblioKarmaTotal(usuario, fechaDesde, fechaHasta)
         usuario.bibliokarmas += bibliokarmasASumar
         this.bibliokarmas = bibliokarmasASumar
     }

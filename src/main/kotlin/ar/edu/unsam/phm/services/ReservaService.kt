@@ -38,8 +38,8 @@ class ReservaService(
                 libroId = it.libroId,
                 libroTitulo = it.libroTitulo,
                 libroAutor = it.libroAutor,
-                fechaDesde = it.fechaDesde,
-                fechaHasta = it.fechaHasta,
+                fechaDesde = it.fechaDesde.toLocalDate(),
+                fechaHasta = it.fechaHasta.toLocalDate(),
                 anioReserva = it.anioReserva,
             )
         }

@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.domain
 import ar.edu.unsam.phm.exceptions.BusinessException
 import jakarta.persistence.*
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
 import kotlin.math.roundToInt
@@ -161,12 +162,12 @@ abstract class Libro() : BaseEntity() {
 
     fun calcularBiblioKarmaTotal(
         usuario: Usuario,
-        desde: LocalDate,
-        hasta: LocalDate,
+        desde: LocalDateTime,
+        hasta: LocalDateTime,
         cantidadReservasDelLibro: Int = 0,
     ): Int {
         if (!hasta.isAfter(desde)) throw BusinessException("La fecha de hasta debe ser posterior a la fecha de desde")
-        val diasReserva = ChronoUnit.DAYS.between(desde, hasta).toInt() + 1
+        val diasReserva = ChronoUnit.DAYS.between(desde.toLocalDate(), hasta.toLocalDate()).toInt() + 1
         return (5 * diasReserva) + plusBiblioKarma(usuario, cantidadReservasDelLibro)
     }
 
