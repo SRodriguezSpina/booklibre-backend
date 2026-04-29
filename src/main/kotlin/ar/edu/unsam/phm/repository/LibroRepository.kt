@@ -63,4 +63,7 @@ class LibroRepository(private val jpa: LibroJpaRepository,
     fun actualizarActivoPorDuenio(usuarioId: Int, activo: Boolean) {
         jpa.actualizarActivoPorDuenio(usuarioId, activo)
     }
+
+    fun liberarReservasVencidas(now: java.time.LocalDateTime) =
+        jpa.liberarReservasVencidas(now)
 }
