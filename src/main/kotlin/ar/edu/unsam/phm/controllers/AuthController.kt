@@ -14,7 +14,6 @@ data class OAuth2TokenResponse(
 )
 
 @RestController
-@CrossOrigin(origins = ["*"])
 @RequestMapping("/api")
 class AuthController (private val authService: AuthService) {
     @PostMapping("/login")
