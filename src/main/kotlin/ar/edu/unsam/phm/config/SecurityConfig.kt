@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.annotation.Order
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -40,6 +41,7 @@ class SecurityConfig(
     private val objectMapper = ObjectMapper()
 
     @Bean
+    @Order(2)
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .csrf { it.disable() }
@@ -47,13 +49,14 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers(HttpMethod.POST, "/api/login", "/api/register").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/login", "/api/register", "/api/auth/token").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/home").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/*").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/*/calificaciones").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/reservas").permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/error").permitAll()
+                    // Swagger rutas manejadas por swaggerFilterChain (Order 1)
                     // hasRole("PUBLICADOR") verifica ROLE_PUBLICADOR.
                     // Tanto PUBLICADOR como LECTOR_PUBLICADOR tienen esta authority.
                     .requestMatchers(HttpMethod.POST, "/api/libros/nuevo").hasRole("PUBLICADOR")
