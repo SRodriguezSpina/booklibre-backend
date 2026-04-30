@@ -41,4 +41,10 @@ class AuthExceptionHandler {
         ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
             ErrorResponse(status = 400, error = "Bad Request", message = error.message.toString(), path = request.requestURI)
         )
+
+    @ExceptionHandler(ForbiddenException::class)
+    fun handleForbidden(error: ForbiddenException, request: HttpServletRequest) =
+        ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ErrorResponse(status = 403, error = "Forbidden", message = error.message.toString(), path = request.requestURI)
+        )
 }

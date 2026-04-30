@@ -7,12 +7,13 @@ import ar.edu.unsam.phm.dtos.UsuarioUpdateResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.mappers.toLibroUsuarioItemDTO
 import ar.edu.unsam.phm.mappers.toResponse
+import ar.edu.unsam.phm.exceptions.ForbiddenException
 import ar.edu.unsam.phm.services.ReservaService
 import ar.edu.unsam.phm.services.UsuarioService
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@CrossOrigin(origins = ["*"])
 @RequestMapping("/api/usuarios")
 class UsuarioController(
     val usuarioService: UsuarioService,
@@ -24,7 +25,14 @@ class UsuarioController(
         usuarioService.obtenerUsuario(id).toResponse()
 
     @PutMapping("/{id}")
-    fun actualizarUsuario(@PathVariable id: Int, @RequestBody request: UsuarioUpdateRequest): UsuarioUpdateResponse {
+    fun actualizarUsuario(
+        @PathVariable id: Int,
+        @RequestBody request: UsuarioUpdateRequest,
+        auth: Authentication,
+    ): UsuarioUpdateResponse {
+        val isAdmin = auth.authorities.any { it.authority == "ROLE_ADMIN" }
+        val isOwner = usuarioService.obtenerUsuario(id).email == auth.name
+        if (!isAdmin && !isOwner) throw ForbiddenException("No tenés permiso para modificar este usuario")
         val resultado = usuarioService.actualizarUsuario(id, request)
         return UsuarioUpdateResponse(
             usuario = resultado.usuario.toResponse(),
