@@ -24,6 +24,7 @@ import ar.edu.unsam.phm.testing.inmemory.repository.LibroRepository
 import ar.edu.unsam.phm.testing.inmemory.repository.ReservaRepository
 import ar.edu.unsam.phm.testing.inmemory.repository.UsuarioRepository
 import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.math.ceil
 
 class LibroServiceInMemory(
@@ -74,8 +75,8 @@ class LibroServiceInMemory(
                     libro.duenio.nombre.contains(prestadoPor, ignoreCase = true)
 
                 val matchFechas = if (fechaDesde != null && fechaHasta != null) {
-                    val desde = LocalDate.parse(fechaDesde)
-                    val hasta = LocalDate.parse(fechaHasta)
+                    val desde: LocalDateTime = LocalDate.parse(fechaDesde).atStartOfDay()
+                    val hasta: LocalDateTime = LocalDate.parse(fechaHasta).atTime(23, 59, 59)
                     val reservasDelLibro = reservaRepository.findByLibroId(libro.id)
                     reservasDelLibro.none { reserva ->
                         reserva.fechaDesde <= hasta && reserva.fechaHasta >= desde
@@ -240,7 +241,7 @@ class LibroServiceInMemory(
             throw UnauthorizedException("No autorizado para eliminar este libro")
         }
 
-        val hoy = LocalDate.now()
+        val hoy = LocalDateTime.now()
         val hayReservaActiva = reservaRepository.findByLibroId(libroId)
             .any { !hoy.isBefore(it.fechaDesde) && !hoy.isAfter(it.fechaHasta) }
 

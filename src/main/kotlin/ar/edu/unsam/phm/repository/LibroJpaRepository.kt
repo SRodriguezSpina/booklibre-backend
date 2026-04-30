@@ -77,4 +77,17 @@ interface LibroJpaRepository : JpaRepository<Libro, Int> {
         @Param("usuarioId") usuarioId: Int,
         @Param("activo") activo: Boolean,
     ): Int
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(
+        value = """
+            UPDATE libros SET disponibilidad = 'DISPONIBLE'
+            WHERE disponibilidad = 'RESERVADO'
+              AND id NOT IN (
+                  SELECT DISTINCT libro_id FROM reservas WHERE fecha_hasta >= :now
+              )
+        """,
+        nativeQuery = true,
+    )
+    fun liberarReservasVencidas(@Param("now") now: java.time.LocalDateTime): Int
 }

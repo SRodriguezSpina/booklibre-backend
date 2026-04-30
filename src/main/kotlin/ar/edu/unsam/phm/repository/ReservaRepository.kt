@@ -5,6 +5,7 @@ import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import org.springframework.stereotype.Component
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Component
 class ReservaRepository(private val jpa: ReservaJpaRepository) {
@@ -26,12 +27,18 @@ class ReservaRepository(private val jpa: ReservaJpaRepository) {
     fun findByUsuarioId(usuarioId: Int) = jpa.findByUsuarioId(usuarioId)
     fun findByLibroDuenioId(usuarioId: Int) = jpa.findByLibroDuenioId(usuarioId)
 
+    fun tieneReservasActivas(usuarioId: Int): Boolean {
+        val now = java.time.LocalDateTime.now()
+        return jpa.existsByUsuarioIdAndFechaHastaAfter(usuarioId, now)
+            || jpa.existsByLibroDuenioIdAndFechaHastaAfter(usuarioId, now)
+    }
+
     fun findByLibroId(libroId: Int): List<Reserva> = getReservasDeLibro(libroId)
 
     fun obtenerIdsLibrosReservados(fechaDesdeStr: String?, fechaHastaStr: String?): Set<Int>? {
         if (fechaDesdeStr == null || fechaHastaStr == null) return null
-        val desde = LocalDate.parse(fechaDesdeStr)
-        val hasta = LocalDate.parse(fechaHastaStr)
+        val desde: LocalDateTime = LocalDate.parse(fechaDesdeStr).atStartOfDay()
+        val hasta: LocalDateTime = LocalDate.parse(fechaHastaStr).atTime(23, 59, 59)
         if (!desde.isBefore(hasta))
             throw BusinessException("La fecha de inicio debe ser anterior a la fecha final")
         return jpa.findLibroIdsBySuperposicion(desde, hasta).toSet()

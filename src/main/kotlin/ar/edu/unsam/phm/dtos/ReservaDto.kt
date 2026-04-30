@@ -1,11 +1,12 @@
 package ar.edu.unsam.phm.dtos
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class CrearReservaDTO(
     val libroId: Int,
     val usuarioId: Int,
-    val fechaDesde: LocalDate,
-    val fechaHasta: LocalDate
+    val fechaDesde: LocalDateTime,
+    val fechaHasta: LocalDateTime
 )
 
 data class ReservaDTO(
@@ -24,7 +25,8 @@ data class ReservaDTO(
     val rating: Double,
     val bibliokarma: Int?,
     val disponibilidad: Boolean?,
-    val libroActivo: Boolean
+    val libroActivo: Boolean,
+    val yaCalificadoPorUsuario: Boolean = false,
 )
 
 data class ReservaAnualUsuarioDTO(

@@ -1,0 +1,1 @@
+ALTER TABLE libros ALTER COLUMN imagen_url TYPE VARCHAR(2000);

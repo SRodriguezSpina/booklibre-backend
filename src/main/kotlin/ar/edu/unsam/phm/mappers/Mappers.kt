@@ -11,6 +11,7 @@ import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.readmodels.CalificacionDetalleView
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.collections.sortedByDescending
 
@@ -40,15 +41,15 @@ fun Libro.toDTO(
     todosLosRangos: List<Reserva> = emptyList(),
     nombresUsuarios: Map<Int, String> = emptyMap(),
 ): LibroDTO {
-    val hoy = LocalDate.now()
+    val hoy = LocalDateTime.now()
     val reservasActivas = todosLosRangos.filter { it.sePisaCon(hoy, hoy) }
     val reservaPrincipal = reservasActivas.firstOrNull()
     val rangosDTO = todosLosRangos
         .filter { !it.fechaHasta.isBefore(hoy) }
         .map {
             RangoReservaDTO(
-                fechaDesde = it.fechaDesde.format(DateTimeFormatter.ISO_DATE),
-                fechaHasta = it.fechaHasta.format(DateTimeFormatter.ISO_DATE)
+                fechaDesde = it.fechaDesde.toLocalDate().format(DateTimeFormatter.ISO_DATE),
+                fechaHasta = it.fechaHasta.toLocalDate().format(DateTimeFormatter.ISO_DATE)
             )
         }
     return LibroDTO(
@@ -138,12 +139,13 @@ fun Reserva.toDTO(): ReservaDTO {
         imagenUrl = this.libro.imagenUrl ?: "",
         alquiladoPorId = usuario.id,
         alquiladoPorNombre = usuario.nombre,
-        fechaDesde = fechaDesde.format(DateTimeFormatter.ISO_DATE),
-        fechaHasta = fechaHasta.format(DateTimeFormatter.ISO_DATE),
+        fechaDesde = fechaDesde.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")),
+        fechaHasta = fechaHasta.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")),
         rating = this.libro.calificacion,
         bibliokarma = bibliokarmas,
         disponibilidad = this.libro.estaDisponible(),
-        libroActivo = this.libro.activo
+        libroActivo = this.libro.activo,
+        yaCalificadoPorUsuario = this.libro.calificaciones.any { it.usuarioId == this.usuario.id },
     )
 }
 

@@ -1,6 +1,6 @@
 package ar.edu.unsam.phm.readmodels
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 /*
     vw_rangos_reserva_libro
@@ -12,8 +12,8 @@ import java.time.LocalDate
 */
 interface RangoReservaLibroView {
     val libroId: Int
-    val fechaDesde: LocalDate
-    val fechaHasta: LocalDate
+    val fechaDesde: LocalDateTime
+    val fechaHasta: LocalDateTime
     val usuarioId: Int
     val esActivaHoy: Boolean
 }

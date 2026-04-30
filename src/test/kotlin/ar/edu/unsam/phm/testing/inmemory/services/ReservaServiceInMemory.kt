@@ -13,7 +13,7 @@ import ar.edu.unsam.phm.testing.inmemory.repository.EntityNotFoundException
 import ar.edu.unsam.phm.testing.inmemory.repository.LibroRepository
 import ar.edu.unsam.phm.testing.inmemory.repository.ReservaRepository
 import ar.edu.unsam.phm.testing.inmemory.repository.UsuarioRepository
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 class ReservaServiceInMemory(
     private val libroRepository: LibroRepository,
@@ -36,7 +36,7 @@ class ReservaServiceInMemory(
         usuarioRepository.findById(usuarioId)
             ?: throw NotFoundException("Usuario $usuarioId no encontrado")
 
-        val anioActual = LocalDate.now().year
+        val anioActual = LocalDateTime.now().year
         return reservaRepository.getReservasDeUsuario(usuarioId)
             .filter { it.usuario.id == usuarioId && it.fechaDesde.year == anioActual }
             .sortedBy { it.fechaDesde }
@@ -48,8 +48,8 @@ class ReservaServiceInMemory(
                     libroId = it.libro.id,
                     libroTitulo = it.libro.titulo,
                     libroAutor = it.libro.autor,
-                    fechaDesde = it.fechaDesde,
-                    fechaHasta = it.fechaHasta,
+                    fechaDesde = it.fechaDesde.toLocalDate(),
+                    fechaHasta = it.fechaHasta.toLocalDate(),
                     anioReserva = it.fechaDesde.year,
                 )
             }

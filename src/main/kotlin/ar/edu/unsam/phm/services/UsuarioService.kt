@@ -5,10 +5,12 @@ import ar.edu.unsam.phm.domain.TipoUsuario
 import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.security.UserDetailsServiceImpl
 
+import ar.edu.unsam.phm.exceptions.BusinessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -21,6 +23,7 @@ data class UsuarioActualizadoConToken(
 class UsuarioService(
     private val usuarioRepository: UsuarioRepository,
     private val libroRepository: LibroRepository,
+    private val reservaRepository: ReservaRepository,
     private val jwtTokenUtils: JwtTokenUtils,
 ) {
     fun obtenerUsuario(id: Int): Usuario =
@@ -36,6 +39,10 @@ class UsuarioService(
         usuarioRepository.validarCelularDisponible(celular, id)
 
         val tipoAnterior = usuario.tipoUsuarioDomain()
+
+        if (request.tipoUsuario != usuario.tipoUsuario && reservaRepository.tieneReservasActivas(id)) {
+            throw BusinessException("No podés cambiar el tipo de usuario mientras tenés reservas activas")
+        }
 
         usuario.actualizarDatosPersonales(
             nuevoNombre    = request.nombre,

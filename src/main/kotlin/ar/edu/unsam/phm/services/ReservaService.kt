@@ -8,8 +8,10 @@ import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
 import ar.edu.unsam.phm.dtos.UsuarioConMasReservasDTO
 import ar.edu.unsam.phm.dtos.UsuarioReservasDevueltasDTO
 import ar.edu.unsam.phm.repository.*
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class ReservaService(
@@ -38,8 +40,8 @@ class ReservaService(
                 libroId = it.libroId,
                 libroTitulo = it.libroTitulo,
                 libroAutor = it.libroAutor,
-                fechaDesde = it.fechaDesde,
-                fechaHasta = it.fechaHasta,
+                fechaDesde = it.fechaDesde.toLocalDate(),
+                fechaHasta = it.fechaHasta.toLocalDate(),
                 anioReserva = it.anioReserva,
             )
         }
@@ -64,6 +66,12 @@ class ReservaService(
                 cantidadReservas = it.cantidadReservas
             )
         }
+
+    @Scheduled(fixedDelay = 5_000)
+    @Transactional
+    fun liberarLibrosConReservaVencida() {
+        libroRepository.liberarReservasVencidas(LocalDateTime.now())
+    }
 
     @Transactional
     fun crearReserva(dto: CrearReservaDTO): Reserva {
