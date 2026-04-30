@@ -75,6 +75,13 @@ class ReservaService(
 
     @Transactional
     fun crearReserva(dto: CrearReservaDTO): Reserva {
+        if (dto.fechaDesde.isBefore(LocalDateTime.now())) {
+            throw BusinessException("La fecha de inicio no puede ser en el pasado")
+        }
+        if (!dto.fechaHasta.isAfter(dto.fechaDesde)) {
+            throw BusinessException("La fecha de fin debe ser posterior a la fecha de inicio")
+        }
+
         val lock = locks.computeIfAbsent(dto.libroId) { Any() }
         synchronized(lock) {
             val libro = libroRepository.getById(dto.libroId)

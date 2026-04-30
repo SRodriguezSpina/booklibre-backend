@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@CrossOrigin(origins = ["*"])
 @RequestMapping("/api/reservas")
 class ReservaController(val reservaService: ReservaService) {
     @Transactional(readOnly = true)

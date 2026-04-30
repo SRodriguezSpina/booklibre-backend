@@ -53,7 +53,7 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.GET, "/api/libros/home").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/*").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/*/calificaciones").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/reservas").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/reservas").authenticated()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/error").permitAll()
                     // Swagger rutas manejadas por swaggerFilterChain (Order 1)
@@ -73,10 +73,10 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.PUT, "/api/libros/baja").hasRole("PUBLICADOR")
                     .requestMatchers(HttpMethod.PUT, "/api/libros/reactivar").hasRole("PUBLICADOR")
                     // usuario controller
-                    .requestMatchers(HttpMethod.GET, "/api/usuarios/*").permitAll()
-                    .requestMatchers(HttpMethod.PUT, "/api/usuarios/*").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/usuarios/*/reservas/anuales").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET, "/api/usuarios/*/libros").hasRole("PUBLICADOR")
+                    .requestMatchers(HttpMethod.GET, "/api/usuarios/*").authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/api/usuarios/*").authenticated()
 
 
 
