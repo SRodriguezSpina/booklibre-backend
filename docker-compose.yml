@@ -1,0 +1,42 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: booklibre-backend
+    restart: unless-stopped
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8080:8080"
+    networks:
+      - booklibre-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/libros/home?usuarioId=1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 50s
+
+  frontend:
+    build:
+      context: ../frontend-2026-grupo-12
+      dockerfile: Dockerfile
+    container_name: booklibre-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend-2026-grupo-12:/app
+      - /app/node_modules
+    environment:
+      - VITE_BACKEND_URL=http://backend:8080
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - booklibre-net
+
+networks:
+  booklibre-net:
+    driver: bridge
