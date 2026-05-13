@@ -1,7 +1,7 @@
 package ar.edu.unsam.phm.repository
 
 import ar.edu.unsam.phm.domain.Reserva
-import ar.edu.unsam.phm.dtos.UsuarioReservasDevueltasDTO
+import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.readmodels.ReservaAnualUsuarioView
 import ar.edu.unsam.phm.readmodels.UsuarioConMasReservasView
 import ar.edu.unsam.phm.readmodels.UsuarioConReservasDevueltasView
@@ -77,4 +77,20 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
         nativeQuery = true
     )
     fun findUsuariosConMasDeNReservas(@Param("minReservas") minReservas: Int): List<UsuarioConMasReservasView>
+
+    fun getByIdOrThrow(id: Int): Reserva =
+        findById(id).orElseThrow { NotFoundException("Reserva $id no encontrada") }
+
+    fun obtenerPrestatarioActual(libroId: Int): Int? =
+        findTopByLibroIdOrderByIdDesc(libroId).map { it.usuario.id }.orElse(null)
+
+    fun contarReservasPorLibro(libroId: Int): Int =
+        countByLibroId(libroId).toInt()
+
+    fun tieneReservasActivas(usuarioId: Int, now: LocalDateTime = LocalDateTime.now()): Boolean =
+        existsByUsuarioIdAndFechaHastaAfter(usuarioId, now) ||
+            existsByLibroDuenioIdAndFechaHastaAfter(usuarioId, now)
+
+    fun obtenerIdsLibrosReservados(desde: LocalDateTime, hasta: LocalDateTime): Set<Int> =
+        findLibroIdsBySuperposicion(desde, hasta).toSet()
 }

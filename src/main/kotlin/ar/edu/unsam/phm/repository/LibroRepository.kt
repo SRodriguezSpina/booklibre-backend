@@ -1,117 +1,154 @@
 package ar.edu.unsam.phm.repository
 
+import ar.edu.unsam.phm.domain.Calificacion
 import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.LibroFiltros
+import ar.edu.unsam.phm.domain.mongo.CalificacionDocument
 import ar.edu.unsam.phm.dtos.PagedResponse
+import ar.edu.unsam.phm.exceptions.NotFoundException
+import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
 import ar.edu.unsam.phm.readmodels.CalificacionDetalleView
-import ar.edu.unsam.phm.readmodels.LibroPaginadoView
-import org.springframework.data.jpa.repository.Modifying
-import org.springframework.data.jpa.repository.Query
-import org.springframework.data.mongodb.repository.MongoRepository
-import org.springframework.data.repository.query.Param
-import java.util.Optional
+import ar.edu.unsam.phm.repository.mongo.CalificacionMongoRepository
+import ar.edu.unsam.phm.repository.mongo.LibroMongoRepository
+import org.springframework.stereotype.Component
 import kotlin.math.ceil
 
-interface LibroRepository : MongoRepository<Libro, String> {
-    fun findByDuenioId(duenioId: Int): List<Libro>
-    fun findAllByActivoTrue(): List<Libro>
-    fun findByIdAndActivoTrue(id: Int): Optional<Libro>
+@Component
+class LibroRepository(
+    private val mongo: LibroMongoRepository,
+    private val calificacionesMongo: CalificacionMongoRepository,
+    private val usuarioJpa: UsuarioJpaRepository,
+    private val historialJpa: HistorialPuntajeJpaRepository,
+) {
 
-    fun findByDuenioIdAndActivoTrue(usuarioId: Int): List<Libro>
-    @Query(
-        value = """
-            SELECT
-                libro_id AS "libroId",
-                total
-            FROM fn_buscar_libros(
-                :query,
-                :generos,
-                :paginasMin,
-                :paginasMax,
-                :isbn,
-                :prestadoPor,
-                :excluirId,
-                :excluirIds,
-                :sortBy,
-                :limit,
-                :offset
-            )
-        """,
-        nativeQuery = true,
-    )
+    private data class CalificacionDetalleMongoView(
+        override val usuarioId: Int,
+        override val nombreUsuario: String,
+        override val valor: Int,
+        override val comentario: String,
+        override val totalCalificaciones: Long,
+    ) : CalificacionDetalleView
 
-    fun buscarIdsPaginados(
-        @Param("query")       query: String,
-        @Param("generos")     generos: Array<String>?,
-        @Param("paginasMin")  paginasMin: Int?,
-        @Param("paginasMax")  paginasMax: Int?,
-        @Param("isbn")        isbn: String?,
-        @Param("prestadoPor") prestadoPor: String?,
-        @Param("excluirId")   excluirId: Int?,
-        @Param("excluirIds")  excluirIds: Array<Int>?,
-        @Param("sortBy")      sortBy: String,
-        @Param("limit")       limit: Int,
-        @Param("offset")      offset: Int,
-    ): List<LibroPaginadoView>
-    @Query(
-        value = """
-            SELECT
-                usuario_id           AS "usuarioId",
-                nombre_usuario       AS "nombreUsuario",
-                valor,
-                comentario,
-                total_calificaciones AS "totalCalificaciones"
-            FROM fn_ultimas_calificaciones(:libroId, :limite)
-        """,
-        nativeQuery = true,
-    )
-    fun findCalificacionesDetalle(
-        @Param("libroId") libroId: Int,
-        @Param("limite")  limite: Int?,
-    ): List<CalificacionDetalleView>
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("""
-        UPDATE Libro l 
-        SET l.activo = :activo 
-        WHERE l.duenio.id = :usuarioId
-    """)
+    fun getById(id: Int): Libro =
+        mongo.findByIdAndActivoTrue(id)
+            ?: throw NotFoundException("Libro $id no encontrado")
 
-    fun actualizarActivoPorDuenio(
-        @Param("usuarioId") usuarioId: Int,
-        @Param("activo") activo: Boolean,
-    ): Int
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query(
-        value = """
-            UPDATE libros SET disponibilidad = 'DISPONIBLE'
-            WHERE disponibilidad = 'RESERVADO'
-              AND id NOT IN (
-                  SELECT DISTINCT libro_id FROM reservas WHERE fecha_hasta >= :now
-              )
-        """,
-        nativeQuery = true,
-    )
+    fun getByIdIncluyendoInactivos(id: Int): Libro =
+        mongo.findByBusinessId(id)
+            ?: throw NotFoundException("Libro $id no encontrado")
 
-    fun liberarReservasVencidas(@Param("now") now: java.time.LocalDateTime): Int
+    fun getLibros(): List<Libro> = mongo.findAll().filter { it.activo }
+
+    fun getTodosLosLibrosDeUsuario(usuarioId: Int): List<Libro> =
+        mongo.findByDuenioId(usuarioId)
+
+    fun getLibrosDeUsuario(usuarioId: Int): List<Libro> =
+        mongo.findByDuenioIdAndActivoTrue(usuarioId)
+
+    fun save(libro: Libro): Libro {
+        if (libro.id == 0) {
+            libro.id = (mongo.findAll().maxOfOrNull { it.id } ?: 0) + 1
+        }
+        return mongo.save(libro)
+    }
+
+    fun delete(libro: Libro) {
+        val persisted = mongo.findByBusinessId(libro.id)
+            ?: throw NotFoundException("Libro ${libro.id} no encontrado")
+        mongo.delete(persisted)
+    }
 
     fun buscarPaginado(filtros: LibroFiltros, page: Int, size: Int): PagedResponse<Libro> {
-        val resultados = buscarIdsPaginados(
-            query       = filtros.query,
-            generos     = filtros.generos.takeIf { it.isNotEmpty() }?.toTypedArray(),
-            paginasMin  = filtros.paginasMin,
-            paginasMax  = filtros.paginasMax,
-            isbn        = filtros.isbn,
-            prestadoPor = filtros.prestadoPor,
-            excluirId   = filtros.excluirDuenioId,
-            excluirIds  = filtros.libroIdsReservados?.toTypedArray(),
-            sortBy      = filtros.sortBy,
-            limit       = size,
-            offset      = page * size,
-        )
-        val total       = resultados.firstOrNull()?.total ?: 0L
-        val totalPages  = ceil(total.toDouble() / size).toInt()
-        val ids         = resultados.map { it.libroId }
-        val librosPorId = findAllById(ids).associateBy { it.libroId }
-        return PagedResponse(ids.mapNotNull { librosPorId[it] }, page, totalPages)
+        val query = filtros.query.trim().lowercase()
+
+        var items = mongo.findAll().asSequence()
+            .filter { it.activo }
+            .filter { libro ->
+                query.isBlank() ||
+                    libro.titulo.lowercase().contains(query) ||
+                    libro.autor.lowercase().contains(query) ||
+                    libro.descripcion.lowercase().contains(query)
+            }
+
+        if (filtros.generos.isNotEmpty()) {
+            val generos = filtros.generos.map { it.trim().uppercase() }.toSet()
+            items = items.filter { it.genero.name in generos }
+        }
+        filtros.paginasMin?.let { min -> items = items.filter { it.cantidadPaginas >= min } }
+        filtros.paginasMax?.let { max -> items = items.filter { it.cantidadPaginas <= max } }
+        filtros.isbn?.takeIf { it.isNotBlank() }?.let { isbn ->
+            items = items.filter { it.isbn == isbn }
+        }
+        filtros.prestadoPor?.takeIf { it.isNotBlank() }?.let { ownerName ->
+            val needle = ownerName.lowercase()
+            items = items.filter { it.duenio.nombre.lowercase().contains(needle) }
+        }
+        filtros.excluirDuenioId?.let { ownerId ->
+            items = items.filter { it.duenio.id != ownerId }
+        }
+        filtros.libroIdsReservados?.takeIf { it.isNotEmpty() }?.let { ids ->
+            items = items.filterNot { it.id in ids }
+        }
+
+        val sorted = when (filtros.sortBy.lowercase()) {
+            "autor" -> items.sortedBy { it.autor.lowercase() }
+            "calificacion" -> items.sortedByDescending { it.calificacion }
+            else -> items.sortedBy { it.titulo.lowercase() }
+        }.toList()
+
+        val total = sorted.size
+        val from = (page * size).coerceAtMost(total)
+        val to = (from + size).coerceAtMost(total)
+        val totalPages = if (total == 0) 0 else ceil(total.toDouble() / size).toInt()
+        return PagedResponse(sorted.subList(from, to), page, totalPages)
     }
+
+    fun getHistorialPuntajes(libroId: Int): List<HistorialPuntaje> =
+        historialJpa.getHistorialPuntajes(libroId)
+
+    fun getCalificacionesDetalle(libroId: Int, limite: Int? = 2): List<CalificacionDetalleView> {
+        val total = calificacionesMongo.countByLibroId(libroId)
+        val todas = calificacionesMongo.findByLibroIdOrderByFechaDesc(libroId)
+        val seleccion = if (limite == null) todas else todas.take(limite)
+        return seleccion.map { calificacion ->
+            CalificacionDetalleMongoView(
+                usuarioId = calificacion.usuarioId,
+                nombreUsuario = usuarioJpa.findById(calificacion.usuarioId).orElse(null)?.nombre
+                    ?: "Usuario ${calificacion.usuarioId}",
+                valor = calificacion.valor,
+                comentario = calificacion.comentario,
+                totalCalificaciones = total,
+            )
+        }
+    }
+
+    fun usuarioYaCalifico(libroId: Int, usuarioId: Int): Boolean =
+        calificacionesMongo.existsByLibroIdAndUsuarioId(libroId, usuarioId)
+
+    fun agregarCalificacion(libro: Libro, calificacion: Calificacion): Libro {
+        calificacionesMongo.save(
+            CalificacionDocument(
+                libroId = libro.id,
+                usuarioId = calificacion.usuarioId,
+                valor = calificacion.valor,
+                comentario = calificacion.comentario,
+                fecha = calificacion.fecha,
+            ),
+        )
+
+        val todas = calificacionesMongo.findByLibroIdOrderByFechaDesc(libro.id)
+        val promedio = if (todas.isEmpty()) 0.0 else todas.map { it.valor }.average()
+
+        libro.agregarCalificacion(calificacion)
+        libro.actualizarPromedioCalificacion(promedio)
+        return save(libro)
+    }
+
+    fun actualizarActivoPorDuenio(usuarioId: Int, activo: Boolean) {
+        val libros = mongo.findByDuenioId(usuarioId)
+        libros.forEach { it.activo = activo }
+        if (libros.isNotEmpty()) mongo.saveAll(libros)
+    }
+
+    fun liberarReservasVencidas(now: java.time.LocalDateTime): Int = 0
 }

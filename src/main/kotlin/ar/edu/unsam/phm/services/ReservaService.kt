@@ -11,6 +11,7 @@ import ar.edu.unsam.phm.repository.*
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
@@ -28,6 +29,16 @@ class ReservaService(
             TipoReserva.HECHAS -> reservaRepository.findByUsuarioId(usuarioId)
             TipoReserva.RECIBIDAS -> reservaRepository.findByLibroDuenioId(usuarioId)
         }
+    }
+
+    fun obtenerIdsLibrosReservados(fechaDesdeStr: String?, fechaHastaStr: String?): Set<Int>? {
+        if (fechaDesdeStr == null || fechaHastaStr == null) return null
+        val desde = LocalDate.parse(fechaDesdeStr).atStartOfDay()
+        val hasta = LocalDate.parse(fechaHastaStr).atTime(23, 59, 59)
+        if (!desde.isBefore(hasta)) {
+            throw BusinessException("La fecha de inicio debe ser anterior a la fecha final")
+        }
+        return reservaRepository.obtenerIdsLibrosReservados(desde, hasta)
     }
 
     fun obtenerReservasAnuales(usuarioId: Int): List<ReservaAnualUsuarioDTO> {

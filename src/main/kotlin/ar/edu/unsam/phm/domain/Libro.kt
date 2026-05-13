@@ -103,10 +103,10 @@ abstract class Libro() : BaseEntity() {
     var estado: EstadoLibro = EstadoLibro.BUENO
     var imagenUrl: String? = null
     var disponibilidad: Disponibilidad = Disponibilidad.DISPONIBLE
+    // Mongo snapshot with only the latest 2 ratings.
     var calificaciones: MutableList<Calificacion> = mutableListOf()
     var calificacion: Double = 0.0
     var activo : Boolean = true
-    val ultimasCalificaciones: List<CalificacionResumen> = emptyList()
 
     constructor(data: LibroData) : this() {
         duenio          = data.duenio
@@ -138,22 +138,15 @@ abstract class Libro() : BaseEntity() {
 
     fun agregarCalificacion(nueva: Calificacion) {
         if (nueva.valor !in 1..5) throw BusinessException("La calificación debe estar entre 1 y 5")
-        if (calificaciones.any { it.usuarioId == nueva.usuarioId })
-            throw BusinessException("Usuario ${nueva.usuarioId} ya calificó este libro")
-        calificaciones.add(
-            Calificacion(
-                libroId = this.id, usuarioId = nueva.usuarioId, valor = nueva.valor, comentario = nueva.comentario),
-        )
-        actualizarPromedioCalificacion()
+        calificaciones.add(nueva)
+        calificaciones = calificaciones
+            .sortedByDescending { it.fecha }
+            .take(2)
+            .toMutableList()
     }
 
-    private fun actualizarPromedioCalificacion() {
-        if (calificaciones.isEmpty()) {
-            calificacion = 0.0
-        } else {
-            val promedio = calificaciones.map { it.valor }.average()
-            calificacion = (promedio * 10.0).roundToInt() / 10.0
-        }
+    fun actualizarPromedioCalificacion(promedioGeneral: Double) {
+        calificacion = (promedioGeneral * 10.0).roundToInt() / 10.0
     }
 
     fun estaDisponible() = disponibilidad == Disponibilidad.DISPONIBLE
