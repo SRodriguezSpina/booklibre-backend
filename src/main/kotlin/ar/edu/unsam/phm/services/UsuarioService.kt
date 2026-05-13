@@ -4,7 +4,6 @@ import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.TipoUsuario
 import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
-import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaRepository
 import ar.edu.unsam.phm.repository.UsuarioRepository
 import ar.edu.unsam.phm.security.JwtTokenUtils

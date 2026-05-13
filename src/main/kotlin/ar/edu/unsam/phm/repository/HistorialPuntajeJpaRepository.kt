@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface HistorialPuntajeJpaRepository : JpaRepository<HistorialPuntaje, Int> {
     // Para ver el historial de un libro específico ordenado por fecha
-    fun findByLibroIdOrderByFechaActualizacionDesc(libroId: Int): List<HistorialPuntaje>
+    fun getHistorialPuntajes(libroId: Int): List<HistorialPuntaje>
 }

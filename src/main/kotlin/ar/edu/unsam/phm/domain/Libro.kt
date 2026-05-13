@@ -2,11 +2,18 @@ package ar.edu.unsam.phm.domain
 
 import ar.edu.unsam.phm.exceptions.BusinessException
 import jakarta.persistence.*
+import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
 import kotlin.math.roundToInt
+
+data class CalificacionResumen(
+    val usuarioId: Int,
+    val valor: Int,
+    val comentario: String
+)
 
 data class LibroFiltros(
     val query: String = "",
@@ -59,12 +66,8 @@ data class LibroData(
     val disponibilidad: Disponibilidad,
 )
 
-@Entity
-@Table(name = "libros")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "tipo", discriminatorType = DiscriminatorType.STRING)
+@Document(collection = "libros")
 abstract class Libro() : BaseEntity() {
-
     companion object {
         private val ISBN_REGEX = Regex("^\\d{13}$")
 
@@ -86,62 +89,24 @@ abstract class Libro() : BaseEntity() {
         }
     }
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "duenio_id", nullable = false)
     lateinit var duenio: Usuario
-
-    @Column(nullable = false)
     var titulo: String = ""
-
-    @Column(nullable = false)
     var autor: String = ""
-
-    @Column(nullable = false, length = 2000)
     var descripcion: String = ""
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     var genero: Genero = Genero.DRAMA
-
-    @Column(name = "cantidad_paginas", nullable = false)
     var cantidadPaginas: Int = 1
-
-    @Column(nullable = false)
     var isbn: String = ""
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     var idioma: Idioma = Idioma.ESPANOL
-
-    @Column(nullable = false)
     var editorial: String = ""
-
-    @Column(nullable = false)
     var fechaPublicacion: LocalDate = LocalDate.now()
-
-    @Column(nullable = false)
     var fechaAgregado: LocalDate = LocalDate.now()
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     var estado: EstadoLibro = EstadoLibro.BUENO
-
-    @Column(nullable = true, length = 2000)
     var imagenUrl: String? = null
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     var disponibilidad: Disponibilidad = Disponibilidad.DISPONIBLE
-
-    @OneToMany(mappedBy = "libro", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-    @OrderBy("id ASC")
     var calificaciones: MutableList<Calificacion> = mutableListOf()
-
-    @Column(nullable = false)
     var calificacion: Double = 0.0
-
-    @Column(nullable = false)
     var activo : Boolean = true
+    val ultimasCalificaciones: List<CalificacionResumen> = emptyList()
 
     constructor(data: LibroData) : this() {
         duenio          = data.duenio
@@ -176,7 +141,8 @@ abstract class Libro() : BaseEntity() {
         if (calificaciones.any { it.usuarioId == nueva.usuarioId })
             throw BusinessException("Usuario ${nueva.usuarioId} ya calificó este libro")
         calificaciones.add(
-            Calificacion(libro = this, usuarioId = nueva.usuarioId, valor = nueva.valor, comentario = nueva.comentario),
+            Calificacion(
+                libroId = this.id, usuarioId = nueva.usuarioId, valor = nueva.valor, comentario = nueva.comentario),
         )
         actualizarPromedioCalificacion()
     }
@@ -226,8 +192,6 @@ abstract class Libro() : BaseEntity() {
     }
 }
 
-@Entity
-@DiscriminatorValue("Comun")
 class LibroComun : Libro {
     constructor() : super()
     constructor(data: LibroData) : super(data)
@@ -239,8 +203,6 @@ class LibroComun : Libro {
     }
 }
 
-@Entity
-@DiscriminatorValue("ConDedicatoria")
 class LibroConDedicatoria : Libro {
     constructor() : super()
     constructor(data: LibroData) : super(data)
@@ -250,8 +212,6 @@ class LibroConDedicatoria : Libro {
     }
 }
 
-@Entity
-@DiscriminatorValue("Coleccionable")
 class LibroColeccionable : Libro {
     constructor() : super()
     constructor(data: LibroData) : super(data)

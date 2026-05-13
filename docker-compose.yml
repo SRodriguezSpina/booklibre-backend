@@ -1,6 +1,5 @@
 services:
-
-  db:
+  postgres:
     image: postgres:16-alpine
     container_name: booklibre-db
     restart: unless-stopped
@@ -20,6 +19,23 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+
+  mongo:
+    image: mongo:latest
+    container_name: booklibre-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017" # Usamos el estándar para evitar confusiones
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: booklibre
+      MONGO_INITDB_ROOT_PASSWORD: booklibre
+      MONGO_INITDB_DATABASE: booklibre
+    volumes:
+      - mongodata:/data/db
+      # Si tenés un script inicial de libros, descomenta la siguiente línea:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.kotlin
+    networks:
+      - booklibre-net
 
   backend:
     build:
