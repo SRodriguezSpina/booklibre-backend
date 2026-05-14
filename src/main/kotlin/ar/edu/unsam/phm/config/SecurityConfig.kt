@@ -51,8 +51,10 @@ class SecurityConfig(
                 auth
                     .requestMatchers(HttpMethod.POST, "/api/login", "/api/register", "/api/auth/token").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/home").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/libros/mas-clickeado").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/*").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/*/calificaciones").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/usuarios/*/clicks").hasRole("PUBLICADOR")
                     .requestMatchers(HttpMethod.GET, "/api/reservas").authenticated()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/error").permitAll()
