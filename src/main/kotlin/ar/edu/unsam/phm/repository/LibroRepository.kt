@@ -3,7 +3,6 @@ package ar.edu.unsam.phm.repository
 import ar.edu.unsam.phm.domain.Calificacion
 import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.LibroFiltros
-import ar.edu.unsam.phm.domain.mongo.CalificacionDocument
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
@@ -127,7 +126,7 @@ class LibroRepository(
 
     fun agregarCalificacion(libro: Libro, calificacion: Calificacion): Libro {
         calificacionesMongo.save(
-            CalificacionDocument(
+            Calificacion(
                 libroId = libro.id,
                 usuarioId = calificacion.usuarioId,
                 valor = calificacion.valor,
