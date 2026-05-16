@@ -4,9 +4,10 @@ import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.AuthResponseUsuario
 import ar.edu.unsam.phm.dtos.LoginRequest
 import ar.edu.unsam.phm.dtos.RegisterRequest
+import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.mappers.toResponse
-import ar.edu.unsam.phm.repository.UsuarioRepository
+import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.security.UserDetailsServiceImpl
 import org.slf4j.LoggerFactory
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class AuthService(
-    private val usuarioRepository: UsuarioRepository,
+    private val usuarioJpa: UsuarioJpaRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtTokenUtils: JwtTokenUtils,
 ) {
@@ -23,7 +24,7 @@ class AuthService(
 
     fun login(request: LoginRequest): AuthResponseUsuario {
         val email = Usuario.normalizarYValidarEmail(request.email)
-        val usuario = usuarioRepository.findByEmail(email)
+        val usuario = usuarioJpa.findByEmail(email)
             ?: throw UnauthorizedException("Usuario o contraseña incorrectos")
         if (!passwordEncoder.matches(request.password, usuario.password)) {
             if (!usuario.password.startsWith("\$2")) {
@@ -38,16 +39,21 @@ class AuthService(
 
     fun register(request: RegisterRequest): AuthResponseUsuario {
         val email = Usuario.normalizarYValidarEmail(request.email)
-        usuarioRepository.validarEmailDisponible(email, -1)
+        validarEmailDisponible(email)
         val nuevo = Usuario(
             email = email,
             password = passwordEncoder.encode(request.password),
             nombre = request.nombre,
             desc = "",
         )
-        val guardado = usuarioRepository.save(nuevo)
+        val guardado = usuarioJpa.save(nuevo)
         val roles = UserDetailsServiceImpl.rolesParaTipo(guardado.tipoUsuario).map { it.authority }
         val token = jwtTokenUtils.generateToken(email, roles)
         return AuthResponseUsuario(true, "Registro exitoso", guardado.toResponse(), token)
+    }
+
+    private fun validarEmailDisponible(email: String) {
+        if (usuarioJpa.findByEmail(email) != null)
+            throw ConflictException("El email ya está en uso")
     }
 }

@@ -56,7 +56,7 @@ class ReservaServiceSpec : DescribeSpec({
                 descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
                 cantidadPaginas = 300, isbn = "9780000000001", idioma = Idioma.ESPANOL,
                 editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
-                estado = EstadoLibro.EXCELENTE, imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
+                estado = EstadoLibro.EXCELENTE, imagenUrl = "",
             )
         ).apply { id = 10 }
 
@@ -151,7 +151,7 @@ class ReservaServiceSpec : DescribeSpec({
                     descripcion = "Sci-fi", genero = Genero.CIENCIA_FICCION,
                     cantidadPaginas = 500, isbn = "9780000000002", idioma = Idioma.ESPANOL,
                     editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
-                    estado = EstadoLibro.MUY_BUENO, imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
+                    estado = EstadoLibro.MUY_BUENO, imagenUrl = "",
                 )
             ).apply { id = 11 }
 

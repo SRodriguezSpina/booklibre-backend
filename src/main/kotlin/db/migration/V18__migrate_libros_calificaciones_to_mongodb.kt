@@ -51,17 +51,8 @@ class V18__migrate_libros_calificaciones_to_mongodb : BaseJavaMigration() {
                     )
                 }
 
-                val ultimasDos = calificaciones
-                    .sortedByDescending { it.id }
-                    .take(2)
-                    .map {
-                        Document()
-                            .append("usuarioId", it.usuarioId)
-                            .append("valor", it.valor)
-                            .append("comentario", it.comentario)
-                            .append("fecha", toDate(fechaDeterministica(it.id)))
-                    }
-
+                // Documento Mongo del libro: sin campo calificaciones (consultar colección
+                // calificaciones) ni disponibilidad (derivada de reservas activas).
                 val libroDoc = Document()
                     .append("_class", classNameParaTipo(libro.tipo))
                     .append("id", libro.id)
@@ -78,8 +69,6 @@ class V18__migrate_libros_calificaciones_to_mongodb : BaseJavaMigration() {
                     .append("fechaAgregado", toDate(libro.fechaAgregado.atStartOfDay()))
                     .append("estado", libro.estado)
                     .append("imagenUrl", libro.imagenUrl)
-                    .append("disponibilidad", libro.disponibilidad)
-                    .append("calificaciones", ultimasDos)
                     .append("calificacion", libro.calificacion)
                     .append("activo", libro.activo)
 
@@ -132,8 +121,9 @@ class V18__migrate_libros_calificaciones_to_mongodb : BaseJavaMigration() {
     }
 
     private fun loadLibros(connection: Connection): List<LibroRow> {
+        // disponibilidad ya no se lee — la columna se elimina en V19.
         val sql = """
-            SELECT id, tipo, titulo, autor, descripcion, genero, estado, disponibilidad,
+            SELECT id, tipo, titulo, autor, descripcion, genero, estado,
                    cantidad_paginas, isbn, idioma, editorial, fecha_publicacion, fecha_agregado,
                    imagen_url, calificacion, duenio_id, activo
             FROM libros
@@ -151,7 +141,6 @@ class V18__migrate_libros_calificaciones_to_mongodb : BaseJavaMigration() {
                         descripcion = rs.getString("descripcion"),
                         genero = rs.getString("genero"),
                         estado = rs.getString("estado"),
-                        disponibilidad = rs.getString("disponibilidad"),
                         cantidadPaginas = rs.getInt("cantidad_paginas"),
                         isbn = rs.getString("isbn"),
                         idioma = rs.getString("idioma"),
@@ -219,7 +208,7 @@ class V18__migrate_libros_calificaciones_to_mongodb : BaseJavaMigration() {
         val descripcion: String,
         val genero: String,
         val estado: String,
-        val disponibilidad: String,
+        // disponibilidad eliminado — ya no se persiste en Mongo
         val cantidadPaginas: Int,
         val isbn: String,
         val idioma: String,

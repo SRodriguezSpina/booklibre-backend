@@ -109,7 +109,7 @@ class LibroControllerEditarCrearTest(
             estado = EstadoLibro.fromString(desde.estado),
             imagenUrl = desde.imagenUrl,
             fechaAgregado = desde.fechaAgregado,
-            disponibilidad = Disponibilidad.DISPONIBLE,
+            
         )
         val libro = when (desde.tipo) {
             "Comun" -> LibroComun(data)

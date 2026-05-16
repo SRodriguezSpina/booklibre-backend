@@ -29,13 +29,19 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: booklibre
       MONGO_INITDB_ROOT_PASSWORD: booklibre
-      MONGO_INITDB_DATABASE: booklibre
+      MONGO_INITDB_DATABASE: booklibreMongo
     volumes:
       - mongodata:/data/db
       # Si tenés un script inicial de libros, descomenta la siguiente línea:
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.kotlin
+      # - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.kotlin
     networks:
       - booklibre-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   backend:
     build:
@@ -50,7 +56,9 @@ services:
     networks:
       - booklibre-net
     depends_on:
-      db:
+      postgres:
+        condition: service_healthy
+      mongo:
         condition: service_healthy
     healthcheck:
       test: [ "CMD-SHELL", "wget -qO- http://localhost:8080/api/libros/home?usuarioId=1 || exit 1" ]
@@ -84,3 +92,4 @@ networks:
 
 volumes:
   pgdata:
+  mongodata:

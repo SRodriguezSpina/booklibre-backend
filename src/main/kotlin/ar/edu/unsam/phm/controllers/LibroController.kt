@@ -5,19 +5,15 @@ import ar.edu.unsam.phm.dtos.*
 import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
-import ar.edu.unsam.phm.services.ClickLogService
 import ar.edu.unsam.phm.services.LibroService
 import org.springframework.http.HttpStatus
-import org.springframework.security.core.Authentication
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/api/libros")
-class LibroController(
-    val libroService: LibroService,
-    val clickLogService: ClickLogService,
-) {
+class LibroController(val libroService: LibroService) {
 
     @Transactional(readOnly = true)
     @GetMapping("/home")
@@ -56,7 +52,12 @@ class LibroController(
         val alquiladoPorId = if (!libro.estaDisponible()) libroService.obtenerPrestatarioActual(libroId) else null
         val totalReservas = libroService.contarReservasPorLibro(libroId)
         val calificaciones = libroService.getCalificacionesDetalle(libroId)
-        return libro.toDTO(alquiladoPorId = alquiladoPorId, calificaciones = calificaciones, totalReservas = totalReservas)
+        return libro.toDTO(
+            alquiladoPorId = alquiladoPorId,
+            estaDisponible = estaDisponible,
+            calificaciones = calificaciones,
+            totalReservas  = totalReservas,
+        )
     }
 
     // Integrante 1 — Query: libro más clickeado
@@ -93,12 +94,12 @@ class LibroController(
     @PutMapping("/{libroId}/baja")
     fun darDeBaja(
         @PathVariable libroId: Int,
-        @RequestParam usuarioId: Int
+        @RequestParam usuarioId: Int,
     ) = libroService.darDeBaja(libroId, usuarioId)
 
     @PutMapping("/{libroId}/reactivar")
     fun reactivar(
         @PathVariable libroId: Int,
-        @RequestParam usuarioId: Int
+        @RequestParam usuarioId: Int,
     ) = libroService.reactivar(libroId, usuarioId)
 }

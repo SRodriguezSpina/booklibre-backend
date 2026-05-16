@@ -1,8 +1,10 @@
 package ar.edu.unsam.phm.repository
 
 import ar.edu.unsam.phm.domain.Calificacion
+import ar.edu.unsam.phm.domain.CalificacionDocument
 import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.LibroFiltros
+import ar.edu.unsam.phm.domain.mongo.CalificacionDocument
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
@@ -109,13 +111,13 @@ class LibroRepository(
         val total = calificacionesMongo.countByLibroId(libroId)
         val todas = calificacionesMongo.findByLibroIdOrderByFechaDesc(libroId)
         val seleccion = if (limite == null) todas else todas.take(limite)
-        return seleccion.map { calificacion ->
+        return seleccion.map { cal ->
             CalificacionDetalleMongoView(
-                usuarioId = calificacion.usuarioId,
-                nombreUsuario = usuarioJpa.findById(calificacion.usuarioId).orElse(null)?.nombre
-                    ?: "Usuario ${calificacion.usuarioId}",
-                valor = calificacion.valor,
-                comentario = calificacion.comentario,
+                usuarioId = cal.usuarioId,
+                nombreUsuario = usuarioJpa.findById(cal.usuarioId).orElse(null)?.nombre
+                    ?: "Usuario ${cal.usuarioId}",
+                valor = cal.valor,
+                comentario = cal.comentario,
                 totalCalificaciones = total,
             )
         }
@@ -126,7 +128,7 @@ class LibroRepository(
 
     fun agregarCalificacion(libro: Libro, calificacion: Calificacion): Libro {
         calificacionesMongo.save(
-            Calificacion(
+            CalificacionDocument(
                 libroId = libro.id,
                 usuarioId = calificacion.usuarioId,
                 valor = calificacion.valor,
@@ -140,6 +142,7 @@ class LibroRepository(
 
         libro.agregarCalificacion(calificacion)
         libro.actualizarPromedioCalificacion(promedio)
+
         return save(libro)
     }
 
