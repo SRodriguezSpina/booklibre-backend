@@ -6,14 +6,19 @@ import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
 import ar.edu.unsam.phm.services.LibroService
+import ar.edu.unsam.phm.services.ClickLogService
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.Authentication
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/api/libros")
-class LibroController(val libroService: LibroService) {
+class LibroController(
+    val libroService: LibroService,
+    val clickLogService: ClickLogService,
+) {
 
     @Transactional(readOnly = true)
     @GetMapping("/home")
@@ -49,7 +54,8 @@ class LibroController(val libroService: LibroService) {
             clickLogService.registrarClick(libroId, libro.titulo, nombreUsuario)
         }
 
-        val alquiladoPorId = if (!libro.estaDisponible()) libroService.obtenerPrestatarioActual(libroId) else null
+        val alquiladoPorId = libroService.obtenerPrestatarioActual(libroId)
+        val estaDisponible = alquiladoPorId == null
         val totalReservas = libroService.contarReservasPorLibro(libroId)
         val calificaciones = libroService.getCalificacionesDetalle(libroId)
         return libro.toDTO(
