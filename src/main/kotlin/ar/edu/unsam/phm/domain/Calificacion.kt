@@ -15,14 +15,25 @@ import java.time.LocalDateTime
     CompoundIndex(name = "ix_calificacion_libro_fecha", def = "{'libroId': 1, 'fecha': -1}"),
 )
 data class Calificacion(
+    val usuarioId: Int,
+    val valor: Int,
+    val comentario: String,
+    val fecha: LocalDateTime,
+)
+
+@Document("calificaciones")
+@CompoundIndexes(
+    CompoundIndex(name = "uk_calificacion_libro_usuario", def = "{'libroId': 1, 'usuarioId': 1}", unique = true),
+    CompoundIndex(name = "ix_calificacion_libro_fecha", def = "{'libroId': 1, 'fecha': -1}"),
+)
+data class CalificacionDocument(
     @MongoId(FieldType.OBJECT_ID)
     var id: ObjectId? = null,
 
     @Indexed
-    var libroId: Int? = null,
-
-    var usuarioId: Int,
-    var valor: Int,
-    var comentario: String,
-    var fecha: LocalDateTime = LocalDateTime.now(),
+    val libroId: Int,
+    val usuarioId: Int,
+    val valor: Int,
+    val comentario: String,
+    val fecha: LocalDateTime = LocalDateTime.now(),
 )

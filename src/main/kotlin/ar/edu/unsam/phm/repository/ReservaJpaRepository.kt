@@ -21,12 +21,11 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
     fun findTopByLibroIdOrderByIdDesc(libroId: Int): Optional<Reserva>
     @Query("""
         SELECT r FROM Reserva r
-        WHERE r.libro.duenio.id = :usuarioId
+        WHERE r.usuario = :usuarioId
     """)
     fun findByLibroDuenioId(@Param("usuarioId") usuarioId: Int): List<Reserva>
-
     @Query("""
-        SELECT r.libro.id FROM Reserva r
+        SELECT r.libro FROM Reserva r
         WHERE r.fechaDesde <= :hasta
           AND r.fechaHasta >= :desde
     """)
@@ -93,4 +92,17 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
 
     fun obtenerIdsLibrosReservados(desde: LocalDateTime, hasta: LocalDateTime): Set<Int> =
         findLibroIdsBySuperposicion(desde, hasta).toSet()
+
+    @Query("""
+        SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END
+        FROM Reserva r
+        WHERE r.libro.id = :libroId
+          AND r.fechaDesde <= :hasta
+          AND r.fechaHasta >= :desde
+    """)
+    fun estaReservadoEnPeriodo(
+        @Param("libroId") libroId: Int,
+        @Param("desde") desde: LocalDateTime,
+        @Param("hasta") hasta: LocalDateTime,
+    ): Boolean
 }

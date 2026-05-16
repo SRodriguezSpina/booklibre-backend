@@ -172,7 +172,7 @@ class LibroServiceInMemory(
             estado = EstadoLibro.valueOf(dto.estado),
             imagenUrl = dto.imagenUrl,
             fechaAgregado = LocalDate.now(),
-            disponibilidad = Disponibilidad.DISPONIBLE,
+            
         )
 
         val libro = when (dto.tipo) {

@@ -1,19 +1,12 @@
 package ar.edu.unsam.phm.domain
 
 import ar.edu.unsam.phm.exceptions.BusinessException
-import jakarta.persistence.*
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
 import kotlin.math.roundToInt
-
-data class CalificacionResumen(
-    val usuarioId: Int,
-    val valor: Int,
-    val comentario: String
-)
 
 data class LibroFiltros(
     val query: String = "",
@@ -63,7 +56,6 @@ data class LibroData(
     val estado: EstadoLibro,
     val imagenUrl: String? = null,
     val fechaAgregado: LocalDate = LocalDate.now(),
-    val disponibilidad: Disponibilidad,
 )
 
 @Document(collection = "libros")
@@ -102,11 +94,9 @@ abstract class Libro() : BaseEntity() {
     var fechaAgregado: LocalDate = LocalDate.now()
     var estado: EstadoLibro = EstadoLibro.BUENO
     var imagenUrl: String? = null
-    var disponibilidad: Disponibilidad = Disponibilidad.DISPONIBLE
-    // Mongo snapshot with only the latest 2 ratings.
-    var calificaciones: MutableList<Calificacion> = mutableListOf()
+    // Promedio de calificaciones (calculado por el service, guardado para ordenamiento)
     var calificacion: Double = 0.0
-    var activo : Boolean = true
+    var activo: Boolean = true
 
     constructor(data: LibroData) : this() {
         duenio          = data.duenio
@@ -122,7 +112,6 @@ abstract class Libro() : BaseEntity() {
         fechaAgregado   = data.fechaAgregado
         estado          = data.estado
         imagenUrl       = data.imagenUrl
-        disponibilidad  = data.disponibilidad
     }
 
     fun calcularBiblioKarmaTotal(
@@ -136,27 +125,11 @@ abstract class Libro() : BaseEntity() {
         return (5 * diasReserva) + plusBiblioKarma(usuario, cantidadReservasDelLibro)
     }
 
-    fun agregarCalificacion(nueva: Calificacion) {
-        if (nueva.valor !in 1..5) throw BusinessException("La calificación debe estar entre 1 y 5")
-        calificaciones.add(nueva)
-        calificaciones = calificaciones
-            .sortedByDescending { it.fecha }
-            .take(2)
-            .toMutableList()
-    }
-
     fun actualizarPromedioCalificacion(promedioGeneral: Double) {
         calificacion = (promedioGeneral * 10.0).roundToInt() / 10.0
     }
 
-    fun estaDisponible() = disponibilidad == Disponibilidad.DISPONIBLE
-
-    fun actualizoDisponibilidad(estaDisponible: Boolean) {
-        disponibilidad = if (estaDisponible) Disponibilidad.DISPONIBLE else Disponibilidad.RESERVADO
-    }
-
     abstract fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int = 0): Int
-
 
     fun actualizarDatos(
         nuevoTitulo: String,

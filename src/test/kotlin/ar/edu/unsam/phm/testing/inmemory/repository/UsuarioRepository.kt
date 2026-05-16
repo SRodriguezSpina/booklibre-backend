@@ -8,11 +8,4 @@ class UsuarioRepository : CommonRepository<Usuario>() {
     fun findByEmail(email: String): Usuario? = lista.find { it.email.equals(email, ignoreCase = true) }
     fun findByCelular(celular: String): Usuario? = lista.find { it.celular == celular }
 
-    fun resolverNombresCalificaciones(calificaciones: List<Calificacion>): Map<Int, String> =
-        calificaciones
-            .map { it.usuarioId }
-            .toSet()
-            .associateWith { idCalificador ->
-                findById(idCalificador)?.nombre ?: "Usuario $idCalificador"
-            }
 }

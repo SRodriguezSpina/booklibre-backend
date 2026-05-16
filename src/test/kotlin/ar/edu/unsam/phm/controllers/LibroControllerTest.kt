@@ -74,7 +74,7 @@ class LibroControllerTest(
                 estado = EstadoLibro.EXCELENTE,
                 imagenUrl = "",
                 fechaAgregado = LocalDate.now(),
-                disponibilidad = Disponibilidad.DISPONIBLE,
+                
             ),
         ).apply { this.id = id }
     }

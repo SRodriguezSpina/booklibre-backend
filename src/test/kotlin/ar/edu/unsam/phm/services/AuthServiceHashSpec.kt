@@ -1,7 +1,7 @@
 package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.dtos.RegisterRequest
-import ar.edu.unsam.phm.repository.UsuarioRepository
+import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import ar.edu.unsam.phm.security.JwtTokenUtils
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -17,7 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 class AuthServiceHashSpec : DescribeSpec({
 
     val passwordEncoder = mockk<PasswordEncoder>()
-    val usuarioRepository = mockk<UsuarioRepository>()
+    val usuarioRepository = mockk<UsuarioJpaRepository>()
     val jwtTokenUtils = mockk<JwtTokenUtils>()
 
     val service = AuthService(usuarioRepository, passwordEncoder, jwtTokenUtils)
@@ -28,7 +28,7 @@ class AuthServiceHashSpec : DescribeSpec({
             val hashedPassword = "\$2a\$10\$hashedvalue.placeholder"
 
             every { passwordEncoder.encode(rawPassword) } returns hashedPassword
-            every { usuarioRepository.validarEmailDisponible(any(), any()) } just runs
+            every { usuarioRepository.findByEmail(any()) } returns null
             every { usuarioRepository.save(any()) } answers { firstArg() }
             every { jwtTokenUtils.generateToken(any(), any()) } returns "test_token"
 
@@ -43,7 +43,7 @@ class AuthServiceHashSpec : DescribeSpec({
             val usuarioCapturado = slot<ar.edu.unsam.phm.domain.Usuario>()
 
             every { passwordEncoder.encode(rawPassword) } returns hashedPassword
-            every { usuarioRepository.validarEmailDisponible(any(), any()) } just runs
+            every { usuarioRepository.findByEmail(any()) } returns null
             every { usuarioRepository.save(capture(usuarioCapturado)) } answers { firstArg() }
             every { jwtTokenUtils.generateToken(any(), any()) } returns "token"
 
@@ -55,7 +55,7 @@ class AuthServiceHashSpec : DescribeSpec({
 
         it("el token devuelto no es nulo") {
             every { passwordEncoder.encode(any()) } returns "\$2a\$10\$hash"
-            every { usuarioRepository.validarEmailDisponible(any(), any()) } just runs
+            every { usuarioRepository.findByEmail(any()) } returns null
             every { usuarioRepository.save(any()) } answers { firstArg() }
             every { jwtTokenUtils.generateToken(any(), any()) } returns "mi_token_jwt"
 
