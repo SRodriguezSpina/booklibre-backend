@@ -5,14 +5,19 @@ import ar.edu.unsam.phm.dtos.*
 import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
+import ar.edu.unsam.phm.services.ClickLogService
 import ar.edu.unsam.phm.services.LibroService
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.Authentication
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/libros")
-class LibroController(val libroService: LibroService) {
+class LibroController(
+    val libroService: LibroService,
+    val clickLogService: ClickLogService,
+) {
 
     @Transactional(readOnly = true)
     @GetMapping("/home")
@@ -37,13 +42,28 @@ class LibroController(val libroService: LibroService) {
 
     @Transactional(readOnly = true)
     @GetMapping("/{libroId}")
-    fun getLibro(@PathVariable libroId: Int): LibroDTO {
+    fun getLibro(
+        @PathVariable libroId: Int,
+        auth: Authentication?,   // nullable: el endpoint es permitAll(), puede venir sin token
+    ): LibroDTO {
         val libro = libroService.obtenerLibro(libroId)
+
+        // Registrar el click solo si hay un usuario autenticado
+        auth?.name?.let { nombreUsuario ->
+            clickLogService.registrarClick(libroId, libro.titulo, nombreUsuario)
+        }
+
         val alquiladoPorId = if (!libro.estaDisponible()) libroService.obtenerPrestatarioActual(libroId) else null
         val totalReservas = libroService.contarReservasPorLibro(libroId)
         val calificaciones = libroService.getCalificacionesDetalle(libroId)
         return libro.toDTO(alquiladoPorId = alquiladoPorId, calificaciones = calificaciones, totalReservas = totalReservas)
     }
+
+    // Integrante 1 — Query: libro más clickeado
+    @GetMapping("/mas-clickeado")
+    fun getLibroMasClickeado() =
+        clickLogService.getLibroMasClickeado()
+            ?: mapOf("mensaje" to "Todavía no hay clicks registrados")
 
     @GetMapping("/{libroId}/calificaciones")
     fun getCalificaciones(@PathVariable libroId: Int): List<CalificacionDTO> =
