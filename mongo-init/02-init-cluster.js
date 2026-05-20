@@ -18,8 +18,8 @@ sh.addShard("shard1rs/shard1a:27017,shard1b:27017,shard1c:27017");
 print("=== Agregando Shard 2 (shard2rs) ===");
 sh.addShard("shard2rs/shard2a:27017,shard2b:27017,shard2c:27017");
 
-print("Esperando registro de shards (5 s)...");
-sleep(5000);
+print("Esperando registro de shards (15 s)...");
+sleep(15000);
 
 // ── 2. Habilitar sharding en la BD ───────────────────────────────────────────
 print("=== Habilitando sharding en booklibreMongo ===");
@@ -49,6 +49,30 @@ sh.shardCollection("booklibreMongo.libros", { _id: "hashed" });
 //
 print("=== Sharding colección 'click_logs' (hashed por libroId) ===");
 sh.shardCollection("booklibreMongo.click_logs", { libroId: "hashed" });
+
+//
+// Colección: calificaciones
+//   Shard key: { libroId: "hashed" }
+//   Justificación: calificaciones es la colección de mayor crecimiento potencial
+//   del sistema (N usuarios × M libros = volumen ilimitado de documentos). La
+//   query más frecuente es "todas las calificaciones de un libro" (se ejecuta
+//   cada vez que un usuario abre el detalle de un libro), por lo que usar
+//   libroId como shard key garantiza Targeted Queries para ese patrón de acceso.
+//   El hash evita hotspots incluso cuando un libro popular recibe muchas
+//   calificaciones simultáneas.
+//
+print("=== Sharding colección 'calificaciones' (hashed por libroId) ===");
+sh.shardCollection("booklibreMongo.calificaciones", { libroId: "hashed" });
+
+// ── 4. Crear usuario de aplicación ───────────────────────────────────────────
+//   Usuario con permisos limitados (readWrite) que usa Spring Boot para
+//   conectarse al cluster. No tiene permisos de administración.
+print("=== Creando usuario de aplicación (booklibre_app) ===");
+db.getSiblingDB("booklibreMongo").createUser({
+  user: "booklibre_app",
+  pwd: "booklibre_app_secret",
+  roles: [{ role: "readWrite", db: "booklibreMongo" }]
+});
 
 // ── Estado final ─────────────────────────────────────────────────────────────
 print("=== Cluster inicializado. Estado final: ===");

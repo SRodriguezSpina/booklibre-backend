@@ -16,6 +16,6 @@ spring:
     locations: classpath:db/migration
   data:
     mongodb:
-      # La app se conecta al router mongos — el sharding es transparente
-      uri: mongodb://mongos:27017/booklibreMongo
+      # La app se conecta al router mongos con usuario autenticado
+      uri: mongodb://booklibre_app:booklibre_app_secret@mongos:27017/booklibreMongo?authSource=booklibreMongo
       database: booklibreMongo
