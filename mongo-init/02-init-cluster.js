@@ -64,6 +64,16 @@ sh.shardCollection("booklibreMongo.click_logs", { libroId: "hashed" });
 print("=== Sharding colección 'calificaciones' (hashed por libroId) ===");
 sh.shardCollection("booklibreMongo.calificaciones", { libroId: "hashed" });
 
+// ── 4. Crear usuario de aplicación ───────────────────────────────────────────
+//   Usuario con permisos limitados (readWrite) que usa Spring Boot para
+//   conectarse al cluster. No tiene permisos de administración.
+print("=== Creando usuario de aplicación (booklibre_app) ===");
+db.getSiblingDB("booklibreMongo").createUser({
+  user: "booklibre_app",
+  pwd: "booklibre_app_secret",
+  roles: [{ role: "readWrite", db: "booklibreMongo" }]
+});
+
 // ── Estado final ─────────────────────────────────────────────────────────────
 print("=== Cluster inicializado. Estado final: ===");
 printjson(sh.status());

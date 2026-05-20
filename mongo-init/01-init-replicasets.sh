@@ -54,4 +54,34 @@ print("shard2rs iniciado:", JSON.stringify(rs.status().ok));
 echo ">>> Esperando elección de primarios (15 s)..."
 sleep 15
 
-echo ">>> Replica sets inicializados. mongos puede arrancar."
+echo ">>> [4/6] Creando usuario admin en configrs (Localhost Exception)"
+mongosh --host configsvr1 --port 27017 --quiet --eval '
+db.getSiblingDB("admin").createUser({
+  user: "admin",
+  pwd: "booklibre_admin_secret",
+  roles: [{ role: "root", db: "admin" }]
+});
+print("Usuario admin creado en configrs");
+'
+
+echo ">>> [5/6] Creando usuario admin en shard1rs (Localhost Exception)"
+mongosh --host shard1a --port 27017 --quiet --eval '
+db.getSiblingDB("admin").createUser({
+  user: "admin",
+  pwd: "booklibre_admin_secret",
+  roles: [{ role: "root", db: "admin" }]
+});
+print("Usuario admin creado en shard1rs");
+'
+
+echo ">>> [6/6] Creando usuario admin en shard2rs (Localhost Exception)"
+mongosh --host shard2a --port 27017 --quiet --eval '
+db.getSiblingDB("admin").createUser({
+  user: "admin",
+  pwd: "booklibre_admin_secret",
+  roles: [{ role: "root", db: "admin" }]
+});
+print("Usuario admin creado en shard2rs");
+'
+
+echo ">>> Replica sets inicializados y usuarios admin creados. mongos puede arrancar."
