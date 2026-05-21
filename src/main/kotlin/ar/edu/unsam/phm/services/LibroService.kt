@@ -159,6 +159,10 @@ class LibroService(
     fun contarLibrosColecciones(): Long =
         libroRepository.contarLibrosCollecionables()
 
+    // Query: libros con promedio de calificación > 4
+    fun getLibrosConPromedioMayorA4(): List<Libro> =
+        libroRepository.getLibrosConPromedioMayorA4()
+
     // Chequea si el usuario puede eliminar/editar un libro siendo dueño
     private fun evaluarPermiso(libro: Libro, usuarioId: Int) {
         if (libro.duenio.id != usuarioId)

@@ -156,4 +156,11 @@ class LibroRepository(
 
     fun contarLibrosCollecionables(): Long =
         mongo.contarPorTipo("ar.edu.unsam.phm.domain.LibroColeccionable")
+
+    fun getLibrosConPromedioMayorA4(): List<Libro> {
+        val resultados = calificacionesMongo.findLibrosConPromedioMayorA4()
+        if (resultados.isEmpty()) return emptyList()
+        val libroIds = resultados.map { it.id }
+        return mongo.findByIdIn(libroIds).filter { it.activo }
+    }
 }
