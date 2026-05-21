@@ -139,7 +139,6 @@ class LibroRepository(
         val todas = calificacionesMongo.findByLibroIdOrderByFechaDesc(libro.id)
         val promedio = if (todas.isEmpty()) 0.0 else todas.map { it.valor }.average()
 
-        libro.agregarCalificacion(calificacion)
         libro.actualizarPromedioCalificacion(promedio)
 
         return save(libro)

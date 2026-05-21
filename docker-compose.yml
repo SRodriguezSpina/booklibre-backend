@@ -1,5 +1,15 @@
 services:
-
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Generador de permisos para la clave de Mongo
+  # Windows monta la clave con permisos abiertos (777), pero mongo requiere 400
+  # ─────────────────────────────────────────────────────────────────────────────
+  mongo-key-generator:
+    image: busybox
+    container_name: mongo-key-generator
+    volumes:
+      - ./mongo-init/mongo.key:/tmp/mongo.key:ro
+      - booklibre_mongo_key_volume:/etc/mongo
+    command: sh -c "cp /tmp/mongo.key /etc/mongo/mongo.key && chmod 400 /etc/mongo/mongo.key && chown 999:999 /etc/mongo/mongo.key"
   # ─────────────────────────────────────────────────────────────────────────────
   # PostgreSQL — persiste usuarios, reservas, historial de puntajes
   # ─────────────────────────────────────────────────────────────────────────────
@@ -14,7 +24,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - booklibre_postgres_data:/var/lib/postgresql/data
     networks:
       - booklibre-net
     healthcheck:
@@ -31,11 +41,14 @@ services:
   configsvr1:
     image: mongo:7
     container_name: configsvr1
+    depends_on:
+      mongo-key-generator:
+        condition: service_completed_successfully
     command: ["mongod", "--configsvr", "--replSet", "configrs", "--bind_ip_all", "--port", "27017",
-             "--keyFile", "/etc/mongo/mongo.key"]
+             ]
     volumes:
-      - configsvr1_data:/data/db
-      - ./mongo-init/mongo.key:/etc/mongo/mongo.key:ro
+      - booklibre_mongo_configsvr1_data:/data/db
+      - booklibre_mongo_key_volume:/etc/mongo:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -48,11 +61,14 @@ services:
   configsvr2:
     image: mongo:7
     container_name: configsvr2
+    depends_on:
+      mongo-key-generator:
+        condition: service_completed_successfully
     command: ["mongod", "--configsvr", "--replSet", "configrs", "--bind_ip_all", "--port", "27017",
-             "--keyFile", "/etc/mongo/mongo.key"]
+             ]
     volumes:
-      - configsvr2_data:/data/db
-      - ./mongo-init/mongo.key:/etc/mongo/mongo.key:ro
+      - booklibre_mongo_configsvr2_data:/data/db
+      - booklibre_mongo_key_volume:/etc/mongo:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -65,11 +81,14 @@ services:
   configsvr3:
     image: mongo:7
     container_name: configsvr3
+    depends_on:
+      mongo-key-generator:
+        condition: service_completed_successfully
     command: ["mongod", "--configsvr", "--replSet", "configrs", "--bind_ip_all", "--port", "27017",
-             "--keyFile", "/etc/mongo/mongo.key"]
+             ]
     volumes:
-      - configsvr3_data:/data/db
-      - ./mongo-init/mongo.key:/etc/mongo/mongo.key:ro
+      - booklibre_mongo_configsvr3_data:/data/db
+      - booklibre_mongo_key_volume:/etc/mongo:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -85,11 +104,14 @@ services:
   shard1a:
     image: mongo:7
     container_name: shard1a
+    depends_on:
+      mongo-key-generator:
+        condition: service_completed_successfully
     command: ["mongod", "--shardsvr", "--replSet", "shard1rs", "--bind_ip_all", "--port", "27017",
-             "--keyFile", "/etc/mongo/mongo.key"]
+             ]
     volumes:
-      - shard1a_data:/data/db
-      - ./mongo-init/mongo.key:/etc/mongo/mongo.key:ro
+      - booklibre_mongo_shard1a_data:/data/db
+      - booklibre_mongo_key_volume:/etc/mongo:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -102,11 +124,14 @@ services:
   shard1b:
     image: mongo:7
     container_name: shard1b
+    depends_on:
+      mongo-key-generator:
+        condition: service_completed_successfully
     command: ["mongod", "--shardsvr", "--replSet", "shard1rs", "--bind_ip_all", "--port", "27017",
-             "--keyFile", "/etc/mongo/mongo.key"]
+             ]
     volumes:
-      - shard1b_data:/data/db
-      - ./mongo-init/mongo.key:/etc/mongo/mongo.key:ro
+      - booklibre_mongo_shard1b_data:/data/db
+      - booklibre_mongo_key_volume:/etc/mongo:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -119,11 +144,14 @@ services:
   shard1c:
     image: mongo:7
     container_name: shard1c
+    depends_on:
+      mongo-key-generator:
+        condition: service_completed_successfully
     command: ["mongod", "--shardsvr", "--replSet", "shard1rs", "--bind_ip_all", "--port", "27017",
-             "--keyFile", "/etc/mongo/mongo.key"]
+             ]
     volumes:
-      - shard1c_data:/data/db
-      - ./mongo-init/mongo.key:/etc/mongo/mongo.key:ro
+      - booklibre_mongo_shard1c_data:/data/db
+      - booklibre_mongo_key_volume:/etc/mongo:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -139,11 +167,14 @@ services:
   shard2a:
     image: mongo:7
     container_name: shard2a
+    depends_on:
+      mongo-key-generator:
+        condition: service_completed_successfully
     command: ["mongod", "--shardsvr", "--replSet", "shard2rs", "--bind_ip_all", "--port", "27017",
-             "--keyFile", "/etc/mongo/mongo.key"]
+             ]
     volumes:
-      - shard2a_data:/data/db
-      - ./mongo-init/mongo.key:/etc/mongo/mongo.key:ro
+      - booklibre_mongo_shard2a_data:/data/db
+      - booklibre_mongo_key_volume:/etc/mongo:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -156,11 +187,14 @@ services:
   shard2b:
     image: mongo:7
     container_name: shard2b
+    depends_on:
+      mongo-key-generator:
+        condition: service_completed_successfully
     command: ["mongod", "--shardsvr", "--replSet", "shard2rs", "--bind_ip_all", "--port", "27017",
-             "--keyFile", "/etc/mongo/mongo.key"]
+             ]
     volumes:
-      - shard2b_data:/data/db
-      - ./mongo-init/mongo.key:/etc/mongo/mongo.key:ro
+      - booklibre_mongo_shard2b_data:/data/db
+      - booklibre_mongo_key_volume:/etc/mongo:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -173,11 +207,14 @@ services:
   shard2c:
     image: mongo:7
     container_name: shard2c
+    depends_on:
+      mongo-key-generator:
+        condition: service_completed_successfully
     command: ["mongod", "--shardsvr", "--replSet", "shard2rs", "--bind_ip_all", "--port", "27017",
-             "--keyFile", "/etc/mongo/mongo.key"]
+             ]
     volumes:
-      - shard2c_data:/data/db
-      - ./mongo-init/mongo.key:/etc/mongo/mongo.key:ro
+      - booklibre_mongo_shard2c_data:/data/db
+      - booklibre_mongo_key_volume:/etc/mongo:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -224,11 +261,11 @@ services:
       --configdb configrs/configsvr1:27017,configsvr2:27017,configsvr3:27017
       --bind_ip_all
       --port 27017
-      --keyFile /etc/mongo/mongo.key
+      
     ports:
       - "27017:27017"
     volumes:
-      - ./mongo-init/mongo.key:/etc/mongo/mongo.key:ro
+      - booklibre_mongo_key_volume:/etc/mongo:ro
     depends_on:
       mongo-rs-init:
         condition: service_completed_successfully
@@ -244,9 +281,9 @@ services:
   # ─────────────────────────────────────────────────────────────────────────────
   # Init — Fase 2: agrega shards a mongos y habilita sharding en las colecciones
   # ─────────────────────────────────────────────────────────────────────────────
-  mongo-cluster-init:
+  mongo:
     image: mongo:7
-    container_name: mongo-cluster-init
+    container_name: mongo
     restart: "no"
     depends_on:
       mongos: { condition: service_healthy }
@@ -279,7 +316,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      mongo-cluster-init:
+      mongo:
         condition: service_completed_successfully
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/libros/home?usuarioId=1 || exit 1"]
@@ -315,13 +352,15 @@ networks:
     driver: bridge
 
 volumes:
-  pgdata:
-  configsvr1_data:
-  configsvr2_data:
-  configsvr3_data:
-  shard1a_data:
-  shard1b_data:
-  shard1c_data:
-  shard2a_data:
-  shard2b_data:
-  shard2c_data:
+  booklibre_postgres_data:
+  booklibre_mongo_configsvr1_data:
+  booklibre_mongo_configsvr2_data:
+  booklibre_mongo_configsvr3_data:
+  booklibre_mongo_shard1a_data:
+  booklibre_mongo_shard1b_data:
+  booklibre_mongo_shard1c_data:
+  booklibre_mongo_shard2a_data:
+  booklibre_mongo_shard2b_data:
+  booklibre_mongo_shard2c_data:
+  booklibre_mongo_key_volume:
+
