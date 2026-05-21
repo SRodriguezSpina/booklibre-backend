@@ -125,7 +125,7 @@ class LibroRepository(
     fun usuarioYaCalifico(libroId: Int, usuarioId: Int): Boolean =
         calificacionesMongo.existsByLibroIdAndUsuarioId(libroId, usuarioId)
 
-    fun agregarCalificacion(libro: Libro, calificacion: CalificacionDocument): Libro {
+    fun agregarCalificacion(libro: Libro, calificacion: Calificacion): Libro {
         calificacionesMongo.save(
             CalificacionDocument(
                 libroId = libro.id,
@@ -139,7 +139,9 @@ class LibroRepository(
         val todas = calificacionesMongo.findByLibroIdOrderByFechaDesc(libro.id)
         val promedio = if (todas.isEmpty()) 0.0 else todas.map { it.valor }.average()
 
+        libro.agregarCalificacion(calificacion)
         libro.actualizarPromedioCalificacion(promedio)
+
         return save(libro)
     }
 
