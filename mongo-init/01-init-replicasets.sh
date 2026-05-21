@@ -95,8 +95,10 @@ echo ">>> Esperando elección de primarios (15 s)..."
 sleep 15
 
 # ─── [4/6] Usuario admin en configrs ──────────────────────────────────────
+# Se conecta al replica set por nombre para que mongosh ruteé al primary
+# (cualquiera de los 3 hosts puede ser primary tras la elección)
 echo ">>> [4/6] Creando usuario admin en configrs"
-mongosh --host configsvr1 --port 27017 --quiet --eval '
+mongosh --host "configrs/configsvr1:27017,configsvr2:27017,configsvr3:27017" --quiet --eval '
 try {
   db.getSiblingDB("admin").createUser({
     user: "admin",
@@ -112,7 +114,7 @@ try {
 
 # ─── [5/6] Usuario admin en shard1rs ──────────────────────────────────────
 echo ">>> [5/6] Creando usuario admin en shard1rs"
-mongosh --host shard1a --port 27017 --quiet --eval '
+mongosh --host "shard1rs/shard1a:27017,shard1b:27017,shard1c:27017" --quiet --eval '
 try {
   db.getSiblingDB("admin").createUser({
     user: "admin",
@@ -128,7 +130,7 @@ try {
 
 # ─── [6/6] Usuario admin en shard2rs ──────────────────────────────────────
 echo ">>> [6/6] Creando usuario admin en shard2rs"
-mongosh --host shard2a --port 27017 --quiet --eval '
+mongosh --host "shard2rs/shard2a:27017,shard2b:27017,shard2c:27017" --quiet --eval '
 try {
   db.getSiblingDB("admin").createUser({
     user: "admin",
