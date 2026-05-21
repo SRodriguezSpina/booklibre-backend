@@ -40,7 +40,7 @@ class V5__seed_calificaciones_mongo : BaseJavaMigration() {
     )
 
     override fun migrate(context: Context) {
-        val mongoUri = System.getenv("MONGODB_URI") ?: "mongodb://localhost:27017/booklibre"
+        val mongoUri = System.getenv("MONGODB_URI") ?: "mongodb://localhost:27017/booklibreMongo"
         val dbName = mongoUri.substringAfterLast("/").substringBefore("?")
 
         val usuarioIdPorEmail = loadUsuarioIds(context.connection)

@@ -58,7 +58,7 @@ class V3__seed_libros_mongo : BaseJavaMigration() {
     )
 
     override fun migrate(context: Context) {
-        val mongoUri = System.getenv("MONGODB_URI") ?: "mongodb://localhost:27017/booklibre"
+        val mongoUri = System.getenv("MONGODB_URI") ?: "mongodb://localhost:27017/booklibreMongo"
         val dbName = mongoUri.substringAfterLast("/").substringBefore("?")
 
         val usuarios = loadUsuarios(context.connection)
