@@ -30,6 +30,31 @@ wait_for_mongo() {
   echo ">>> $host listo"
 }
 
+# ─── Helper: esperar a que un replica set haya elegido primary ─────────────
+# La elección puede tardar significativamente más en hosts lentos (Docker
+# Desktop en Windows/Mac arm). Sin esto, los pasos [4-6/6] fallan con
+# "not primary" o exit codes raros si el RS todavía no eligió leader.
+wait_for_primary() {
+  local rs=$1
+  local hosts=$2
+  local max=60
+  local i=0
+  echo ">>> Esperando primary de $rs..."
+  while [ $i -lt $max ]; do
+    if mongosh --host "$hosts" --quiet --eval '
+      const p = rs.status().members.find(m => m.stateStr === "PRIMARY");
+      if (p) { quit(0); } else { quit(1); }
+    ' >/dev/null 2>&1; then
+      echo ">>> $rs primary listo"
+      return 0
+    fi
+    i=$((i+1))
+    sleep 2
+  done
+  echo "ERROR: $rs no eligio primary tras $((max*2))s"
+  exit 1
+}
+
 # ─── [1/3] Config Servers ──────────────────────────────────────────────────
 echo ">>> [1/3] Iniciando replica set configrs"
 wait_for_mongo configsvr1
@@ -91,8 +116,10 @@ try {
 }
 '
 
-echo ">>> Esperando elección de primarios (15 s)..."
-sleep 15
+# ─── Esperar a que cada replica set haya elegido primary ──────────────────
+wait_for_primary "configrs" "configrs/configsvr1:27017,configsvr2:27017,configsvr3:27017"
+wait_for_primary "shard1rs" "shard1rs/shard1a:27017,shard1b:27017,shard1c:27017"
+wait_for_primary "shard2rs" "shard2rs/shard2a:27017,shard2b:27017,shard2c:27017"
 
 # ─── [4/6] Usuario admin en configrs ──────────────────────────────────────
 # Se conecta al replica set por nombre para que mongosh ruteé al primary
