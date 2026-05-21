@@ -18,8 +18,8 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
     fun countByLibroId(libroId: Int): Long
     fun existsByUsuarioIdAndFechaHastaAfter(usuarioId: Int, now: java.time.LocalDateTime): Boolean
     fun existsByLibroIdInAndFechaHastaAfter(libroIds: Collection<Int>, now: java.time.LocalDateTime): Boolean
-
     fun findTopByLibroIdOrderByIdDesc(libroId: Int): Optional<Reserva>
+
     @Query("""
         SELECT r.libroId FROM Reserva r
         WHERE r.fechaDesde <= :hasta
@@ -29,6 +29,15 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
         @Param("desde") desde: LocalDateTime,
         @Param("hasta") hasta: LocalDateTime,
     ): List<Int>
+
+    @Query("""
+        SELECT r.libroId 
+        FROM Reserva r
+        GROUP BY r.libroId
+        HAVING MAX(r.fechaHasta) < :now
+    """)
+    fun findLibrosConTodasReservasCumplidas(@Param("now") now: LocalDateTime): List<Int>
+
 
     @Query(
         value = """

@@ -79,6 +79,14 @@ class LibroController(
     fun contarColeccionables(): Map<String, Long> =
         mapOf("cantidad" to libroService.contarLibrosColecciones())
 
+    // Lolo: Saber qué libros tienen todas las reservas cumplidas
+    @GetMapping("/reservas-cumplidas")
+    fun getLibrosConReservasCumplidas(
+        @RequestParam(required = false) usuarioId: Int?
+    ): List<LibroHomeDTO> =
+        libroService.getLibrosConReservasCumplidas()
+            .map { it.toHomeDTO(libroService.calcularBiblioKarma(it, usuarioId)) }
+
     @GetMapping("/{libroId}/calificaciones")
     fun getCalificaciones(@PathVariable libroId: Int): List<CalificacionDTO> =
         libroService.getCalificaciones(libroId)
