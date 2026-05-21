@@ -35,9 +35,9 @@ try {
 }
 
 // ── 3. Particionar colecciones ───────────────────────────────────────────────
-print("=== Sharding colección 'libros' (hashed por id) ===");
+print("=== Sharding colección 'libros' (hashed por _id) ===");
 try {
-  sh.shardCollection("booklibreMongo.libros", { id: "hashed" });
+  sh.shardCollection("booklibreMongo.libros", { _id: "hashed" });
   print("Colección 'libros' sharded.");
 } catch(e) {
   print("'libros' ya sharded o error ignorable:", e.codeName || e.message);
