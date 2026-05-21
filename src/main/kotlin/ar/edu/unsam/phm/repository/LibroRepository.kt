@@ -20,7 +20,6 @@ class LibroRepository(
     private val usuarioJpa: UsuarioJpaRepository,
     private val historialJpa: HistorialPuntajeJpaRepository,
 ) {
-
     private data class CalificacionDetalleMongoView(
         override val usuarioId: Int,
         override val nombreUsuario: String,
