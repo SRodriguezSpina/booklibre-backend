@@ -124,13 +124,13 @@ class LibroService(
             throw BusinessException("La calificación debe estar entre 1 y 5")
         }
 
-        val calificacionDocument = CalificacionDocument(
-            libroId    = idLibro,
+        val calificacion = Calificacion(
             usuarioId  = dto.usuarioId,
             valor      = dto.valor,
             comentario = dto.comentario,
+            fecha      = LocalDateTime.now(),
         )
-        libroRepository.agregarCalificacion(libro, calificacionDocument)
+        libroRepository.agregarCalificacion(libro, calificacion)
     }
 
     fun darDeBaja(libroId: Int, usuarioId: Int) {
