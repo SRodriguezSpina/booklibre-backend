@@ -47,3 +47,4 @@ bin/
 ### Secrets ###
 .env
 certbot/
+.agents/

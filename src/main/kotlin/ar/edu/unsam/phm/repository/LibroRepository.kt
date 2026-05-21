@@ -4,7 +4,6 @@ import ar.edu.unsam.phm.domain.Calificacion
 import ar.edu.unsam.phm.domain.CalificacionDocument
 import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.LibroFiltros
-import ar.edu.unsam.phm.domain.mongo.CalificacionDocument
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
@@ -140,7 +139,6 @@ class LibroRepository(
         val todas = calificacionesMongo.findByLibroIdOrderByFechaDesc(libro.id)
         val promedio = if (todas.isEmpty()) 0.0 else todas.map { it.valor }.average()
 
-        libro.agregarCalificacion(calificacion)
         libro.actualizarPromedioCalificacion(promedio)
 
         return save(libro)
