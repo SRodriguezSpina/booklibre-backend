@@ -1,19 +1,19 @@
-#!/bin/bash
-# ─────────────────────────────────────────────────────────────────────────────
+﻿#!/bin/bash
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Fase 1: inicializa los tres replica sets independientes
 # Cada rs.initiate() se ejecuta con --host apuntando al nodo primario
 # pero el script corre desde el contenedor mongo-rs-init (fuera del host).
 #
-# Con keyFile activo, la Localhost Exception solo aplica si te conectás
+# Con keyFile activo, la Localhost Exception solo aplica si te conectÃ¡s
 # desde el mismo host (127.0.0.1). Para evitar esto, usamos un script
 # que hace exec dentro de cada contenedor.
-# ─────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 set -e
 
 ADMIN_USER="admin"
 ADMIN_PASS="booklibre_admin_secret"
 
-# ─── Helper: esperar a que mongosh pueda conectarse sin auth ───────────────
+# â”€â”€â”€ Helper: esperar a que mongosh pueda conectarse sin auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 wait_for_mongo() {
   local host=$1
   local max=30
@@ -22,7 +22,7 @@ wait_for_mongo() {
   until mongosh --host "$host" --port 27017 --quiet --eval "db.adminCommand('ping').ok" 2>/dev/null; do
     i=$((i+1))
     if [ $i -ge $max ]; then
-      echo "ERROR: $host no respondió a tiempo"
+      echo "ERROR: $host no respondiÃ³ a tiempo"
       exit 1
     fi
     sleep 2
@@ -30,10 +30,10 @@ wait_for_mongo() {
   echo ">>> $host listo"
 }
 
-# ─── Helper: esperar a que un replica set haya elegido primary ─────────────
-# La elección puede tardar significativamente más en hosts lentos (Docker
+# â”€â”€â”€ Helper: esperar a que un replica set haya elegido primary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# La elecciÃ³n puede tardar significativamente mÃ¡s en hosts lentos (Docker
 # Desktop en Windows/Mac arm). Sin esto, los pasos [4-6/6] fallan con
-# "not primary" o exit codes raros si el RS todavía no eligió leader.
+# "not primary" o exit codes raros si el RS todavÃ­a no eligiÃ³ leader.
 wait_for_primary() {
   local rs=$1
   local hosts=$2
@@ -55,7 +55,7 @@ wait_for_primary() {
   exit 1
 }
 
-# ─── [1/3] Config Servers ──────────────────────────────────────────────────
+# â”€â”€â”€ [1/3] Config Servers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 echo ">>> [1/3] Iniciando replica set configrs"
 wait_for_mongo configsvr1
 mongosh --host configsvr1 --port 27017 --quiet --eval '
@@ -76,7 +76,7 @@ try {
 }
 '
 
-# ─── [2/3] Shard 1 ────────────────────────────────────────────────────────
+# â”€â”€â”€ [2/3] Shard 1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 echo ">>> [2/3] Iniciando replica set shard1rs"
 wait_for_mongo shard1a
 mongosh --host shard1a --port 27017 --quiet --eval '
@@ -96,7 +96,7 @@ try {
 }
 '
 
-# ─── [3/3] Shard 2 ────────────────────────────────────────────────────────
+# â”€â”€â”€ [3/3] Shard 2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 echo ">>> [3/3] Iniciando replica set shard2rs"
 wait_for_mongo shard2a
 mongosh --host shard2a --port 27017 --quiet --eval '
@@ -116,14 +116,14 @@ try {
 }
 '
 
-# ─── Esperar a que cada replica set haya elegido primary ──────────────────
+# â”€â”€â”€ Esperar a que cada replica set haya elegido primary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 wait_for_primary "configrs" "configrs/configsvr1:27017,configsvr2:27017,configsvr3:27017"
 wait_for_primary "shard1rs" "shard1rs/shard1a:27017,shard1b:27017,shard1c:27017"
 wait_for_primary "shard2rs" "shard2rs/shard2a:27017,shard2b:27017,shard2c:27017"
 
-# ─── [4/6] Usuario admin en configrs ──────────────────────────────────────
-# Se conecta al replica set por nombre para que mongosh ruteé al primary
-# (cualquiera de los 3 hosts puede ser primary tras la elección)
+# â”€â”€â”€ [4/6] Usuario admin en configrs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Se conecta al replica set por nombre para que mongosh ruteÃ© al primary
+# (cualquiera de los 3 hosts puede ser primary tras la elecciÃ³n)
 echo ">>> [4/6] Creando usuario admin en configrs"
 mongosh --host "configrs/configsvr1:27017,configsvr2:27017,configsvr3:27017" --quiet --eval '
 try {
@@ -139,7 +139,7 @@ try {
 }
 '
 
-# ─── [5/6] Usuario admin en shard1rs ──────────────────────────────────────
+# â”€â”€â”€ [5/6] Usuario admin en shard1rs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 echo ">>> [5/6] Creando usuario admin en shard1rs"
 mongosh --host "shard1rs/shard1a:27017,shard1b:27017,shard1c:27017" --quiet --eval '
 try {
@@ -155,7 +155,7 @@ try {
 }
 '
 
-# ─── [6/6] Usuario admin en shard2rs ──────────────────────────────────────
+# â”€â”€â”€ [6/6] Usuario admin en shard2rs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 echo ">>> [6/6] Creando usuario admin en shard2rs"
 mongosh --host "shard2rs/shard2a:27017,shard2b:27017,shard2c:27017" --quiet --eval '
 try {
