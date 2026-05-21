@@ -10,7 +10,13 @@ import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
 import ar.edu.unsam.phm.readmodels.CalificacionDetalleView
 import ar.edu.unsam.phm.repository.mongo.CalificacionMongoRepository
 import ar.edu.unsam.phm.repository.mongo.LibroMongoRepository
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
+import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Component
+import java.util.regex.Pattern
 import kotlin.math.ceil
 
 @Component
@@ -19,6 +25,7 @@ class LibroRepository(
     private val calificacionesMongo: CalificacionMongoRepository,
     private val usuarioJpa: UsuarioJpaRepository,
     private val historialJpa: HistorialPuntajeJpaRepository,
+    private val mongoTemplate: MongoTemplate,
 ) {
     private data class CalificacionDetalleMongoView(
         override val usuarioId: Int,
@@ -49,7 +56,7 @@ class LibroRepository(
 
     fun save(libro: Libro): Libro {
         if (libro.id == 0) {
-            libro.id = (mongo.findAll().maxOfOrNull { it.id } ?: 0) + 1
+            libro.id = (mongo.findTopByOrderByIdDesc()?.id ?: 0) + 1
         }
         return mongo.save(libro)
     }
@@ -61,48 +68,47 @@ class LibroRepository(
     }
 
     fun buscarPaginado(filtros: LibroFiltros, page: Int, size: Int): PagedResponse<Libro> {
-        val query = filtros.query.trim().lowercase()
+        val criteria = Criteria.where("activo").`is`(true)
 
-        var items = mongo.findAll().asSequence()
-            .filter { it.activo }
-            .filter { libro ->
-                query.isBlank() ||
-                    libro.titulo.lowercase().contains(query) ||
-                    libro.autor.lowercase().contains(query) ||
-                    libro.descripcion.lowercase().contains(query)
-            }
+        val texto = filtros.query.trim()
+        if (texto.isNotBlank()) {
+            val escaped = Pattern.quote(texto)
+            criteria.orOperator(
+                Criteria.where("titulo").regex(escaped, "i"),
+                Criteria.where("autor").regex(escaped, "i"),
+                Criteria.where("descripcion").regex(escaped, "i"),
+            )
+        }
 
         if (filtros.generos.isNotEmpty()) {
-            val generos = filtros.generos.map { it.trim().uppercase() }.toSet()
-            items = items.filter { it.genero.name in generos }
+            criteria.and("genero").`in`(filtros.generos.map { it.trim().uppercase() })
         }
-        filtros.paginasMin?.let { min -> items = items.filter { it.cantidadPaginas >= min } }
-        filtros.paginasMax?.let { max -> items = items.filter { it.cantidadPaginas <= max } }
-        filtros.isbn?.takeIf { it.isNotBlank() }?.let { isbn ->
-            items = items.filter { it.isbn == isbn }
+        filtros.paginasMin?.let { criteria.and("cantidadPaginas").gte(it) }
+        filtros.paginasMax?.let { criteria.and("cantidadPaginas").lte(it) }
+        filtros.isbn?.takeIf { it.isNotBlank() }?.let { criteria.and("isbn").`is`(it) }
+        filtros.prestadoPor?.takeIf { it.isNotBlank() }?.let {
+            criteria.and("duenio.nombre").regex(Pattern.quote(it), "i")
         }
-        filtros.prestadoPor?.takeIf { it.isNotBlank() }?.let { ownerName ->
-            val needle = ownerName.lowercase()
-            items = items.filter { it.duenio.nombre.lowercase().contains(needle) }
-        }
-        filtros.excluirDuenioId?.let { ownerId ->
-            items = items.filter { it.duenio.id != ownerId }
-        }
+        filtros.excluirDuenioId?.let { criteria.and("duenio.id").ne(it) }
         filtros.libroIdsReservados?.takeIf { it.isNotEmpty() }?.let { ids ->
-            items = items.filterNot { it.id in ids }
+            criteria.and("id").nin(ids)
         }
 
-        val sorted = when (filtros.sortBy.lowercase()) {
-            "autor" -> items.sortedBy { it.autor.lowercase() }
-            "calificacion" -> items.sortedByDescending { it.calificacion }
-            else -> items.sortedBy { it.titulo.lowercase() }
-        }.toList()
+        val sortField = when (filtros.sortBy.lowercase()) {
+            "autor"        -> "autor"
+            "calificacion" -> "calificacion"
+            else           -> "titulo"
+        }
+        val sortDir = if (sortField == "calificacion") Sort.Direction.DESC else Sort.Direction.ASC
 
-        val total = sorted.size
-        val from = (page * size).coerceAtMost(total)
-        val to = (from + size).coerceAtMost(total)
-        val totalPages = if (total == 0) 0 else ceil(total.toDouble() / size).toInt()
-        return PagedResponse(sorted.subList(from, to), page, totalPages)
+        val baseQuery = Query(criteria)
+        val total = mongoTemplate.count(baseQuery, Libro::class.java)
+
+        val pageRequest = PageRequest.of(page, size, Sort.by(sortDir, sortField))
+        val items = mongoTemplate.find(baseQuery.with(pageRequest), Libro::class.java)
+
+        val totalPages = if (total == 0L) 0 else ceil(total.toDouble() / size).toInt()
+        return PagedResponse(items, page, totalPages)
     }
 
     fun getHistorialPuntajes(libroId: Int): List<HistorialPuntaje> =
