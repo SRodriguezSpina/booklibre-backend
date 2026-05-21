@@ -49,9 +49,11 @@ class LibroController(
     ): LibroDTO {
         val libro = libroService.obtenerLibro(libroId)
 
-        // Registrar el click solo si hay un usuario autenticado
+        // Registrar el click solo si hay un usuario autenticado y NO es el propietario del libro
         auth?.name?.let { nombreUsuario ->
-            clickLogService.registrarClick(libroId, libro.titulo, nombreUsuario)
+            if (nombreUsuario != libro.duenio.email) {
+                clickLogService.registrarClick(libroId, libro.titulo, nombreUsuario)
+            }
         }
 
         val alquiladoPorId = libroService.obtenerPrestatarioActual(libroId)
