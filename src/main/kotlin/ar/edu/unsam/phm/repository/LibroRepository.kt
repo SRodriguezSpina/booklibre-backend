@@ -61,6 +61,38 @@ class LibroRepository(
     fun getLibrosDeUsuario(usuarioId: Int): List<Libro> =
         mongo.findByDuenioIdAndActivoTrue(usuarioId)
 
+    fun findPaginadoByDuenioId(
+        usuarioId: Int,
+        filtro: String,
+        ordenarPor: String,
+        direccion: String,
+        page: Int,
+        size: Int,
+        librosReservadosAhora: Set<Int>,
+    ): PagedResponse<Libro> {
+        val criteria = Criteria.where("duenio.id").`is`(usuarioId)
+        when (filtro.lowercase()) {
+            "disponibles" -> if (librosReservadosAhora.isNotEmpty()) criteria.and("id").nin(librosReservadosAhora)
+            "prestados"   -> criteria.and("id").`in`(
+                if (librosReservadosAhora.isEmpty()) listOf(Int.MIN_VALUE) else librosReservadosAhora
+            )
+        }
+
+        val sortField = when (ordenarPor.lowercase()) {
+            "estado" -> "activo"
+            "fecha"  -> "fechaAgregado"
+            else     -> "titulo"
+        }
+        val sortDir = if (direccion.lowercase() == "descendente") Sort.Direction.DESC else Sort.Direction.ASC
+
+        val baseQuery = Query(criteria)
+        val total = mongoTemplate.count(baseQuery, Libro::class.java)
+        val pageRequest = PageRequest.of(page, size, Sort.by(sortDir, sortField))
+        val items = mongoTemplate.find(baseQuery.with(pageRequest), Libro::class.java)
+        val totalPages = if (total == 0L) 0 else ceil(total.toDouble() / size).toInt()
+        return PagedResponse(items, page, totalPages, total)
+    }
+
     fun save(libro: Libro): Libro {
         if (libro.id == 0) {
             libro.id = (mongo.findTopByOrderByIdDesc()?.id ?: 0) + 1

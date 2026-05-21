@@ -74,7 +74,8 @@ data class LibroHomeDTO(
 data class PagedResponse<T>(
     val content: List<T>,
     val page: Int,
-    val totalPages: Int
+    val totalPages: Int,
+    val totalElements: Long = 0L,
 )
 
 data class HistorialPuntajeDTO(
