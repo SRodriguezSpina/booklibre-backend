@@ -4,7 +4,6 @@ import ar.edu.unsam.phm.domain.Calificacion
 import ar.edu.unsam.phm.domain.CalificacionDocument
 import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.LibroFiltros
-import ar.edu.unsam.phm.domain.mongo.CalificacionDocument
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
@@ -126,7 +125,7 @@ class LibroRepository(
     fun usuarioYaCalifico(libroId: Int, usuarioId: Int): Boolean =
         calificacionesMongo.existsByLibroIdAndUsuarioId(libroId, usuarioId)
 
-    fun agregarCalificacion(libro: Libro, calificacion: Calificacion): Libro {
+    fun agregarCalificacion(libro: Libro, calificacion: CalificacionDocument): Libro {
         calificacionesMongo.save(
             CalificacionDocument(
                 libroId = libro.id,
@@ -140,9 +139,7 @@ class LibroRepository(
         val todas = calificacionesMongo.findByLibroIdOrderByFechaDesc(libro.id)
         val promedio = if (todas.isEmpty()) 0.0 else todas.map { it.valor }.average()
 
-        libro.agregarCalificacion(calificacion)
         libro.actualizarPromedioCalificacion(promedio)
-
         return save(libro)
     }
 
@@ -153,4 +150,7 @@ class LibroRepository(
     }
 
     fun liberarReservasVencidas(now: java.time.LocalDateTime): Int = 0
+
+    fun contarLibrosCollecionables(): Long =
+        mongo.contarPorTipo("ar.edu.unsam.phm.domain.LibroColeccionable")
 }

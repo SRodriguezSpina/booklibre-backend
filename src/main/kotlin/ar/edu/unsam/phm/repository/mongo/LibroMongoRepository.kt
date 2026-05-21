@@ -11,4 +11,6 @@ interface LibroMongoRepository : MongoRepository<Libro, ObjectId> {
     fun findByBusinessId(id: Int): Libro?
     fun findByDuenioId(duenioId: Int): List<Libro>
     fun findByDuenioIdAndActivoTrue(duenioId: Int): List<Libro>
+    @Query(value = "{ '_class': ?0 }", count = true)
+    fun contarPorTipo(tipo: String): Long
 }
