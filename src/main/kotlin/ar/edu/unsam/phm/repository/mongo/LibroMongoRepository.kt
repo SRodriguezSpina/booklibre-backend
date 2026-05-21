@@ -18,4 +18,5 @@ interface LibroMongoRepository : MongoRepository<Libro, ObjectId> {
     fun contarPorTipo(tipo: String): Long
     @Query("{ 'id' : { \$in: ?0 } }")
     fun findByIdIn(ids: Collection<Int>): List<Libro>
+    fun findTopByOrderByIdDesc(): Libro?
 }
