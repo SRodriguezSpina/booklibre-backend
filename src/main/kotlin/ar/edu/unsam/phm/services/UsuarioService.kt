@@ -74,7 +74,7 @@ class UsuarioService(
     private fun tieneReservasActivas(usuarioId: Int): Boolean {
         val ahora = java.time.LocalDateTime.now()
         if (reservaJpa.existsByUsuarioIdAndFechaHastaAfter(usuarioId, ahora)) return true
-        val librosDelUsuario = libroRepository.getTodosLosLibrosDeUsuario(usuarioId).map { it.id }
+        val librosDelUsuario = libroRepository.findLibroIdsByDuenioId(usuarioId)
         return librosDelUsuario.isNotEmpty() &&
             reservaJpa.existsByLibroIdInAndFechaHastaAfter(librosDelUsuario, ahora)
     }

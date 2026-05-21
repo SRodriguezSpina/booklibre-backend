@@ -51,6 +51,13 @@ class LibroRepository(
     fun getTodosLosLibrosDeUsuario(usuarioId: Int): List<Libro> =
         mongo.findByDuenioId(usuarioId)
 
+    fun findLibroIdsByDuenioId(usuarioId: Int): List<Int> {
+        val query = Query(Criteria.where("duenio.id").`is`(usuarioId))
+        query.fields().include("id").exclude("_id")
+        return mongoTemplate.find(query, org.bson.Document::class.java, "libros")
+            .mapNotNull { it.getInteger("id") }
+    }
+
     fun getLibrosDeUsuario(usuarioId: Int): List<Libro> =
         mongo.findByDuenioIdAndActivoTrue(usuarioId)
 

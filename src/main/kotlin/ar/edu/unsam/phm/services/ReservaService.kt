@@ -35,7 +35,7 @@ class ReservaService(
         val reservas = when (tipo) {
             TipoReserva.HECHAS    -> reservaJpa.findByUsuarioId(usuarioId)
             TipoReserva.RECIBIDAS -> {
-                val librosDelUsuario = libroRepository.getTodosLosLibrosDeUsuario(usuarioId).map { it.id }
+                val librosDelUsuario = libroRepository.findLibroIdsByDuenioId(usuarioId)
                 if (librosDelUsuario.isEmpty()) emptyList()
                 else reservaJpa.findByLibroIdIn(librosDelUsuario)
             }
