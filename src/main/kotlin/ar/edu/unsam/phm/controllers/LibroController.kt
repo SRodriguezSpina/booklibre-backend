@@ -87,6 +87,19 @@ class LibroController(
         libroService.getLibrosConReservasCumplidas()
             .map { it.toHomeDTO(libroService.calcularBiblioKarma(it, usuarioId)) }
 
+    // Query: Saber qué libros tienen más de 4 puntos de calificación
+    // Alternativa con bibliokarma por usuario:
+    // @GetMapping("/mejor-calificados")
+    // fun getLibrosMejorCalificados(
+    //     @RequestParam(required = false) usuarioId: Int?
+    // ): List<LibroHomeDTO> =
+    //     libroService.getLibrosConPromedioMayorA4()
+    //         .map { it.toHomeDTO(libroService.calcularBiblioKarma(it, usuarioId)) }
+    @GetMapping("/mejor-calificados")
+    fun getLibrosMejorCalificados(): List<LibroHomeDTO> =
+        libroService.getLibrosConPromedioMayorA4()
+            .map { it.toHomeDTO(null) }
+
     @GetMapping("/{libroId}/calificaciones")
     fun getCalificaciones(@PathVariable libroId: Int): List<CalificacionDTO> =
         libroService.getCalificaciones(libroId)
