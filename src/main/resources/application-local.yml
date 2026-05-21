@@ -18,5 +18,5 @@ spring:
     mongodb:
       # Desarrollo local: conectar al mongos local (puerto 27017) con usuario autenticado
       # Para levantar solo el cluster Mongo: docker-compose up configsvr1 configsvr2 configsvr3 shard1a shard1b shard1c shard2a shard2b shard2c mongo-rs-init mongos mongo-cluster-init
-      uri: mongodb://booklibre_app:booklibre_app_secret@localhost:27017/booklibreMongo?authSource=booklibreMongo
-      database: booklibreMongo
+      uri: mongodb://booklibre_app:booklibre_app_secret@localhost:27017/booklibre?authSource=booklibreMongo
+      database: booklibre

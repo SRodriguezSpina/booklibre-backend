@@ -106,4 +106,16 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
         @Param("desde") desde: LocalDateTime,
         @Param("hasta") hasta: LocalDateTime,
     ): Boolean
+
+    @Query("""
+        SELECT r.libroId
+        FROM Reserva r
+        WHERE r.fechaHasta >= :now
+        GROUP BY r.libroId
+        HAVING COUNT(r) >= :minReservas
+    """)
+    fun findLibroIdsConAlMenosNReservasActivas(
+        @Param("now") now: LocalDateTime,
+        @Param("minReservas") minReservas: Long,
+    ): List<Int>
 }
