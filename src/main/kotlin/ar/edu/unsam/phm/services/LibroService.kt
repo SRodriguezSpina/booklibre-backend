@@ -67,6 +67,10 @@ class LibroService(
         return libroRepository.findAllByIds(libroIds)
     }
 
+    fun getLibrosConReservasActivasMayorA(minReservas: Long = 3L): List<Libro> {
+        val libroIds = reservaJpa.findLibroIdsConAlMenosNReservasActivas(LocalDateTime.now(), minReservas)
+        return libroRepository.findAllByIds(libroIds)
+    }
 
     fun getCalificaciones(libroId: Int): List<CalificacionDTO> =
         libroRepository.getCalificacionesDetalle(libroId, null)

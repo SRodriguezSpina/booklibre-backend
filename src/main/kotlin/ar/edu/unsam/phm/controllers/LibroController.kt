@@ -87,6 +87,15 @@ class LibroController(
         libroService.getLibrosConReservasCumplidas()
             .map { it.toHomeDTO(libroService.calcularBiblioKarma(it, usuarioId)) }
 
+    // Dami: libros con al menos N reservas activas
+    @GetMapping("/reservas-activas")
+    fun getLibrosConReservasActivas(
+        @RequestParam(required = false) usuarioId: Int?,
+        @RequestParam(defaultValue = "3") minReservas: Long,
+    ): List<LibroHomeDTO> =
+        libroService.getLibrosConReservasActivasMayorA(minReservas)
+            .map { it.toHomeDTO(libroService.calcularBiblioKarma(it, usuarioId)) }
+
     @GetMapping("/{libroId}/calificaciones")
     fun getCalificaciones(@PathVariable libroId: Int): List<CalificacionDTO> =
         libroService.getCalificaciones(libroId)
