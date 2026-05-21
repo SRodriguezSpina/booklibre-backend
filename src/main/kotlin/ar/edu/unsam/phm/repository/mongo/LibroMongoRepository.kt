@@ -16,4 +16,6 @@ interface LibroMongoRepository : MongoRepository<Libro, ObjectId> {
     fun findByDuenioIdAndActivoTrue(duenioId: Int): List<Libro>
     @Query(value = "{ '_class': ?0 }", count = true)
     fun contarPorTipo(tipo: String): Long
+    @Query("{ 'id' : { \$in: ?0 } }")
+    fun findByIdIn(ids: Collection<Int>): List<Libro>
 }

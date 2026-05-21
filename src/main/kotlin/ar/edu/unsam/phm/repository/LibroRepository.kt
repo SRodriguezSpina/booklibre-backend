@@ -39,6 +39,9 @@ class LibroRepository(
 
     fun getLibros(): List<Libro> = mongo.findAll().filter { it.activo }
 
+    fun findAllByIds(ids: Collection<Int>): List<Libro> =
+        if (ids.isEmpty()) emptyList() else mongo.findByIdIn(ids)
+
     fun getTodosLosLibrosDeUsuario(usuarioId: Int): List<Libro> =
         mongo.findByDuenioId(usuarioId)
 

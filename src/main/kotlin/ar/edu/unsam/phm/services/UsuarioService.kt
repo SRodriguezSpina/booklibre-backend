@@ -41,7 +41,7 @@ class UsuarioService(
 
         val tipoAnterior = usuario.tipoUsuarioDomain()
 
-        if (request.tipoUsuario != usuario.tipoUsuario && reservaJpa.tieneReservasActivas(id)) {
+        if (request.tipoUsuario != usuario.tipoUsuario && tieneReservasActivas(id)) {
             throw BusinessException("No podés cambiar el tipo de usuario mientras tenés reservas activas")
         }
 
@@ -70,6 +70,14 @@ class UsuarioService(
 
     fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> =
         libroRepository.getLibrosDeUsuario(usuarioId)
+
+    private fun tieneReservasActivas(usuarioId: Int): Boolean {
+        val ahora = java.time.LocalDateTime.now()
+        if (reservaJpa.existsByUsuarioIdAndFechaHastaAfter(usuarioId, ahora)) return true
+        val librosDelUsuario = libroRepository.getTodosLosLibrosDeUsuario(usuarioId).map { it.id }
+        return librosDelUsuario.isNotEmpty() &&
+            reservaJpa.existsByLibroIdInAndFechaHastaAfter(librosDelUsuario, ahora)
+    }
 
     // Validaciones de unicidad — incumben al service porque tocan el repositorio
     private fun validarEmailDisponible(email: String, idActual: Int) {

@@ -96,25 +96,26 @@ fun Libro.toDTO(
 )
 
 fun Reserva.toDTO(
+    libro: Libro,
     estaDisponible: Boolean = false,
     yaCalificadoPorUsuario: Boolean = false,
 ): ReservaDTO = ReservaDTO(
-    id                     = this.libro.id,
+    id                     = libro.id,
     prestamoId             = this.id,
-    titulo                 = this.libro.titulo,
-    autor                  = this.libro.autor,
-    estado                 = this.libro.estado.name,
-    propietarioId          = this.libro.duenio.id,
-    propietarioNombre      = this.libro.duenio.nombre,
-    imagenUrl              = this.libro.imagenUrl ?: "",
+    titulo                 = libro.titulo,
+    autor                  = libro.autor,
+    estado                 = libro.estado.name,
+    propietarioId          = libro.duenio.id,
+    propietarioNombre      = libro.duenio.nombre,
+    imagenUrl              = libro.imagenUrl ?: "",
     alquiladoPorId         = usuario.id,
     alquiladoPorNombre     = usuario.nombre,
     fechaDesde             = fechaDesde.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")),
     fechaHasta             = fechaHasta.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")),
-    rating                 = this.libro.calificacion,
+    rating                 = libro.calificacion,
     bibliokarma            = bibliokarmas,
     disponibilidad         = estaDisponible,
-    libroActivo            = this.libro.activo,
+    libroActivo            = libro.activo,
     yaCalificadoPorUsuario = yaCalificadoPorUsuario,
 )
 

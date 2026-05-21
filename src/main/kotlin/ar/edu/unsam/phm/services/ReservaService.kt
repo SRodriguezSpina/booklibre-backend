@@ -34,15 +34,21 @@ class ReservaService(
         usuarioJpa.findById(usuarioId).orElseThrow { NotFoundException("Usuario $usuarioId no encontrado") }
         val reservas = when (tipo) {
             TipoReserva.HECHAS    -> reservaJpa.findByUsuarioId(usuarioId)
-            TipoReserva.RECIBIDAS -> reservaJpa.findByLibroDuenioId(usuarioId)
+            TipoReserva.RECIBIDAS -> {
+                val librosDelUsuario = libroRepository.getTodosLosLibrosDeUsuario(usuarioId).map { it.id }
+                if (librosDelUsuario.isEmpty()) emptyList()
+                else reservaJpa.findByLibroIdIn(librosDelUsuario)
+            }
         }
+        val librosPorId = libroRepository.findAllByIds(reservas.map { it.libroId }).associateBy { it.id }
         val ahora = LocalDateTime.now()
-        return reservas.map { reserva ->
-            val estaDisponible = !reservaJpa.estaReservadoEnPeriodo(reserva.libro.id, ahora, ahora)
+        return reservas.mapNotNull { reserva ->
+            val libro = librosPorId[reserva.libroId] ?: return@mapNotNull null
+            val estaDisponible = !reservaJpa.estaReservadoEnPeriodo(reserva.libroId, ahora, ahora)
             val yaCalificado = calificacionesMongo.existsByLibroIdAndUsuarioId(
-                reserva.libro.id, reserva.usuario.id,
+                reserva.libroId, reserva.usuario.id,
             )
-            reserva.toDTO(estaDisponible = estaDisponible, yaCalificadoPorUsuario = yaCalificado)
+            reserva.toDTO(libro = libro, estaDisponible = estaDisponible, yaCalificadoPorUsuario = yaCalificado)
         }
     }
 
@@ -118,12 +124,12 @@ class ReservaService(
             }
 
             val reserva = Reserva(
-                libro     = libro,
-                usuario   = solicitante,
+                libroId    = libro.id,
+                usuario    = solicitante,
                 fechaDesde = dto.fechaDesde,
                 fechaHasta = dto.fechaHasta,
             )
-            reserva.confirmar()
+            reserva.confirmar(libro)
 
             libro.duenio.sumaLibroReservado()
             solicitante.sumaLibroLeido()
