@@ -62,6 +62,12 @@ class LibroService(
     fun getRating(libroId: Int): Double =
         libroRepository.getById(libroId).calificacion
 
+    fun getLibrosConReservasCumplidas(): List<Libro> {
+        val libroIds = reservaJpa.findLibrosConTodasReservasCumplidas(LocalDateTime.now())
+        return libroRepository.findAllByIds(libroIds)
+    }
+
+
     fun getCalificaciones(libroId: Int): List<CalificacionDTO> =
         libroRepository.getCalificacionesDetalle(libroId, null)
             .map { CalificacionDTO(it.usuarioId, it.nombreUsuario, it.valor, it.comentario) }
