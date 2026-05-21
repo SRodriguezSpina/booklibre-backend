@@ -72,17 +72,8 @@ class V18__migrate_libros_calificaciones_to_mongodb : BaseJavaMigration() {
                     .append("calificacion", libro.calificacion)
                     .append("activo", libro.activo)
 
-                librosCollection.updateOne(
-                    Filters.eq("id", libro.id),
-                    Document(
-                        "\$set",
-                        libroDoc,
-                    ).append(
-                        "\$setOnInsert",
-                        Document("_id", ObjectId()),
-                    ),
-                    UpdateOptions().upsert(true),
-                )
+                libroDoc.append("_id", ObjectId())
+                librosCollection.insertOne(libroDoc)
             }
         }
     }

@@ -2,7 +2,7 @@ server:
   port: 8080
 spring:
   datasource:
-    url: jdbc:postgresql://db:5432/booklibre
+    url: jdbc:postgresql://postgres:5432/booklibre
     username: booklibre
     password: booklibre
     driver-class-name: org.postgresql.Driver
@@ -16,6 +16,7 @@ spring:
     locations: classpath:db/migration
   data:
     mongodb:
-      # La app se conecta al router mongos con usuario autenticado
-      uri: mongodb://booklibre_app:booklibre_app_secret@mongos:27017/booklibreMongo?authSource=booklibreMongo
+      uri: mongodb://mongos:27017/booklibreMongo
       database: booklibreMongo
+  main:
+    allow-bean-definition-overriding: true

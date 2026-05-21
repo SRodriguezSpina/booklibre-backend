@@ -18,9 +18,14 @@ class ClickLogService(
      * Se llama desde LibroController.getLibro() cuando hay usuario autenticado.
      */
     fun registrarClick(libroId: Int, libroTitulo: String, nombreUsuario: String) {
+        val ahora = LocalDateTime.now()
+        val limiteDedupe = ahora.minusSeconds(5)
+        if (clickLogMongo.existsByLibroIdAndNombreUsuarioAndFechaHoraAfter(libroId, nombreUsuario, limiteDedupe)) {
+            return
+        }
         clickLogMongo.save(
             ClickLogDocument(
-                fechaHora     = LocalDateTime.now(),
+                fechaHora     = ahora,
                 nombreUsuario = nombreUsuario,
                 libroId       = libroId,
                 libroTitulo   = libroTitulo,

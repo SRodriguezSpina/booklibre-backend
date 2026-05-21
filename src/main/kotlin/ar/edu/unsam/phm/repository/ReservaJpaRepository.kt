@@ -13,19 +13,15 @@ import java.util.Optional
 
 interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
     fun findByLibroId(libroId: Int): List<Reserva>
+    fun findByLibroIdIn(libroIds: Collection<Int>): List<Reserva>
     fun findByUsuarioId(usuarioId: Int): List<Reserva>
     fun countByLibroId(libroId: Int): Long
     fun existsByUsuarioIdAndFechaHastaAfter(usuarioId: Int, now: java.time.LocalDateTime): Boolean
-    fun existsByLibroDuenioIdAndFechaHastaAfter(duenioId: Int, now: java.time.LocalDateTime): Boolean
+    fun existsByLibroIdInAndFechaHastaAfter(libroIds: Collection<Int>, now: java.time.LocalDateTime): Boolean
 
     fun findTopByLibroIdOrderByIdDesc(libroId: Int): Optional<Reserva>
     @Query("""
-        SELECT r FROM Reserva r
-        WHERE r.usuario = :usuarioId
-    """)
-    fun findByLibroDuenioId(@Param("usuarioId") usuarioId: Int): List<Reserva>
-    @Query("""
-        SELECT r.libro FROM Reserva r
+        SELECT r.libroId FROM Reserva r
         WHERE r.fechaDesde <= :hasta
           AND r.fechaHasta >= :desde
     """)
@@ -86,17 +82,13 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
     fun contarReservasPorLibro(libroId: Int): Int =
         countByLibroId(libroId).toInt()
 
-    fun tieneReservasActivas(usuarioId: Int, now: LocalDateTime = LocalDateTime.now()): Boolean =
-        existsByUsuarioIdAndFechaHastaAfter(usuarioId, now) ||
-            existsByLibroDuenioIdAndFechaHastaAfter(usuarioId, now)
-
     fun obtenerIdsLibrosReservados(desde: LocalDateTime, hasta: LocalDateTime): Set<Int> =
         findLibroIdsBySuperposicion(desde, hasta).toSet()
 
     @Query("""
         SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END
         FROM Reserva r
-        WHERE r.libro.id = :libroId
+        WHERE r.libroId = :libroId
           AND r.fechaDesde <= :hasta
           AND r.fechaHasta >= :desde
     """)

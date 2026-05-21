@@ -6,9 +6,8 @@ import java.time.LocalDateTime
 @Table(name = "reservas")
 
 class Reserva (
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "libro_id", nullable = false)
-    var libro: Libro,
+    @Column(name = "libro_id", nullable = false)
+    var libroId: Int,
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
@@ -27,10 +26,10 @@ class Reserva (
     fun sePisaCon(otraFechaDesde: LocalDateTime, otraFechaHasta: LocalDateTime): Boolean {
         return this.fechaDesde <= otraFechaHasta && this.fechaHasta >= otraFechaDesde
     }
-    fun confirmar() {
-        asignarKarma()
+    fun confirmar(libro: Libro) {
+        asignarKarma(libro)
     }
-    private fun asignarKarma() {
+    private fun asignarKarma(libro: Libro) {
         val bibliokarmasASumar = libro.calcularBiblioKarmaTotal(usuario, fechaDesde, fechaHasta)
         usuario.bibliokarmas += bibliokarmasASumar
         this.bibliokarmas = bibliokarmasASumar
