@@ -4,6 +4,7 @@ import ar.edu.unsam.phm.domain.mongo.ClickLogDocument
 import org.bson.types.ObjectId
 import org.springframework.data.mongodb.repository.Aggregation
 import org.springframework.data.mongodb.repository.MongoRepository
+import java.time.LocalDateTime
 
 interface ClickLogMongoRepository : MongoRepository<ClickLogDocument, ObjectId> {
 
@@ -12,6 +13,12 @@ interface ClickLogMongoRepository : MongoRepository<ClickLogDocument, ObjectId> 
 
     // Clicks de varios libros a la vez (para el perfil del publicador)
     fun findByLibroIdInOrderByFechaHoraDesc(libroIds: List<Int>): List<ClickLogDocument>
+
+    fun existsByLibroIdAndNombreUsuarioAndFechaHoraAfter(
+        libroId: Int,
+        nombreUsuario: String,
+        fechaHora: LocalDateTime,
+    ): Boolean
 
     /**
      * Consulta MongoDB — Integrante 1: libro más clickeado
