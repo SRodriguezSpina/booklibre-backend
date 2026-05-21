@@ -72,6 +72,11 @@ class LibroController(
         clickLogService.getLibroMasClickeado()
             ?: mapOf("mensaje" to "Todavía no hay clicks registrados")
 
+    // Query: Saber cuántos libros son del tipo coleccionables s/aggregation
+    @GetMapping("/colecionables/count")
+    fun contarColeccionables(): Map<String, Long> =
+        mapOf("cantidad" to libroService.contarLibrosColecciones())
+
     @GetMapping("/{libroId}/calificaciones")
     fun getCalificaciones(@PathVariable libroId: Int): List<CalificacionDTO> =
         libroService.getCalificaciones(libroId)

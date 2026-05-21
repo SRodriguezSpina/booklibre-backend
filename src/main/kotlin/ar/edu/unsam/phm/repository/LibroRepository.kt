@@ -4,7 +4,6 @@ import ar.edu.unsam.phm.domain.Calificacion
 import ar.edu.unsam.phm.domain.CalificacionDocument
 import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.LibroFiltros
-import ar.edu.unsam.phm.domain.mongo.CalificacionDocument
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
@@ -153,4 +152,7 @@ class LibroRepository(
     }
 
     fun liberarReservasVencidas(now: java.time.LocalDateTime): Int = 0
+
+    fun contarLibrosCollecionables(): Long =
+        mongo.contarPorTipo("ar.edu.unsam.phm.domain.LibroColeccionable")
 }

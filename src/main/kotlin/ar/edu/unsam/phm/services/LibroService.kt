@@ -150,6 +150,9 @@ class LibroService(
     fun obtenerHistorialDePuntajes(libroId: Int): List<HistorialPuntaje> =
         libroRepository.getHistorialPuntajes(libroId)
 
+    fun contarLibrosColecciones(): Long =
+        libroRepository.contarLibrosCollecionables()
+
     // Chequea si el usuario puede eliminar/editar un libro siendo dueño
     private fun evaluarPermiso(libro: Libro, usuarioId: Int) {
         if (libro.duenio.id != usuarioId)
