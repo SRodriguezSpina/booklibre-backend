@@ -3,14 +3,18 @@ package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.TipoUsuario
 import ar.edu.unsam.phm.domain.Usuario
+import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
+import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
+import ar.edu.unsam.phm.mappers.toLibroUsuarioItemDTO
+import ar.edu.unsam.phm.exceptions.BusinessException
+import ar.edu.unsam.phm.exceptions.ConflictException
+import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.repository.LibroRepository
-import ar.edu.unsam.phm.repository.ReservaRepository
-import ar.edu.unsam.phm.repository.UsuarioRepository
+import ar.edu.unsam.phm.repository.ReservaJpaRepository
+import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.security.UserDetailsServiceImpl
-
-import ar.edu.unsam.phm.exceptions.BusinessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -21,26 +25,26 @@ data class UsuarioActualizadoConToken(
 
 @Service
 class UsuarioService(
-    private val usuarioRepository: UsuarioRepository,
+    private val usuarioJpa: UsuarioJpaRepository,
     private val libroRepository: LibroRepository,
-    private val reservaRepository: ReservaRepository,
+    private val reservaJpa: ReservaJpaRepository,
     private val jwtTokenUtils: JwtTokenUtils,
 ) {
     fun obtenerUsuario(id: Int): Usuario =
-        usuarioRepository.getById(id)
+        usuarioJpa.findById(id).orElseThrow { NotFoundException("Usuario $id no encontrado") }
 
     @Transactional
     fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioActualizadoConToken {
-        val usuario = usuarioRepository.getById(id)
+        val usuario = usuarioJpa.findById(id).orElseThrow { NotFoundException("Usuario $id no encontrado") }
         val email   = Usuario.normalizarYValidarEmail(request.email)
         val celular = Usuario.normalizarYValidarCelular(request.celular)
 
-        usuarioRepository.validarEmailDisponible(email, id)
-        usuarioRepository.validarCelularDisponible(celular, id)
+        validarEmailDisponible(email, id)
+        validarCelularDisponible(celular, id)
 
         val tipoAnterior = usuario.tipoUsuarioDomain()
 
-        if (request.tipoUsuario != usuario.tipoUsuario && reservaRepository.tieneReservasActivas(id)) {
+        if (request.tipoUsuario != usuario.tipoUsuario && tieneReservasActivas(id)) {
             throw BusinessException("No podés cambiar el tipo de usuario mientras tenés reservas activas")
         }
 
@@ -57,7 +61,7 @@ class UsuarioService(
 
         manejarCambioDeTipo(usuario, tipoAnterior, tipoActual)
 
-        val actualizado = usuarioRepository.save(usuario)
+        val actualizado = usuarioJpa.save(usuario)
         val roles = UserDetailsServiceImpl.rolesParaTipo(actualizado.tipoUsuario).map { it.authority }
         val nuevoToken = jwtTokenUtils.generateToken(actualizado.email, roles)
 
@@ -70,16 +74,54 @@ class UsuarioService(
     fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> =
         libroRepository.getLibrosDeUsuario(usuarioId)
 
+    fun obtenerLibrosDeUsuarioPaginado(
+        usuarioId: Int,
+        filtro: String,
+        ordenarPor: String,
+        direccion: String,
+        page: Int,
+        size: Int,
+    ): PagedResponse<LibroUsuarioItemDTO> {
+        val ahora = java.time.LocalDateTime.now()
+        val librosReservadosAhora = reservaJpa.obtenerIdsLibrosReservados(ahora, ahora)
+        val paged = libroRepository.findPaginadoByDuenioId(
+            usuarioId, filtro, ordenarPor, direccion, page, size, librosReservadosAhora,
+        )
+        val items = paged.content.map { libro ->
+            libro.toLibroUsuarioItemDTO().copy(disponible = libro.id !in librosReservadosAhora)
+        }
+        return PagedResponse(items, paged.page, paged.totalPages, paged.totalElements)
+    }
+
+    private fun tieneReservasActivas(usuarioId: Int): Boolean {
+        val ahora = java.time.LocalDateTime.now()
+        if (reservaJpa.existsByUsuarioIdAndFechaHastaAfter(usuarioId, ahora)) return true
+        val librosDelUsuario = libroRepository.findLibroIdsByDuenioId(usuarioId)
+        return librosDelUsuario.isNotEmpty() &&
+            reservaJpa.existsByLibroIdInAndFechaHastaAfter(librosDelUsuario, ahora)
+    }
+
+    // Validaciones de unicidad — incumben al service porque tocan el repositorio
+    private fun validarEmailDisponible(email: String, idActual: Int) {
+        val existente = usuarioJpa.findByEmail(email)
+        if (existente != null && existente.id != idActual)
+            throw ConflictException("El email ya está en uso")
+    }
+
+    private fun validarCelularDisponible(celular: String, idActual: Int) {
+        val existente = usuarioJpa.findByCelular(celular)
+        if (existente != null && existente.id != idActual)
+            throw ConflictException("El celular ya está en uso")
+    }
+
     private fun manejarCambioDeTipo(
         usuario: Usuario,
         tipoAnterior: TipoUsuario,
-        tipoActual: TipoUsuario
+        tipoActual: TipoUsuario,
     ) {
-        val eraPublicador = tipoAnterior.puedePublicar()
+        val eraPublicador    = tipoAnterior.puedePublicar()
         val ahoraEsPublicador = tipoActual.puedePublicar()
-
         if (eraPublicador == ahoraEsPublicador) return
-
         libroRepository.actualizarActivoPorDuenio(usuario.id, ahoraEsPublicador)
     }
 }

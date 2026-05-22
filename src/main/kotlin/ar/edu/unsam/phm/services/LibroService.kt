@@ -1,26 +1,30 @@
 package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.domain.*
- import ar.edu.unsam.phm.dtos.CalificacionDTO
- import ar.edu.unsam.phm.dtos.LibroDTO
- import ar.edu.unsam.phm.dtos.NewCalificacionDTO
- import ar.edu.unsam.phm.dtos.PagedResponse
- import ar.edu.unsam.phm.exceptions.BusinessException
- import ar.edu.unsam.phm.exceptions.ConflictException
+import ar.edu.unsam.phm.dtos.CalificacionDTO
+import ar.edu.unsam.phm.dtos.LibroDTO
+import ar.edu.unsam.phm.dtos.NewCalificacionDTO
+import ar.edu.unsam.phm.dtos.PagedResponse
+import ar.edu.unsam.phm.exceptions.BusinessException
+import ar.edu.unsam.phm.exceptions.ConflictException
+import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
- import ar.edu.unsam.phm.repository.LibroRepository
- import ar.edu.unsam.phm.repository.ReservaRepository
- import ar.edu.unsam.phm.repository.UsuarioRepository
- import org.springframework.transaction.annotation.Transactional
- import org.springframework.stereotype.Service
- import java.time.LocalDate
+import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.ReservaJpaRepository
+import ar.edu.unsam.phm.repository.UsuarioJpaRepository
+import ar.edu.unsam.phm.repository.mongo.CalificacionMongoRepository
+import org.springframework.stereotype.Service
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Service
 class LibroService(
     private val libroRepository: LibroRepository,
-    private val usuarioRepository: UsuarioRepository,
-    private val reservaRepository: ReservaRepository,
+    private val usuarioJpa: UsuarioJpaRepository,
+    private val reservaJpa: ReservaJpaRepository,
+    private val calificacionesMongo: CalificacionMongoRepository,
+    private val reservaService: ReservaService,
 ) {
     fun search(
         query: String, generos: String, page: Int, size: Int,
@@ -28,7 +32,7 @@ class LibroService(
         fechaDesde: String?, fechaHasta: String?,
         isbn: String?, prestadoPor: String?, sortBy: String?,
     ): PagedResponse<Libro> {
-        val librosReservadosIds = reservaRepository.obtenerIdsLibrosReservados(fechaDesde, fechaHasta)
+        val librosReservadosIds = reservaService.obtenerIdsLibrosReservados(fechaDesde, fechaHasta)
         val filtros = LibroFiltros.desdeRequest(
             query, generos, paginasMin, paginasMax, isbn,
             prestadoPor, usuarioId, librosReservadosIds, sortBy,
@@ -37,37 +41,44 @@ class LibroService(
     }
 
     fun calcularBiblioKarma(libro: Libro, usuarioId: Int?): Int {
-        val usuario = usuarioId?.let { usuarioRepository.findById(it) } ?: return 0
-        val cantidadReservas = reservaRepository.findByLibroId(libro.id).size
+        val usuario = usuarioId?.let { usuarioJpa.findById(it).orElse(null) } ?: return 0
+        val cantidadReservas = reservaJpa.contarReservasPorLibro(libro.id)
         return libro.plusBiblioKarma(usuario, cantidadReservas)
     }
 
     fun obtenerLibro(id: Int): Libro = libroRepository.getById(id)
 
-    fun obtenerReservasDeLibro(libroId: Int): List<Reserva> =
-        reservaRepository.getReservasDeLibro(libroId)
+    fun obtenerReservasDeLibro(libroId: Int) = reservaJpa.findByLibroId(libroId)
 
     fun obtenerPrestatarioActual(libroId: Int): Int? =
-        reservaRepository.obtenerPrestatarioActual(libroId)
+        reservaJpa.obtenerPrestatarioActual(libroId)
 
     fun contarReservasPorLibro(libroId: Int): Int =
-        reservaRepository.contarReservasPorLibro(libroId)
+        reservaJpa.contarReservasPorLibro(libroId)
 
     fun getCalificacionesDetalle(libroId: Int, limite: Int? = 2) =
         libroRepository.getCalificacionesDetalle(libroId, limite)
 
-    fun obtenerNombresUsuariosCalificaciones(libro: Libro): Map<Int, String> =
-        usuarioRepository.resolverNombresCalificaciones(libro.calificaciones)
-
     fun getRating(libroId: Int): Double =
         libroRepository.getById(libroId).calificacion
+
+    fun getLibrosConReservasCumplidas(): List<Libro> {
+        val libroIds = reservaJpa.findLibrosConTodasReservasCumplidas(LocalDateTime.now())
+        return libroRepository.findAllByIds(libroIds)
+    }
+
+    fun getLibrosConReservasActivasMayorA(minReservas: Long = 3L): List<Libro> {
+        val libroIds = reservaJpa.findLibroIdsConAlMenosNReservasActivas(LocalDateTime.now(), minReservas)
+        return libroRepository.findAllByIds(libroIds)
+    }
 
     fun getCalificaciones(libroId: Int): List<CalificacionDTO> =
         libroRepository.getCalificacionesDetalle(libroId, null)
             .map { CalificacionDTO(it.usuarioId, it.nombreUsuario, it.valor, it.comentario) }
 
     fun crearLibro(dto: LibroDTO, usuarioId: Int): Libro {
-        val duenio = usuarioRepository.getById(usuarioId)
+        val duenio = usuarioJpa.findById(usuarioId)
+            .orElseThrow { NotFoundException("Usuario $usuarioId no encontrado") }
         val data = LibroData(
             duenio           = duenio,
             titulo           = dto.titulo,
@@ -82,7 +93,6 @@ class LibroService(
             estado           = EstadoLibro.fromString(dto.estado),
             imagenUrl        = dto.imagenUrl,
             fechaAgregado    = LocalDate.now(),
-            disponibilidad   = Disponibilidad.DISPONIBLE,
         )
         val libro = when (dto.tipo) {
             "Comun"          -> LibroComun(data)
@@ -112,19 +122,25 @@ class LibroService(
         return libroRepository.save(libro)
     }
 
-    @Transactional
     fun agregarCalificacion(idLibro: Int, dto: NewCalificacionDTO) {
         val libro = libroRepository.getById(idLibro)
-        usuarioRepository.getById(dto.usuarioId)
+        usuarioJpa.findById(dto.usuarioId)
+            .orElseThrow { NotFoundException("Usuario ${dto.usuarioId} no encontrado") }
+
+        if (libroRepository.usuarioYaCalifico(idLibro, dto.usuarioId)) {
+            throw ConflictException("Usuario ${dto.usuarioId} ya calificó este libro")
+        }
+        if (dto.valor !in 1..5) {
+            throw BusinessException("La calificación debe estar entre 1 y 5")
+        }
 
         val calificacion = Calificacion(
-            libro = libro,
-            usuarioId = dto.usuarioId,
-            valor = dto.valor,
-            comentario = dto.comentario
+            usuarioId  = dto.usuarioId,
+            valor      = dto.valor,
+            comentario = dto.comentario,
+            fecha      = LocalDateTime.now(),
         )
-        libro.agregarCalificacion(calificacion)
-        libroRepository.save(libro)
+        libroRepository.agregarCalificacion(libro, calificacion)
     }
 
     fun darDeBaja(libroId: Int, usuarioId: Int) {
@@ -133,6 +149,7 @@ class LibroService(
         libro.activo = false
         libroRepository.save(libro)
     }
+
     fun reactivar(libroId: Int, usuarioId: Int) {
         val libro = libroRepository.getByIdIncluyendoInactivos(libroId)
         evaluarPermiso(libro, usuarioId)
@@ -140,12 +157,19 @@ class LibroService(
         libroRepository.save(libro)
     }
 
-    fun obtenerHistorialDePuntajes(libroId: Int): List<HistorialPuntaje> {
-        return libroRepository.getHistorialPuntajes(libroId)
-    }
+    fun obtenerHistorialDePuntajes(libroId: Int): List<HistorialPuntaje> =
+        libroRepository.getHistorialPuntajes(libroId)
 
+    fun contarLibrosColecciones(): Long =
+        libroRepository.contarLibrosCollecionables()
+
+    // Query: libros con promedio de calificación > 4
+    fun getLibrosConPromedioMayorA4(): List<Libro> =
+        libroRepository.getLibrosConPromedioMayorA4()
+
+    // Chequea si el usuario puede eliminar/editar un libro siendo dueño
     private fun evaluarPermiso(libro: Libro, usuarioId: Int) {
         if (libro.duenio.id != usuarioId)
             throw UnauthorizedException("Acción no autorizada")
-    } //chequea si el usuario puede eliminar/editar libro si es dueño
+    }
 }

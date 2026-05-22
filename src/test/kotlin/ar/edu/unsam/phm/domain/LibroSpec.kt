@@ -36,7 +36,7 @@ class LibroSpec : DescribeSpec({
                     cantidadPaginas = 300, isbn = "9780000000001", idioma = Idioma.ESPANOL,
                     editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
                     estado = EstadoLibro.EXCELENTE, imagenUrl = "",
-                    disponibilidad = Disponibilidad.DISPONIBLE
+                    
                 )
             ).apply { id = 1 }
 
@@ -80,7 +80,7 @@ class LibroSpec : DescribeSpec({
                                 descripcion = "Descripción de prueba", genero = Genero.DRAMA, cantidadPaginas = 0,
                                 isbn = "9780000000005", idioma = Idioma.ESPANOL, editorial = "Editorial de prueba",
                                 fechaPublicacion = LocalDate.now(), estado = EstadoLibro.BUENO, imagenUrl = "",
-                                disponibilidad = Disponibilidad.DISPONIBLE,
+                                
                             ),
                         )
                     }
@@ -98,7 +98,7 @@ class LibroSpec : DescribeSpec({
                     descripcion = "Clásico", genero = Genero.LITERATURA_CLASICA,
                     cantidadPaginas = 100, isbn = "9780000000002", idioma = Idioma.ESPANOL,
                     editorial = "Salamandra", fechaPublicacion = LocalDate.of(1943, 4, 6),
-                    estado = EstadoLibro.MUY_BUENO, imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
+                    estado = EstadoLibro.MUY_BUENO, imagenUrl = "",
                 )
             ).apply { id = 2 }
 
@@ -125,7 +125,7 @@ class LibroSpec : DescribeSpec({
                     descripcion = "Sci-fi épico", genero = Genero.CIENCIA_FICCION,
                     cantidadPaginas = 500, isbn = "9780000000003", idioma = Idioma.ESPANOL,
                     editorial = "Minotauro", fechaPublicacion = LocalDate.of(1965, 8, 1),
-                    estado = EstadoLibro.EXCELENTE, imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
+                    estado = EstadoLibro.EXCELENTE, imagenUrl = "",
                 )
             ).apply { id = 3 }
 
@@ -166,7 +166,7 @@ class LibroSpec : DescribeSpec({
                     descripcion = "Historia", genero = Genero.LITERATURA_CLASICA,
                     cantidadPaginas = 400, isbn = "9780000000004", idioma = Idioma.ESPANOL,
                     editorial = "Debate", fechaPublicacion = LocalDate.of(2011, 1, 1),
-                    estado = EstadoLibro.EXCELENTE, imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
+                    estado = EstadoLibro.EXCELENTE, imagenUrl = "",
                 )
             ).apply { id = 4 }
 
@@ -238,7 +238,7 @@ class LibroSpec : DescribeSpec({
                             editorial = "Editorial de prueba",
                             fechaPublicacion = LocalDate.now(),
                             estado = EstadoLibro.BUENO,
-                            imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
+                            imagenUrl = "",
                         )
                     )
                 }
@@ -259,7 +259,7 @@ class LibroSpec : DescribeSpec({
                             editorial = "Editorial de prueba",
                             fechaPublicacion = LocalDate.now(),
                             estado = EstadoLibro.BUENO,
-                            imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
+                            imagenUrl = "",
                         )
                     )
                 }

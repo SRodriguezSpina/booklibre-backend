@@ -1,13 +1,15 @@
 package ar.edu.unsam.phm.controllers
 
+import ar.edu.unsam.phm.dtos.ClickLogDTO
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
+import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
-import ar.edu.unsam.phm.mappers.toLibroUsuarioItemDTO
 import ar.edu.unsam.phm.mappers.toResponse
 import ar.edu.unsam.phm.exceptions.ForbiddenException
+import ar.edu.unsam.phm.services.ClickLogService
 import ar.edu.unsam.phm.services.ReservaService
 import ar.edu.unsam.phm.services.UsuarioService
 import org.springframework.security.core.Authentication
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*
 class UsuarioController(
     val usuarioService: UsuarioService,
     val reservaService: ReservaService,
+    val clickLogService: ClickLogService,
 ) {
 
     @GetMapping("/{id}")
@@ -41,10 +44,27 @@ class UsuarioController(
     }
 
     @GetMapping("/{id}/libros")
-    fun getLibrosDeUsuario(@PathVariable id: Int): List<LibroUsuarioItemDTO> =
-        usuarioService.obtenerLibrosDeUsuario(id).map { libro -> libro.toLibroUsuarioItemDTO() }
+    fun getLibrosDeUsuario(
+        @PathVariable id: Int,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(defaultValue = "todos") filtro: String,
+        @RequestParam(defaultValue = "titulo") ordenarPor: String,
+        @RequestParam(defaultValue = "ascendente") direccion: String,
+    ): PagedResponse<LibroUsuarioItemDTO> =
+        usuarioService.obtenerLibrosDeUsuarioPaginado(id, filtro, ordenarPor, direccion, page, size)
 
     @GetMapping("/{id}/reservas/anuales")
     fun getReservasAnualesDeUsuario(@PathVariable id: Int): List<ReservaAnualUsuarioDTO> =
         reservaService.obtenerReservasAnuales(id)
+
+    /**
+     * Bonus — Historial de clicks en los libros del publicador.
+     * GET /api/usuarios/{id}/clicks
+     * Muestra quién y cuándo vio los libros de este usuario (publicador).
+     */
+    @GetMapping("/{id}/clicks")
+    fun getClicksDeLibrosDePublicador(@PathVariable id: Int): List<ClickLogDTO> =
+        clickLogService.getClicksDeLibrosDeUsuario(id)
+            .map { ClickLogDTO(it.libroId, it.libroTitulo, it.nombreUsuario, it.fechaHora.toString()) }
 }

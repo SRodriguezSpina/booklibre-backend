@@ -72,7 +72,7 @@ class ReservaControllerTest(
             estado = estado,
             imagenUrl = "",
             fechaAgregado = LocalDate.now(),
-            disponibilidad = Disponibilidad.DISPONIBLE,
+            
         )
         return LibroComun(data).apply { this.id = id }
     }

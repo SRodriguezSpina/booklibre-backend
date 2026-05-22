@@ -1,0 +1,5 @@
+# Forzar LF para scripts de shell (evita que Windows convierta a CRLF)
+*.sh text eol=lf
+
+# Forzar LF para scripts JS de mongo-init
+mongo-init/*.js text eol=lf

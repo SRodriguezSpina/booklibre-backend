@@ -18,7 +18,7 @@ class ReservaSpec : DescribeSpec({
                 duenio = duenio, titulo = "1984", autor = "Orwell",
                 descripcion = "Novela distópica", genero = Genero.DRAMA, cantidadPaginas = 300,
                 isbn = "9780000000006", idioma = Idioma.ESPANOL, editorial = "Debolsillo",
-                fechaPublicacion = LocalDate.now(), estado = EstadoLibro.BUENO, imagenUrl = "",disponibilidad = Disponibilidad.DISPONIBLE
+                fechaPublicacion = LocalDate.now(), estado = EstadoLibro.BUENO, imagenUrl = "",
             )
         ).apply { id = 10 }
 

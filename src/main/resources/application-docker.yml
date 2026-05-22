@@ -2,7 +2,7 @@ server:
   port: 8080
 spring:
   datasource:
-    url: jdbc:postgresql://db:5432/booklibre
+    url: jdbc:postgresql://postgres:5432/booklibre
     username: booklibre
     password: booklibre
     driver-class-name: org.postgresql.Driver
@@ -14,3 +14,9 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  data:
+    mongodb:
+      uri: mongodb://mongos:27017/booklibreMongo
+      database: booklibreMongo
+  main:
+    allow-bean-definition-overriding: true

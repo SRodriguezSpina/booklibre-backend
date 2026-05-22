@@ -9,6 +9,6 @@ package ar.edu.unsam.phm.readmodels
  * Permite calcular el totalPages sin hacer una segunda consulta a la BDD.
  */
 interface LibroPaginadoView {
-    val libroId: Int
+    val libroId: String
     val total: Long
 }

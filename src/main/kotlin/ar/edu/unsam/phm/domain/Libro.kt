@@ -1,7 +1,7 @@
 package ar.edu.unsam.phm.domain
 
 import ar.edu.unsam.phm.exceptions.BusinessException
-import jakarta.persistence.*
+import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -56,15 +56,10 @@ data class LibroData(
     val estado: EstadoLibro,
     val imagenUrl: String? = null,
     val fechaAgregado: LocalDate = LocalDate.now(),
-    val disponibilidad: Disponibilidad,
 )
 
-@Entity
-@Table(name = "libros")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "tipo", discriminatorType = DiscriminatorType.STRING)
+@Document(collection = "libros")
 abstract class Libro() : BaseEntity() {
-
     companion object {
         private val ISBN_REGEX = Regex("^\\d{13}$")
 
@@ -86,62 +81,22 @@ abstract class Libro() : BaseEntity() {
         }
     }
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "duenio_id", nullable = false)
     lateinit var duenio: Usuario
-
-    @Column(nullable = false)
     var titulo: String = ""
-
-    @Column(nullable = false)
     var autor: String = ""
-
-    @Column(nullable = false, length = 2000)
     var descripcion: String = ""
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     var genero: Genero = Genero.DRAMA
-
-    @Column(name = "cantidad_paginas", nullable = false)
     var cantidadPaginas: Int = 1
-
-    @Column(nullable = false)
     var isbn: String = ""
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     var idioma: Idioma = Idioma.ESPANOL
-
-    @Column(nullable = false)
     var editorial: String = ""
-
-    @Column(nullable = false)
     var fechaPublicacion: LocalDate = LocalDate.now()
-
-    @Column(nullable = false)
     var fechaAgregado: LocalDate = LocalDate.now()
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     var estado: EstadoLibro = EstadoLibro.BUENO
-
-    @Column(nullable = true, length = 2000)
     var imagenUrl: String? = null
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    var disponibilidad: Disponibilidad = Disponibilidad.DISPONIBLE
-
-    @OneToMany(mappedBy = "libro", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-    @OrderBy("id ASC")
-    var calificaciones: MutableList<Calificacion> = mutableListOf()
-
-    @Column(nullable = false)
+    // Promedio de calificaciones (calculado por el service, guardado para ordenamiento)
     var calificacion: Double = 0.0
-
-    @Column(nullable = false)
-    var activo : Boolean = true
+    var activo: Boolean = true
 
     constructor(data: LibroData) : this() {
         duenio          = data.duenio
@@ -157,7 +112,6 @@ abstract class Libro() : BaseEntity() {
         fechaAgregado   = data.fechaAgregado
         estado          = data.estado
         imagenUrl       = data.imagenUrl
-        disponibilidad  = data.disponibilidad
     }
 
     fun calcularBiblioKarmaTotal(
@@ -171,33 +125,11 @@ abstract class Libro() : BaseEntity() {
         return (5 * diasReserva) + plusBiblioKarma(usuario, cantidadReservasDelLibro)
     }
 
-    fun agregarCalificacion(nueva: Calificacion) {
-        if (nueva.valor !in 1..5) throw BusinessException("La calificación debe estar entre 1 y 5")
-        if (calificaciones.any { it.usuarioId == nueva.usuarioId })
-            throw BusinessException("Usuario ${nueva.usuarioId} ya calificó este libro")
-        calificaciones.add(
-            Calificacion(libro = this, usuarioId = nueva.usuarioId, valor = nueva.valor, comentario = nueva.comentario),
-        )
-        actualizarPromedioCalificacion()
-    }
-
-    private fun actualizarPromedioCalificacion() {
-        if (calificaciones.isEmpty()) {
-            calificacion = 0.0
-        } else {
-            val promedio = calificaciones.map { it.valor }.average()
-            calificacion = (promedio * 10.0).roundToInt() / 10.0
-        }
-    }
-
-    fun estaDisponible() = disponibilidad == Disponibilidad.DISPONIBLE
-
-    fun actualizoDisponibilidad(estaDisponible: Boolean) {
-        disponibilidad = if (estaDisponible) Disponibilidad.DISPONIBLE else Disponibilidad.RESERVADO
+    fun actualizarPromedioCalificacion(promedioGeneral: Double) {
+        calificacion = (promedioGeneral * 10.0).roundToInt() / 10.0
     }
 
     abstract fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int = 0): Int
-
 
     fun actualizarDatos(
         nuevoTitulo: String,
@@ -226,8 +158,6 @@ abstract class Libro() : BaseEntity() {
     }
 }
 
-@Entity
-@DiscriminatorValue("Comun")
 class LibroComun : Libro {
     constructor() : super()
     constructor(data: LibroData) : super(data)
@@ -239,8 +169,6 @@ class LibroComun : Libro {
     }
 }
 
-@Entity
-@DiscriminatorValue("ConDedicatoria")
 class LibroConDedicatoria : Libro {
     constructor() : super()
     constructor(data: LibroData) : super(data)
@@ -250,8 +178,6 @@ class LibroConDedicatoria : Libro {
     }
 }
 
-@Entity
-@DiscriminatorValue("Coleccionable")
 class LibroColeccionable : Libro {
     constructor() : super()
     constructor(data: LibroData) : super(data)

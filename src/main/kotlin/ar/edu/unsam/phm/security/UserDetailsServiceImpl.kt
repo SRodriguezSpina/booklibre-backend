@@ -1,6 +1,6 @@
 package ar.edu.unsam.phm.security
 
-import ar.edu.unsam.phm.repository.UsuarioRepository
+import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
@@ -9,10 +9,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 
 @Service
-class UserDetailsServiceImpl(private val usuarioRepository: UsuarioRepository) : UserDetailsService {
+class UserDetailsServiceImpl(private val usuarioJpa: UsuarioJpaRepository) : UserDetailsService {
 
     override fun loadUserByUsername(email: String): UserDetails {
-        val usuario = usuarioRepository.findByEmail(email)
+        val usuario = usuarioJpa.findByEmail(email)
             ?: throw UsernameNotFoundException("Usuario no encontrado: $email")
         return User(usuario.email, usuario.password, rolesParaTipo(usuario.tipoUsuario))
     }

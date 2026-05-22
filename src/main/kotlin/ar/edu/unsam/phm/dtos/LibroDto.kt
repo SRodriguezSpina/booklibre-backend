@@ -5,6 +5,14 @@ import ar.edu.unsam.phm.domain.Genero
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+// Bonus: historial de clicks sobre los libros de un publicador
+data class ClickLogDTO(
+    val libroId: Int,
+    val libroTitulo: String,
+    val nombreUsuario: String,
+    val fechaHora: String,
+)
+
 data class RangoReservaDTO(
     val fechaDesde: String,
     val fechaHasta: String
@@ -66,7 +74,8 @@ data class LibroHomeDTO(
 data class PagedResponse<T>(
     val content: List<T>,
     val page: Int,
-    val totalPages: Int
+    val totalPages: Int,
+    val totalElements: Long = 0L,
 )
 
 data class HistorialPuntajeDTO(

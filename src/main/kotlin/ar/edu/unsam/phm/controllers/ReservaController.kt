@@ -6,7 +6,6 @@ import ar.edu.unsam.phm.dtos.CrearReservaDTO
 import ar.edu.unsam.phm.dtos.UsuarioConMasReservasDTO
 import ar.edu.unsam.phm.dtos.UsuarioReservasDevueltasDTO
 import ar.edu.unsam.phm.services.ReservaService
-import ar.edu.unsam.phm.mappers.toDTO
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 
@@ -18,7 +17,7 @@ class ReservaController(val reservaService: ReservaService) {
     fun getReservas(
         @RequestParam usuarioId: Int,
         @RequestParam tipo: TipoReserva
-    ): List<ReservaDTO> = reservaService.obtenerReservas(usuarioId, tipo).map { it.toDTO() }
+    ): List<ReservaDTO> = reservaService.obtenerReservas(usuarioId, tipo)
 
     @PostMapping("/crear")
     fun crearReserva(@RequestBody body: CrearReservaDTO) {
