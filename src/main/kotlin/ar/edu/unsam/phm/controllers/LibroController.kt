@@ -60,7 +60,7 @@ class LibroController(
         val alquiladoPorId = libroService.obtenerPrestatarioActual(libroId)
         val totalReservas = libroService.contarReservasPorLibro(libroId)
         val calificaciones = libroService.getCalificacionesDetalle(libroId)
-        val reservasActivas = libroService.obtenerRangosReservasActivas(libroId)
+        val reservasActivas = libroService.obtenerRangosReservasActivas(libro)
         val estoyReservado = usuarioId?.let { libroService.usuarioTieneReservaPendiente(libroId, it) } ?: false
         val miReservaHasta = if (estoyReservado && usuarioId != null) libroService.obtenerMiReservaHasta(libroId, usuarioId) else null
         return libro.toDTO(

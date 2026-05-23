@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.domain
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.Sharded
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -60,6 +61,7 @@ data class LibroData(
 )
 
 @Document(collection = "libros")
+@Sharded(shardKey = ["libroId"])
 abstract class Libro() : BaseEntity() {
     companion object {
         private val ISBN_REGEX = Regex("^\\d{13}$")

@@ -34,13 +34,13 @@ class LibroMongoRepository(
 
     fun getById(id: Int): Libro? {
         val query = Query(Criteria.where("libroId").`is`(id).and("activo").`is`(true))
-        query.fields().exclude("clicks").exclude("reservas").slice("calificaciones", -2)
+        query.fields().exclude("clicks").slice("calificaciones", -2)
         return mongoTemplate.findOne(query, Libro::class.java)
     }
 
     fun getByIdIncluyendoInactivos(id: Int): Libro? {
         val query = Query(Criteria.where("libroId").`is`(id))
-        query.fields().exclude("clicks").exclude("reservas").slice("calificaciones", -2)
+        query.fields().exclude("clicks").slice("calificaciones", -2)
         return mongoTemplate.findOne(query, Libro::class.java)
     }
 
@@ -201,11 +201,9 @@ class LibroMongoRepository(
     }
 
     fun actualizarActivoPorDuenio(usuarioId: Int, activo: Boolean) {
-        val libros = findByDuenioId(usuarioId)
-        libros.forEach {
-            it.activo = activo
-            mongoTemplate.save(it)
-        }
+        val query = Query(Criteria.where("duenio.id").`is`(usuarioId))
+        val update = org.springframework.data.mongodb.core.query.Update().set("activo", activo)
+        mongoTemplate.updateMulti(query, update, Libro::class.java)
     }
 
     fun liberarReservasVencidas(now: java.time.LocalDateTime): Int = 0

@@ -70,7 +70,7 @@ class V5__seed_calificaciones_mongo : BaseJavaMigration() {
                 val roundedAvg = (avg * 10.0).roundToInt() / 10.0
 
                 librosCollection.updateOne(
-                    Document("id", libroId),
+                    Document("libroId", libroId),
                     Document("\$set", Document("calificaciones", califDocs).append("calificacion", roundedAvg))
                 )
             }

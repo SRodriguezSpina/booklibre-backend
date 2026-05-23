@@ -55,9 +55,10 @@ class LibroService(
     fun contarReservasPorLibro(libroId: Int): Int =
         reservaJpa.contarReservasPorLibro(libroId)
 
-    fun obtenerRangosReservasActivas(libroId: Int): List<RangoReservaDTO> {
+    fun obtenerRangosReservasActivas(libro: Libro): List<RangoReservaDTO> {
         val ahora = LocalDateTime.now()
-        return reservaJpa.findByLibroIdAndFechaHastaAfter(libroId, ahora)
+        return libro.reservas
+            .filter { it.fechaHasta.isAfter(ahora) }
             .map { RangoReservaDTO(
                 fechaDesde = it.fechaDesde.toLocalDate().toString(),
                 fechaHasta = it.fechaHasta.toLocalDate().toString(),

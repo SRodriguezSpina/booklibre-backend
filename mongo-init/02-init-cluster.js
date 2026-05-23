@@ -5,6 +5,15 @@
 // replica sets ya fueron inicializados por 01-init-replicasets.sh.
 // -----------------------------------------------------------------------------
 
+// 0. Set default RW concern to support PSA shards
+print("=== Configurando Write Concern para soportar shards PSA ===");
+try {
+  db.adminCommand({ setDefaultRWConcern: 1, defaultWriteConcern: { w: 1 } });
+  print("Write concern global configurado a w:1.");
+} catch(e) {
+  print("Error al configurar write concern global:", e.codeName || e.message);
+}
+
 // 1. Agregar shards
 print("=== Agregando Shard 1 (shard1rs) ===");
 try {
