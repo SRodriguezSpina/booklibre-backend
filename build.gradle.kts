@@ -52,6 +52,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     // testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
