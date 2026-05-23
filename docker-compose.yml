@@ -24,6 +24,7 @@ services:
       retries: 5
       start_period: 30s
 
+  # 2 ROUTERS
   # ─────────────────────────────────────────────────────────────────────────────
   # MongoDB — Config Servers (replica set: configrs)
   # Almacenan los metadatos del cluster (rangos de chunks, ubicación de shards)
@@ -284,6 +285,8 @@ services:
         condition: service_healthy
     networks:
       - booklibre-net
+
+# AGREGAR ARBITRO
 
 networks:
   booklibre-net:

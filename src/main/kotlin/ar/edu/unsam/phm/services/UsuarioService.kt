@@ -3,7 +3,10 @@ package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.TipoUsuario
 import ar.edu.unsam.phm.domain.Usuario
+import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
+import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
+import ar.edu.unsam.phm.mappers.toLibroUsuarioItemDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
@@ -70,6 +73,25 @@ class UsuarioService(
 
     fun obtenerLibrosDeUsuario(usuarioId: Int): List<Libro> =
         libroRepository.getLibrosDeUsuario(usuarioId)
+
+    fun obtenerLibrosDeUsuarioPaginado(
+        usuarioId: Int,
+        filtro: String,
+        ordenarPor: String,
+        direccion: String,
+        page: Int,
+        size: Int,
+    ): PagedResponse<LibroUsuarioItemDTO> {
+        val ahora = java.time.LocalDateTime.now()
+        val librosReservadosAhora = reservaJpa.obtenerIdsLibrosReservados(ahora, ahora)
+        val paged = libroRepository.findPaginadoByDuenioId(
+            usuarioId, filtro, ordenarPor, direccion, page, size, librosReservadosAhora,
+        )
+        val items = paged.content.map { libro ->
+            libro.toLibroUsuarioItemDTO().copy(disponible = libro.id !in librosReservadosAhora)
+        }
+        return PagedResponse(items, paged.page, paged.totalPages, paged.totalElements)
+    }
 
     private fun tieneReservasActivas(usuarioId: Int): Boolean {
         val ahora = java.time.LocalDateTime.now()

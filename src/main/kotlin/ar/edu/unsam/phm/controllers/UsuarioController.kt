@@ -2,11 +2,11 @@ package ar.edu.unsam.phm.controllers
 
 import ar.edu.unsam.phm.dtos.ClickLogDTO
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
+import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
-import ar.edu.unsam.phm.mappers.toLibroUsuarioItemDTO
 import ar.edu.unsam.phm.mappers.toResponse
 import ar.edu.unsam.phm.exceptions.ForbiddenException
 import ar.edu.unsam.phm.services.ClickLogService
@@ -44,8 +44,15 @@ class UsuarioController(
     }
 
     @GetMapping("/{id}/libros")
-    fun getLibrosDeUsuario(@PathVariable id: Int): List<LibroUsuarioItemDTO> =
-        usuarioService.obtenerLibrosDeUsuario(id).map { libro -> libro.toLibroUsuarioItemDTO() }
+    fun getLibrosDeUsuario(
+        @PathVariable id: Int,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(defaultValue = "todos") filtro: String,
+        @RequestParam(defaultValue = "titulo") ordenarPor: String,
+        @RequestParam(defaultValue = "ascendente") direccion: String,
+    ): PagedResponse<LibroUsuarioItemDTO> =
+        usuarioService.obtenerLibrosDeUsuarioPaginado(id, filtro, ordenarPor, direccion, page, size)
 
     @GetMapping("/{id}/reservas/anuales")
     fun getReservasAnualesDeUsuario(@PathVariable id: Int): List<ReservaAnualUsuarioDTO> =

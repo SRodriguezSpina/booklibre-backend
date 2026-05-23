@@ -50,7 +50,7 @@ class V7__seed_massive_libros_mongo : BaseJavaMigration() {
     private val estados = arrayOf("EXCELENTE", "MUY_BUENO", "BUENO")
 
     override fun migrate(context: Context) {
-        val mongoUri = System.getenv("MONGODB_URI") ?: "mongodb://localhost:27017/booklibre"
+        val mongoUri = System.getenv("MONGODB_URI") ?: "mongodb://localhost:27017/booklibreMongo"
         val dbName = mongoUri.substringAfterLast("/").substringBefore("?")
 
         val duenios = loadDuenios(context.connection)

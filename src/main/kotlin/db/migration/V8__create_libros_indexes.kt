@@ -9,7 +9,7 @@ import org.flywaydb.core.api.migration.Context
 class V8__create_libros_indexes : BaseJavaMigration() {
 
     override fun migrate(context: Context) {
-        val mongoUri = System.getenv("MONGODB_URI") ?: "mongodb://localhost:27017/booklibre"
+        val mongoUri = System.getenv("MONGODB_URI") ?: "mongodb://localhost:27017/booklibreMongo"
         val dbName = mongoUri.substringAfterLast("/").substringBefore("?")
 
         MongoClients.create(mongoUri).use { client ->
