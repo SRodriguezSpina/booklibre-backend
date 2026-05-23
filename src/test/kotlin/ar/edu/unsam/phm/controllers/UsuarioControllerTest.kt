@@ -12,6 +12,7 @@ import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.services.UsuarioActualizadoConToken
 import ar.edu.unsam.phm.services.ReservaService
 import ar.edu.unsam.phm.services.UsuarioService
+import ar.edu.unsam.phm.services.ClickLogService
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -20,12 +21,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 
 @WebMvcTest(UsuarioController::class)
-@WithMockUser
+@WithMockUser(username = "user1@mail.com")
 @DisplayName("Dado un UsuarioController")
 class UsuarioControllerTest {
     @Autowired
@@ -39,6 +41,9 @@ class UsuarioControllerTest {
 
     @MockBean
     lateinit var jwtTokenUtils: JwtTokenUtils
+
+    @MockBean
+    lateinit var clickLogService: ClickLogService
 
     // Helper para crear un usuario de dominio rápidamente
     private fun crearUsuarioFake(id: Int, nombre: String): Usuario {
@@ -105,6 +110,7 @@ class UsuarioControllerTest {
             tipoUsuario = "PUBLICADOR"
         ).apply { this.id = id }
 
+        Mockito.`when`(usuarioService.obtenerUsuario(id)).thenReturn(usuarioActualizado)
         Mockito.`when`(usuarioService.actualizarUsuario(id, request)).thenReturn(
             UsuarioActualizadoConToken(
                 usuario = usuarioActualizado,
@@ -114,6 +120,7 @@ class UsuarioControllerTest {
 
         mockMvc.perform(
             MockMvcRequestBuilders.put("/api/usuarios/$id")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
@@ -133,8 +140,4 @@ class UsuarioControllerTest {
 
         Mockito.verify(usuarioService).actualizarUsuario(id, request)
     }
-
-    //@Test
-    //@DisplayName("GET /api/usuarios/{id}/libros devuelve 200 con lista de libros")
-    //TODO(REALIZAR TEST)
 }

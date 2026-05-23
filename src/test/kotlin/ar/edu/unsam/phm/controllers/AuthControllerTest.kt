@@ -19,12 +19,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @WebMvcTest(AuthController::class)
+@AutoConfigureMockMvc(addFilters = false)
 @Import(AuthExceptionHandler::class)
 @DisplayName("AuthController")
 class AuthControllerTest {
@@ -52,7 +54,9 @@ class AuthControllerTest {
         celular = "",
         ciudad = "",
         tipoUsuario = "Lector",
-        bibliokarmas = 0
+        bibliokarmas = 0,
+        reservados = 0,
+        leidos = 0
     )
 
     val loginExitoso = AuthResponseUsuario(

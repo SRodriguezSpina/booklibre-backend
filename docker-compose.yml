@@ -1,8 +1,8 @@
 services:
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # PostgreSQL — persiste usuarios, reservas, historial de puntajes
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
+  # PostgreSQL - Persiste usuarios, reservas, historial de puntajes
+  # -----------------------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
     container_name: booklibre-db
@@ -24,11 +24,9 @@ services:
       retries: 5
       start_period: 30s
 
-  # 2 ROUTERS
-  # ─────────────────────────────────────────────────────────────────────────────
-  # MongoDB — Config Servers (replica set: configrs)
-  # Almacenan los metadatos del cluster (rangos de chunks, ubicación de shards)
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
+  # MongoDB - Config Servers (replica set: configrs)
+  # -----------------------------------------------------------------------------
   configsvr1:
     image: mongo:7
     container_name: configsvr1
@@ -74,9 +72,9 @@ services:
       retries: 10
       start_period: 20s
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # MongoDB — Shard 1 (replica set: shard1rs)
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
+  # MongoDB - Shard 1 (replica set: shard1rs) - PSA Architecture
+  # -----------------------------------------------------------------------------
   shard1a:
     image: mongo:7
     container_name: shard1a
@@ -107,12 +105,12 @@ services:
       retries: 10
       start_period: 20s
 
-  shard1c:
+  shard1arbitro:
     image: mongo:7
-    container_name: shard1c
+    container_name: shard1arbitro
     command: ["mongod", "--shardsvr", "--replSet", "shard1rs", "--bind_ip_all", "--port", "27017"]
     volumes:
-      - booklibre_mongo_shard1c_data:/data/db
+      - booklibre_mongo_shard1arbitro_data:/data/db
     networks:
       - booklibre-net
     healthcheck:
@@ -122,9 +120,9 @@ services:
       retries: 10
       start_period: 20s
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # MongoDB — Shard 2 (replica set: shard2rs)
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
+  # MongoDB - Shard 2 (replica set: shard2rs) - PSA Architecture
+  # -----------------------------------------------------------------------------
   shard2a:
     image: mongo:7
     container_name: shard2a
@@ -155,12 +153,12 @@ services:
       retries: 10
       start_period: 20s
 
-  shard2c:
+  shard2arbitro:
     image: mongo:7
-    container_name: shard2c
+    container_name: shard2arbitro
     command: ["mongod", "--shardsvr", "--replSet", "shard2rs", "--bind_ip_all", "--port", "27017"]
     volumes:
-      - booklibre_mongo_shard2c_data:/data/db
+      - booklibre_mongo_shard2arbitro_data:/data/db
     networks:
       - booklibre-net
     healthcheck:
@@ -170,10 +168,9 @@ services:
       retries: 10
       start_period: 20s
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Init — Fase 1: inicializa los 3 replica sets
-  # Sale con exit 0 cuando termina; permite que router arranque.
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
+  # Init - Fase 1: inicializa los 3 replica sets
+  # -----------------------------------------------------------------------------
   mongo-rs-init:
     image: mongo:7
     container_name: mongo-rs-init
@@ -184,24 +181,22 @@ services:
       configsvr3: { condition: service_healthy }
       shard1a:    { condition: service_healthy }
       shard1b:    { condition: service_healthy }
-      shard1c:    { condition: service_healthy }
+      shard1arbitro: { condition: service_healthy }
       shard2a:    { condition: service_healthy }
       shard2b:    { condition: service_healthy }
-      shard2c:    { condition: service_healthy }
+      shard2arbitro: { condition: service_healthy }
     volumes:
       - ./mongo-init:/scripts:ro
     command: ["bash", "/scripts/01-init-replicasets.sh"]
     networks:
       - booklibre-net
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Router (mongos) — router del cluster sharded
-  # Arranca solo después de que configrs ya está inicializado.
-  # La app Spring se conecta únicamente a este nodo.
-  # ─────────────────────────────────────────────────────────────────────────────
-  router:
+  # -----------------------------------------------------------------------------
+  # Router (mongos-router)
+  # -----------------------------------------------------------------------------
+  mongos-router:
     image: mongo:7
-    container_name: router
+    container_name: mongos-router
     command: >
       mongos
       --configdb configrs/configsvr1:27017,configsvr2:27017,configsvr3:27017
@@ -221,24 +216,24 @@ services:
       retries: 15
       start_period: 30s
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Init — Fase 2: agrega shards a router y habilita sharding en las colecciones
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
+  # Init - Fase 2: agrega shards a router y habilita sharding en las colecciones
+  # -----------------------------------------------------------------------------
   mongo:
     image: mongo:7
     container_name: mongo
     restart: "no"
     depends_on:
-      router: { condition: service_healthy }
+      mongos-router: { condition: service_healthy }
     volumes:
       - ./mongo-init:/scripts:ro
-    command: ["mongosh", "--host", "router", "--port", "27017", "/scripts/02-init-cluster.js"]
+    command: ["mongosh", "--host", "mongos-router", "--port", "27017", "/scripts/02-init-cluster.js"]
     networks:
       - booklibre-net
 
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
   # Backend Spring Boot
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
   backend:
     build:
       context: .
@@ -247,7 +242,7 @@ services:
     restart: unless-stopped
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - MONGODB_URI=mongodb://router:27017/booklibreMongo
+      - MONGODB_URI=mongodb://mongos-router:27017/booklibreMongo
     ports:
       - "8080:8080"
     networks:
@@ -264,9 +259,9 @@ services:
       retries: 5
       start_period: 60s
 
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
   # Frontend React + Vite
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
   frontend:
     build:
       context: ../frontend-2026-grupo-12
@@ -286,8 +281,6 @@ services:
     networks:
       - booklibre-net
 
-# AGREGAR ARBITRO
-
 networks:
   booklibre-net:
     driver: bridge
@@ -299,7 +292,7 @@ volumes:
   booklibre_mongo_configsvr3_data:
   booklibre_mongo_shard1a_data:
   booklibre_mongo_shard1b_data:
-  booklibre_mongo_shard1c_data:
+  booklibre_mongo_shard1arbitro_data:
   booklibre_mongo_shard2a_data:
   booklibre_mongo_shard2b_data:
-  booklibre_mongo_shard2c_data:
+  booklibre_mongo_shard2arbitro_data:

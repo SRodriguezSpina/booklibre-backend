@@ -24,20 +24,20 @@ class V7__seed_massive_libros_mongo : BaseJavaMigration() {
 
     private val prefijos = arrayOf(
         "El misterio de", "La sombra de", "Entre las ruinas de", "Memorias de",
-        "El secreto de", "La historia de", "Más allá de", "El viaje a",
-        "La caída de", "El origen de", "Cartas desde", "El último",
+        "El secreto de", "La historia de", "Mas alla de", "El viaje a",
+        "La caida de", "El origen de", "Cartas desde", "El ultimo",
     )
 
     private val sufijos = arrayOf(
-        "la oscuridad", "los sueños", "la humanidad", "el tiempo",
+        "la oscuridad", "los suenos", "la humanidad", "el tiempo",
         "los mares", "la luz", "las estrellas", "el silencio",
         "la memoria", "los espejos", "el destino", "la verdad",
     )
 
     private val autores = arrayOf(
-        "Sofía Beltrán", "Mateo Acosta", "Lucía Iturralde", "Tomás Quintero",
+        "Sofia Beltran", "Mateo Acosta", "Lucia Iturralde", "Tomas Quintero",
         "Camila Aguilera", "Diego Sandoval", "Valentina Mora", "Bruno Tagliabue",
-        "Isabella Cárdenas", "Javier Solís", "Renata Espinosa", "Nicolás Ferreyra",
+        "Isabella Cardenas", "Javier Solis", "Renata Espinosa", "Nicolas Ferreyra",
     )
 
     private val generos = arrayOf(
@@ -81,6 +81,7 @@ class V7__seed_massive_libros_mongo : BaseJavaMigration() {
                     .append("_id", ObjectId())
                     .append("_class", classNameParaTipo(tipo))
                     .append("id", libroId)
+                    .append("libroId", libroId)
                     .append("duenio", duenio)
                     .append("titulo", titulo)
                     .append("autor", autor)
@@ -96,6 +97,9 @@ class V7__seed_massive_libros_mongo : BaseJavaMigration() {
                     .append("imagenUrl", null)
                     .append("calificacion", 0.0)
                     .append("activo", true)
+                    .append("calificaciones", ArrayList<Document>())
+                    .append("clicks", ArrayList<Document>())
+                    .append("reservas", ArrayList<Document>())
 
                 docs.add(doc)
 

@@ -16,10 +16,9 @@ import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
-import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.mongo.LibroMongoRepository
 import ar.edu.unsam.phm.repository.ReservaJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioJpaRepository
-import ar.edu.unsam.phm.repository.mongo.CalificacionMongoRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -32,12 +31,11 @@ import java.time.LocalDate
 
 class LibroServiceSpringSpec : DescribeSpec({
 
-    val libroRepository = mockk<LibroRepository>()
+    val libroRepository = mockk<LibroMongoRepository>()
     val usuarioJpa = mockk<UsuarioJpaRepository>()
     val reservaJpa = mockk<ReservaJpaRepository>()
-    val calificacionesMongo = mockk<CalificacionMongoRepository>()
     val reservaService = mockk<ReservaService>()
-    val service = LibroService(libroRepository, usuarioJpa, reservaJpa, calificacionesMongo, reservaService)
+    val service = LibroService(libroRepository, usuarioJpa, reservaJpa, reservaService)
 
     val duenio = Usuario(
         email = "ana@example.com",
@@ -109,14 +107,14 @@ class LibroServiceSpringSpec : DescribeSpec({
 
         it("crearLibro guarda LibroConDedicatoria") {
             every { usuarioJpa.findById(3) } returns java.util.Optional.of(duenio)
-            every { libroRepository.save(any()) } answers { firstArg<Libro>().apply { id = 1 } }
+            every { libroRepository.save(any()) } answers { (args[0] as Libro).apply { id = 1 } }
 
             service.crearLibro(libroDto("ConDedicatoria"), 3).shouldBeInstanceOf<LibroConDedicatoria>()
         }
 
         it("crearLibro guarda LibroColeccionable") {
             every { usuarioJpa.findById(3) } returns java.util.Optional.of(duenio)
-            every { libroRepository.save(any()) } answers { firstArg<Libro>().apply { id = 2 } }
+            every { libroRepository.save(any()) } answers { (args[0] as Libro).apply { id = 2 } }
 
             service.crearLibro(libroDto("Coleccionable"), 3).shouldBeInstanceOf<LibroColeccionable>()
         }
@@ -139,7 +137,7 @@ class LibroServiceSpringSpec : DescribeSpec({
                 ciudad = "Lanús",
                 bibliokarmas = 50,
             ).apply { id = 2 }
-            every { libroRepository.getById(10) } returns libro
+            every { libroRepository.getByIdCompleto(10) } returns libro
             every { usuarioJpa.findById(2) } returns java.util.Optional.of(calificador)
             every { libroRepository.usuarioYaCalifico(10, 2) } returns false
             every { libroRepository.agregarCalificacion(any(), any()) } returns libro
@@ -151,7 +149,7 @@ class LibroServiceSpringSpec : DescribeSpec({
 
         it("actualizarLibro lanza UnauthorizedException si el usuario no es el dueño") {
             val libro = libroComunPersistido()
-            every { libroRepository.getById(10) } returns libro
+            every { libroRepository.getByIdCompleto(10) } returns libro
             shouldThrow<UnauthorizedException> {
                 service.actualizarLibro(10, libroDto(), usuarioId = 999)
             }
