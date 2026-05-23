@@ -6,6 +6,7 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class LibroSpec : DescribeSpec({
     isolationMode = IsolationMode.InstancePerTest
@@ -22,8 +23,8 @@ class LibroSpec : DescribeSpec({
         val usuarioPobre   = Usuario("p", "p", "Pobre",   "sin karma", bibliokarmas = 0)
         val usuarioRico    = Usuario("r", "r", "Rico",    "con karma", bibliokarmas = 2000)
 
-        val desde = LocalDate.of(2026, 3, 1)
-        val hasta = LocalDate.of(2026, 3, 10) // 10 días
+        val desde = LocalDate.of(2026, 3, 1).atStartOfDay()
+        val hasta = LocalDate.of(2026, 3, 10).atStartOfDay() // 10 días
 
         // ── LibroComun ────────────────────────────────────────────────────────
         describe("LibroComun") {
@@ -36,7 +37,6 @@ class LibroSpec : DescribeSpec({
                     cantidadPaginas = 300, isbn = "9780000000001", idioma = Idioma.ESPANOL,
                     editorial = "Debolsillo", fechaPublicacion = LocalDate.of(1949, 6, 8),
                     estado = EstadoLibro.EXCELENTE, imagenUrl = "",
-                    
                 )
             ).apply { id = 1 }
 
@@ -54,7 +54,7 @@ class LibroSpec : DescribeSpec({
 
             describe("calcularBiblioKarmaTotal — validaciones") {
                 it("LANZA BusinessException CUANDO HASTA ES IGUAL A DESDE") {
-                    val mismaFecha = LocalDate.of(2026, 3, 1)
+                    val mismaFecha = LocalDate.of(2026, 3, 1).atStartOfDay()
                     assertThrows<BusinessException> {
                         libro.calcularBiblioKarmaTotal(usuarioPobre, mismaFecha, mismaFecha)
                     }
@@ -64,8 +64,8 @@ class LibroSpec : DescribeSpec({
                     assertThrows<BusinessException> {
                         libro.calcularBiblioKarmaTotal(
                             usuarioPobre,
-                            LocalDate.of(2026, 3, 10),
-                            LocalDate.of(2026, 3, 1)
+                            LocalDate.of(2026, 3, 10).atStartOfDay(),
+                            LocalDate.of(2026, 3, 1).atStartOfDay()
                         )
                     }
                 }
@@ -80,7 +80,6 @@ class LibroSpec : DescribeSpec({
                                 descripcion = "Descripción de prueba", genero = Genero.DRAMA, cantidadPaginas = 0,
                                 isbn = "9780000000005", idioma = Idioma.ESPANOL, editorial = "Editorial de prueba",
                                 fechaPublicacion = LocalDate.now(), estado = EstadoLibro.BUENO, imagenUrl = "",
-                                
                             ),
                         )
                     }
@@ -175,27 +174,27 @@ class LibroSpec : DescribeSpec({
             }
 
             it("AGREGA UNA CALIFICACION Y CALCULA EL PROMEDIO CORRECTAMENTE") {
-                libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 4, comentario = ""))
+                libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 4, comentario = "", fecha = LocalDateTime.now()))
                 libro.calificacion shouldBe 4.0
             }
 
             it("PROMEDIO CON MULTIPLES CALIFICACIONES ES CORRECTO") {
-                libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 4, comentario = ""))
-                libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 2, valor = 2, comentario = ""))
+                libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 4, comentario = "", fecha = LocalDateTime.now()))
+                libro.agregarCalificacion(Calificacion(usuarioId = 2, valor = 2, comentario = "", fecha = LocalDateTime.now()))
                 libro.calificacion shouldBe 3.0
             }
 
             it("NO SE PUEDE CALIFICAR DOS VECES CON EL MISMO USUARIO") {
-                libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 5, comentario = ""))
+                libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 5, comentario = "", fecha = LocalDateTime.now()))
                 assertThrows<BusinessException> {
-                    libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 3, comentario = ""))
+                    libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 3, comentario = "", fecha = LocalDateTime.now()))
                 }
             }
 
             it("LA CALIFICACION NO CAMBIA TRAS UN INTENTO DUPLICADO") {
-                libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 5, comentario = ""))
+                libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 5, comentario = "", fecha = LocalDateTime.now()))
                 assertThrows<BusinessException> {
-                    libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 1, comentario = ""))
+                    libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 1, comentario = "", fecha = LocalDateTime.now()))
                 }
                 libro.calificacion shouldBe 5.0
             }
@@ -203,25 +202,26 @@ class LibroSpec : DescribeSpec({
             describe("Calificaciones — casos borde") {
                 it("AGREGAR CALIFICACION CON VALOR MENOR A 1 LANZA BusinessException") {
                     assertThrows<BusinessException> {
-                        libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 0, comentario = ""))
+                        libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 0, comentario = "", fecha = LocalDateTime.now()))
                     }
                 }
 
                 it("AGREGAR CALIFICACION CON VALOR MAYOR A 5 LANZA BusinessException") {
                     assertThrows<BusinessException> {
-                        libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 6, comentario = ""))
+                        libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 6, comentario = "", fecha = LocalDateTime.now()))
                     }
                 }
 
                 it("GETCLASIFICACION REDONDEA A 1 DECIMAL CORRECTAMENTE") {
-                    libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 1, valor = 4, comentario = ""))
-                    libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 2, valor = 3, comentario = ""))
-                    libro.agregarCalificacion(Calificacion(libro = libro, usuarioId = 3, valor = 5, comentario = ""))
+                    libro.agregarCalificacion(Calificacion(usuarioId = 1, valor = 4, comentario = "", fecha = LocalDateTime.now()))
+                    libro.agregarCalificacion(Calificacion(usuarioId = 2, valor = 3, comentario = "", fecha = LocalDateTime.now()))
+                    libro.agregarCalificacion(Calificacion(usuarioId = 3, valor = 5, comentario = "", fecha = LocalDateTime.now()))
                     libro.calificacion shouldBe 4.0
                 }
             }
         }
 
+        // ── ISBN ──────────────────────────────────────────────────────────────
         describe("ISBN") {
             it("LANZA BusinessException SI EL ISBN CONTIENE CARACTERES NO NUMERICOS") {
                 assertThrows<BusinessException> {

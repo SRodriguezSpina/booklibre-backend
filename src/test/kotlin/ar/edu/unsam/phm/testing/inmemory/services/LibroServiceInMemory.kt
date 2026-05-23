@@ -1,7 +1,6 @@
 package ar.edu.unsam.phm.testing.inmemory.services
 
 import ar.edu.unsam.phm.domain.Calificacion
-import ar.edu.unsam.phm.domain.Disponibilidad
 import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.LibroColeccionable
 import ar.edu.unsam.phm.domain.LibroComun
@@ -12,12 +11,12 @@ import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.NewCalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
+import ar.edu.unsam.phm.dtos.RangoReservaDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.mappers.toDTO
-import ar.edu.unsam.phm.mappers.toDetalleDTOs
 import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.testing.inmemory.repository.EntityNotFoundException
 import ar.edu.unsam.phm.testing.inmemory.repository.LibroRepository
@@ -119,21 +118,16 @@ class LibroServiceInMemory(
         }
 
         val reservasDelLibro = reservaRepository.findByLibroId(id)
-        val nombresUsuarios = usuarioRepository.resolverNombresCalificaciones(libro.calificaciones)
 
-        return libro.toDTO(
-            todosLosRangos = reservasDelLibro,
-            nombresUsuarios = nombresUsuarios,
-        )
-    }
-
-    private fun nombreUsuarioResenia(calificaciones: List<Calificacion>): Map<Int, String> {
-        return calificaciones
-            .map { it.usuarioId }
-            .toSet()
-            .associateWith { idCalificador ->
-                usuarioRepository.findById(idCalificador)?.nombre ?: "Usuario $idCalificador"
+        return libro.toDTO().copy(
+            cantidadReservas = reservasDelLibro.size,
+            reservas = reservasDelLibro.map {
+                RangoReservaDTO(
+                    fechaDesde = it.fechaDesde.toLocalDate().toString(),
+                    fechaHasta = it.fechaHasta.toLocalDate().toString(),
+                )
             }
+        )
     }
 
     fun getRating(libroId: Int): Double {
@@ -151,7 +145,14 @@ class LibroServiceInMemory(
         } catch (_: EntityNotFoundException) {
             throw NotFoundException("Libro.kt $libroId no encontrado")
         }
-        return libro.calificaciones.toDetalleDTOs(nombreUsuarioResenia(libro.calificaciones))
+        return libro.calificaciones.map {
+            CalificacionDTO(
+                usuarioId = it.usuarioId,
+                nombreUsuario = usuarioRepository.findById(it.usuarioId)?.nombre ?: "Usuario ${it.usuarioId}",
+                valor = it.valor,
+                comentario = it.comentario
+            )
+        }
     }
 
     fun crearLibro(dto: LibroDTO, usuarioId: Int): LibroDTO {
@@ -172,7 +173,6 @@ class LibroServiceInMemory(
             estado = EstadoLibro.valueOf(dto.estado),
             imagenUrl = dto.imagenUrl,
             fechaAgregado = LocalDate.now(),
-            
         )
 
         val libro = when (dto.tipo) {
@@ -221,12 +221,14 @@ class LibroServiceInMemory(
         usuarioRepository.findById(dto.usuarioId)
             ?: throw NotFoundException("Usuario ${dto.usuarioId} no encontrado")
         val calificacion = Calificacion(
-            libro = libro,
             usuarioId = dto.usuarioId,
             valor = dto.valor,
-            comentario = dto.comentario
+            comentario = dto.comentario,
+            fecha = LocalDateTime.now()
         )
-        libro.agregarCalificacion(calificacion)
+        libro.calificaciones.add(calificacion)
+        val promedio = if (libro.calificaciones.isEmpty()) 0.0 else libro.calificaciones.map { it.valor }.average()
+        libro.actualizarPromedioCalificacion(promedio)
         libroRepository.update(libro)
     }
 

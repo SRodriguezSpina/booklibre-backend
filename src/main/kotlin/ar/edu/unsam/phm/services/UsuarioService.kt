@@ -10,7 +10,7 @@ import ar.edu.unsam.phm.mappers.toLibroUsuarioItemDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
-import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.mongo.LibroMongoRepository
 import ar.edu.unsam.phm.repository.ReservaJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import ar.edu.unsam.phm.security.JwtTokenUtils
@@ -26,7 +26,7 @@ data class UsuarioActualizadoConToken(
 @Service
 class UsuarioService(
     private val usuarioJpa: UsuarioJpaRepository,
-    private val libroRepository: LibroRepository,
+    private val libroRepository: LibroMongoRepository,
     private val reservaJpa: ReservaJpaRepository,
     private val jwtTokenUtils: JwtTokenUtils,
 ) {

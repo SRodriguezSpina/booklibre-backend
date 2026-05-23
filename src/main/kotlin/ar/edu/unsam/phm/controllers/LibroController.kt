@@ -150,4 +150,13 @@ class LibroController(
         @PathVariable libroId: Int,
         @RequestParam usuarioId: Int,
     ) = libroService.reactivar(libroId, usuarioId)
+
+    @DeleteMapping("/{libroId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun eliminarLibro(
+        @PathVariable libroId: Int,
+        @RequestParam usuarioId: Int,
+    ) {
+        libroService.eliminarLibro(libroId, usuarioId)
+    }
 }

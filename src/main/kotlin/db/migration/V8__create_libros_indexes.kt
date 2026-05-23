@@ -17,6 +17,7 @@ class V8__create_libros_indexes : BaseJavaMigration() {
             val opts = IndexOptions().background(true)
 
             collection.createIndex(Indexes.ascending("id"), opts)
+            collection.createIndex(Indexes.ascending("libroId"), opts)
             collection.createIndex(Indexes.ascending("activo"), opts)
             collection.createIndex(Indexes.ascending("duenio.id"), opts)
             collection.createIndex(Indexes.ascending("duenio.id", "activo"), opts)

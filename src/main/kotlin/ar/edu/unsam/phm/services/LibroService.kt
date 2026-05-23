@@ -11,20 +11,18 @@ import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
-import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.mongo.LibroMongoRepository
 import ar.edu.unsam.phm.repository.ReservaJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioJpaRepository
-import ar.edu.unsam.phm.repository.mongo.CalificacionMongoRepository
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
 class LibroService(
-    private val libroRepository: LibroRepository,
+    private val libroRepository: LibroMongoRepository,
     private val usuarioJpa: UsuarioJpaRepository,
     private val reservaJpa: ReservaJpaRepository,
-    private val calificacionesMongo: CalificacionMongoRepository,
     private val reservaService: ReservaService,
 ) {
     fun search(
@@ -47,7 +45,7 @@ class LibroService(
         return libro.plusBiblioKarma(usuario, cantidadReservas)
     }
 
-    fun obtenerLibro(id: Int): Libro = libroRepository.getById(id)
+    fun obtenerLibro(id: Int): Libro = libroRepository.getById(id) ?: throw NotFoundException("Libro $id no encontrado")
 
     fun obtenerReservasDeLibro(libroId: Int) = reservaJpa.findByLibroId(libroId)
 
@@ -78,7 +76,7 @@ class LibroService(
         libroRepository.getCalificacionesDetalle(libroId, limite)
 
     fun getRating(libroId: Int): Double =
-        libroRepository.getById(libroId).calificacion
+        (libroRepository.getById(libroId) ?: throw NotFoundException("Libro $libroId no encontrado")).calificacion
 
     fun getLibrosConReservasCumplidas(): List<Libro> {
         val libroIds = reservaJpa.findLibrosConTodasReservasCumplidas(LocalDateTime.now())
@@ -112,17 +110,12 @@ class LibroService(
             imagenUrl        = dto.imagenUrl,
             fechaAgregado    = LocalDate.now(),
         )
-        val libro = when (dto.tipo) {
-            "Comun"          -> LibroComun(data)
-            "ConDedicatoria" -> LibroConDedicatoria(data)
-            "Coleccionable"  -> LibroColeccionable(data)
-            else -> throw BusinessException("Tipo de libro inválido: ${dto.tipo}")
-        }
+        val libro = Libro.crear(dto.tipo, data)
         return libroRepository.save(libro)
     }
 
     fun actualizarLibro(id: Int, dto: LibroDTO, usuarioId: Int): Libro {
-        val libro = libroRepository.getById(id)
+        val libro = libroRepository.getByIdCompleto(id) ?: throw NotFoundException("Libro $id no encontrado")
         evaluarPermiso(libro, usuarioId)
         libro.actualizarDatos(
             nuevoTitulo           = dto.titulo,
@@ -141,16 +134,9 @@ class LibroService(
     }
 
     fun agregarCalificacion(idLibro: Int, dto: NewCalificacionDTO) {
-        val libro = libroRepository.getById(idLibro)
+        val libro = libroRepository.getByIdCompleto(idLibro) ?: throw NotFoundException("Libro $idLibro no encontrado")
         usuarioJpa.findById(dto.usuarioId)
             .orElseThrow { NotFoundException("Usuario ${dto.usuarioId} no encontrado") }
-
-        if (libroRepository.usuarioYaCalifico(idLibro, dto.usuarioId)) {
-            throw ConflictException("Usuario ${dto.usuarioId} ya calificó este libro")
-        }
-        if (dto.valor !in 1..5) {
-            throw BusinessException("La calificación debe estar entre 1 y 5")
-        }
 
         val calificacion = Calificacion(
             usuarioId  = dto.usuarioId,
@@ -162,14 +148,24 @@ class LibroService(
     }
 
     fun darDeBaja(libroId: Int, usuarioId: Int) {
-        val libro = libroRepository.getByIdIncluyendoInactivos(libroId)
+        val libro = libroRepository.getByIdIncluyendoInactivosCompleto(libroId) ?: throw NotFoundException("Libro $libroId no encontrado")
         evaluarPermiso(libro, usuarioId)
         libro.activo = false
         libroRepository.save(libro)
     }
 
+    fun eliminarLibro(libroId: Int, usuarioId: Int) {
+        val libro = libroRepository.getByIdCompleto(libroId) ?: throw NotFoundException("Libro $libroId no encontrado")
+        evaluarPermiso(libro, usuarioId)
+        val reservasActivas = reservaJpa.findByLibroIdAndFechaHastaAfter(libroId, LocalDateTime.now())
+        if (reservasActivas.isNotEmpty()) {
+            throw ConflictException("No se puede eliminar el libro porque tiene reservas activas")
+        }
+        libroRepository.delete(libro)
+    }
+
     fun reactivar(libroId: Int, usuarioId: Int) {
-        val libro = libroRepository.getByIdIncluyendoInactivos(libroId)
+        val libro = libroRepository.getByIdIncluyendoInactivosCompleto(libroId) ?: throw NotFoundException("Libro $libroId no encontrado")
         evaluarPermiso(libro, usuarioId)
         libro.activo = true
         libroRepository.save(libro)

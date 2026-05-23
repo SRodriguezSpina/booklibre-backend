@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm.domain
 import jakarta.persistence.*
 import java.time.LocalDateTime
+import ar.edu.unsam.phm.exceptions.BusinessException
 
 @Entity
 @Table(name = "reservas")
@@ -27,6 +28,12 @@ class Reserva (
         return this.fechaDesde <= otraFechaHasta && this.fechaHasta >= otraFechaDesde
     }
     fun confirmar(libro: Libro) {
+        if (!fechaHasta.isAfter(fechaDesde)) {
+            throw BusinessException("La fecha de fin debe ser posterior a la fecha de inicio")
+        }
+        if (libro.duenio.id == usuario.id) {
+            throw BusinessException("No podés reservar tu propio libro")
+        }
         asignarKarma(libro)
     }
     private fun asignarKarma(libro: Libro) {

@@ -11,10 +11,9 @@ import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.NotFoundException
-import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.mongo.LibroMongoRepository
 import ar.edu.unsam.phm.repository.ReservaJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioJpaRepository
-import ar.edu.unsam.phm.repository.mongo.CalificacionMongoRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -27,11 +26,10 @@ import java.util.Optional
 
 class ReservaServiceSpringSpec : DescribeSpec({
 
-    val libroRepository = mockk<LibroRepository>()
+    val libroRepository = mockk<LibroMongoRepository>()
     val usuarioJpa = mockk<UsuarioJpaRepository>()
     val reservaJpa = mockk<ReservaJpaRepository>()
-    val calificacionesMongo = mockk<CalificacionMongoRepository>()
-    val service = ReservaService(libroRepository, usuarioJpa, reservaJpa, calificacionesMongo)
+    val service = ReservaService(libroRepository, usuarioJpa, reservaJpa)
 
     val duenio = Usuario(
         email = "ana@example.com",
@@ -69,15 +67,19 @@ class ReservaServiceSpringSpec : DescribeSpec({
         bibliokarmas = 500,
     ).apply { this.id = id }
 
+    beforeEach {
+        every { reservaJpa.existsByLibroIdAndUsuarioIdAndFechaHastaAfter(any(), any(), any()) } returns false
+    }
+
     describe("ReservaService con repositorios mockeados") {
 
         it("crearReserva lanza BusinessException si el libro ya está reservado en ese período") {
             val libro = libroBase()
             val user = lector()
-            val desde = LocalDateTime.of(2026, 5, 1, 0, 0)
-            val hasta = LocalDateTime.of(2026, 5, 10, 23, 59)
+            val desde = LocalDateTime.now().plusDays(1)
+            val hasta = LocalDateTime.now().plusDays(10)
             val dto = CrearReservaDTO(10, 1, desde, hasta)
-            every { libroRepository.getById(10) } returns libro
+            every { libroRepository.getByIdCompleto(10) } returns libro
             every { usuarioJpa.findById(1) } returns Optional.of(user)
             every { reservaJpa.estaReservadoEnPeriodo(10, desde, hasta) } returns true
 
@@ -87,20 +89,20 @@ class ReservaServiceSpringSpec : DescribeSpec({
         }
 
         it("crearReserva lanza NotFoundException si el libro no existe") {
-            val desde = LocalDateTime.of(2026, 5, 1, 0, 0)
-            val hasta = LocalDateTime.of(2026, 5, 10, 23, 59)
+            val desde = LocalDateTime.now().plusDays(1)
+            val hasta = LocalDateTime.now().plusDays(10)
             val dto = CrearReservaDTO(999, 1, desde, hasta)
-            every { libroRepository.getById(999) } throws NotFoundException("Libro.kt 999 no encontrado")
+            every { libroRepository.getByIdCompleto(999) } throws NotFoundException("Libro.kt 999 no encontrado")
 
             shouldThrow<NotFoundException> { service.crearReserva(dto) }
         }
 
         it("crearReserva lanza NotFoundException si el usuario no existe") {
             val libro = libroBase()
-            val desde = LocalDateTime.of(2026, 5, 1, 0, 0)
-            val hasta = LocalDateTime.of(2026, 5, 10, 23, 59)
+            val desde = LocalDateTime.now().plusDays(1)
+            val hasta = LocalDateTime.now().plusDays(10)
             val dto = CrearReservaDTO(10, 999, desde, hasta)
-            every { libroRepository.getById(10) } returns libro
+            every { libroRepository.getByIdCompleto(10) } returns libro
             every { usuarioJpa.findById(999) } returns Optional.empty()
 
             shouldThrow<NotFoundException> { service.crearReserva(dto) }
@@ -109,10 +111,11 @@ class ReservaServiceSpringSpec : DescribeSpec({
         it("crearReserva persiste usuario y reserva cuando todo es válido") {
             val libro = libroBase()
             val user = lector()
-            val desde = LocalDateTime.of(2026, 5, 1, 0, 0)
-            val hasta = LocalDateTime.of(2026, 5, 10, 23, 59)
+            val desde = LocalDateTime.now().plusDays(1)
+            val hasta = LocalDateTime.now().plusDays(10)
             val dto = CrearReservaDTO(10, 1, desde, hasta)
-            every { libroRepository.getById(10) } returns libro
+            every { libroRepository.getByIdCompleto(10) } returns libro
+            every { libroRepository.save(any()) } answers { firstArg() }
             every { usuarioJpa.findById(1) } returns Optional.of(user)
             every { reservaJpa.estaReservadoEnPeriodo(10, desde, hasta) } returns false
             every { usuarioJpa.save(any()) } answers { firstArg() }
@@ -120,7 +123,7 @@ class ReservaServiceSpringSpec : DescribeSpec({
 
             val reserva = service.crearReserva(dto)
 
-            reserva.libro.id shouldBe 10
+            reserva.libroId shouldBe 10
             reserva.usuario.id shouldBe 1
             verify { usuarioJpa.save(user) }
             verify { reservaJpa.save(any()) }

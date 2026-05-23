@@ -31,9 +31,11 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import java.time.LocalDate
 
 @WebMvcTest(LibroController::class)
+@AutoConfigureMockMvc(addFilters = false)
 @WithMockUser(roles = ["PUBLICADOR"])
 @DisplayName("LibroController — crear y editar libros")
 class LibroControllerEditarCrearTest(
@@ -41,6 +43,8 @@ class LibroControllerEditarCrearTest(
 ) {
     @MockBean
     lateinit var libroService: LibroService
+    @MockBean
+    lateinit var clickLogService: ar.edu.unsam.phm.services.ClickLogService
     @MockBean
     lateinit var jwtTokenUtils: JwtTokenUtils
     private val mapper = ObjectMapper().registerModule(JavaTimeModule())

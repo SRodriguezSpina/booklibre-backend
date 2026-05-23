@@ -48,7 +48,7 @@ class LibroServiceSpec : DescribeSpec({
     fun buildService(
         libroRepo: LibroRepository,
         usuarioRepo: UsuarioRepository,
-        reservaRepo: ReservaRepository = ReservaRepository(),
+        reservaRepo: ReservaRepository = ReservaRepository(libroRepo),
     ) = LibroServiceInMemory(libroRepo, usuarioRepo, reservaRepo)
 
     fun libroDTOBase(
@@ -622,17 +622,17 @@ class LibroServiceSpec : DescribeSpec({
 
         it("lanza ConflictException si el libro tiene una reserva activa") {
             val (libroRepo, usuarioRepo) = buildRepos()
-            val reservaRepo = ReservaRepository()
+            val reservaRepo = ReservaRepository(libroRepo)
             val service = buildService(libroRepo, usuarioRepo, reservaRepo)
             val libroCreado = service.crearLibro(libroDTOBase(), duenio.id)
 
             // Forzamos una reserva activa en el dueño simulando la lógica real
             val libroDominio = libroRepo.getById(libroCreado.id)
             val reserva = Reserva(
-                libro = libroDominio,
+                libroId = libroDominio.id,
                 usuario = otroUsuario,
-                fechaDesde = LocalDate.now().minusDays(1),
-                fechaHasta = LocalDate.now().plusDays(5)
+                fechaDesde = LocalDate.now().minusDays(1).atStartOfDay(),
+                fechaHasta = LocalDate.now().plusDays(5).atTime(23, 59, 59)
             )
             reservaRepo.create(reserva)
 
