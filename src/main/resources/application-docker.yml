@@ -16,7 +16,7 @@ spring:
     locations: classpath:db/migration
   data:
     mongodb:
-      uri: mongodb://mongos:27017/booklibreMongo
+      uri: mongodb://router:27017/booklibreMongo
       database: booklibreMongo
   main:
     allow-bean-definition-overriding: true

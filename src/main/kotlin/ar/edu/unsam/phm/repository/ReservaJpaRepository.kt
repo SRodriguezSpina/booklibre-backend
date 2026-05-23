@@ -18,6 +18,9 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
     fun countByLibroId(libroId: Int): Long
     fun existsByUsuarioIdAndFechaHastaAfter(usuarioId: Int, now: java.time.LocalDateTime): Boolean
     fun existsByLibroIdInAndFechaHastaAfter(libroIds: Collection<Int>, now: java.time.LocalDateTime): Boolean
+    fun existsByLibroIdAndUsuarioIdAndFechaHastaAfter(libroId: Int, usuarioId: Int, now: java.time.LocalDateTime): Boolean
+    fun findByLibroIdAndFechaHastaAfter(libroId: Int, now: java.time.LocalDateTime): List<Reserva>
+    fun findFirstByLibroIdAndUsuarioIdAndFechaHastaAfter(libroId: Int, usuarioId: Int, now: java.time.LocalDateTime): Optional<Reserva>
     fun findTopByLibroIdOrderByIdDesc(libroId: Int): Optional<Reserva>
 
     @Query("""

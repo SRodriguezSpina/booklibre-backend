@@ -172,7 +172,7 @@ services:
 
   # ─────────────────────────────────────────────────────────────────────────────
   # Init — Fase 1: inicializa los 3 replica sets
-  # Sale con exit 0 cuando termina; permite que mongos arranque.
+  # Sale con exit 0 cuando termina; permite que router arranque.
   # ─────────────────────────────────────────────────────────────────────────────
   mongo-rs-init:
     image: mongo:7
@@ -195,13 +195,13 @@ services:
       - booklibre-net
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Mongos — router del cluster sharded
+  # Router (mongos) — router del cluster sharded
   # Arranca solo después de que configrs ya está inicializado.
   # La app Spring se conecta únicamente a este nodo.
   # ─────────────────────────────────────────────────────────────────────────────
-  mongos:
+  router:
     image: mongo:7
-    container_name: mongos
+    container_name: router
     command: >
       mongos
       --configdb configrs/configsvr1:27017,configsvr2:27017,configsvr3:27017
@@ -222,17 +222,17 @@ services:
       start_period: 30s
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Init — Fase 2: agrega shards a mongos y habilita sharding en las colecciones
+  # Init — Fase 2: agrega shards a router y habilita sharding en las colecciones
   # ─────────────────────────────────────────────────────────────────────────────
   mongo:
     image: mongo:7
     container_name: mongo
     restart: "no"
     depends_on:
-      mongos: { condition: service_healthy }
+      router: { condition: service_healthy }
     volumes:
       - ./mongo-init:/scripts:ro
-    command: ["mongosh", "--host", "mongos", "--port", "27017", "/scripts/02-init-cluster.js"]
+    command: ["mongosh", "--host", "router", "--port", "27017", "/scripts/02-init-cluster.js"]
     networks:
       - booklibre-net
 
@@ -247,7 +247,7 @@ services:
     restart: unless-stopped
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - MONGODB_URI=mongodb://mongos:27017/booklibreMongo
+      - MONGODB_URI=mongodb://router:27017/booklibreMongo
     ports:
       - "8080:8080"
     networks:

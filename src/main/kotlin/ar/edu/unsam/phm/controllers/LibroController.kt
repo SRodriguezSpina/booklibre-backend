@@ -46,6 +46,7 @@ class LibroController(
     fun getLibro(
         @PathVariable libroId: Int,
         auth: Authentication?,   // nullable: el endpoint es permitAll(), puede venir sin token
+        @RequestParam(required = false) usuarioId: Int?,
     ): LibroDTO {
         val libro = libroService.obtenerLibro(libroId)
 
@@ -57,14 +58,18 @@ class LibroController(
         }
 
         val alquiladoPorId = libroService.obtenerPrestatarioActual(libroId)
-        val estaDisponible = alquiladoPorId == null
         val totalReservas = libroService.contarReservasPorLibro(libroId)
         val calificaciones = libroService.getCalificacionesDetalle(libroId)
+        val reservasActivas = libroService.obtenerRangosReservasActivas(libroId)
+        val estoyReservado = usuarioId?.let { libroService.usuarioTieneReservaPendiente(libroId, it) } ?: false
+        val miReservaHasta = if (estoyReservado && usuarioId != null) libroService.obtenerMiReservaHasta(libroId, usuarioId) else null
         return libro.toDTO(
             alquiladoPorId = alquiladoPorId,
-            estaDisponible = estaDisponible,
+            estaDisponible = !estoyReservado,
             calificaciones = calificaciones,
             totalReservas  = totalReservas,
+            reservas       = reservasActivas,
+            miReservaFechaHasta = miReservaHasta,
         )
     }
 

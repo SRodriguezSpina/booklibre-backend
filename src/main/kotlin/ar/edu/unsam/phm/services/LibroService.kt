@@ -5,6 +5,7 @@ import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.NewCalificacionDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
+import ar.edu.unsam.phm.dtos.RangoReservaDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
@@ -55,6 +56,23 @@ class LibroService(
 
     fun contarReservasPorLibro(libroId: Int): Int =
         reservaJpa.contarReservasPorLibro(libroId)
+
+    fun obtenerRangosReservasActivas(libroId: Int): List<RangoReservaDTO> {
+        val ahora = LocalDateTime.now()
+        return reservaJpa.findByLibroIdAndFechaHastaAfter(libroId, ahora)
+            .map { RangoReservaDTO(
+                fechaDesde = it.fechaDesde.toLocalDate().toString(),
+                fechaHasta = it.fechaHasta.toLocalDate().toString(),
+            ) }
+    }
+
+    fun usuarioTieneReservaPendiente(libroId: Int, usuarioId: Int): Boolean =
+        reservaJpa.existsByLibroIdAndUsuarioIdAndFechaHastaAfter(libroId, usuarioId, LocalDateTime.now())
+
+    fun obtenerMiReservaHasta(libroId: Int, usuarioId: Int): String? =
+        reservaJpa.findFirstByLibroIdAndUsuarioIdAndFechaHastaAfter(libroId, usuarioId, LocalDateTime.now())
+            .map { it.fechaHasta.toLocalDate().toString() }
+            .orElse(null)
 
     fun getCalificacionesDetalle(libroId: Int, limite: Int? = 2) =
         libroRepository.getCalificacionesDetalle(libroId, limite)
