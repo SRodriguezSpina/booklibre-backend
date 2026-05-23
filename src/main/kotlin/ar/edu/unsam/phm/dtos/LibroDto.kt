@@ -52,6 +52,7 @@ data class LibroDTO(
     val alquiladoPorId: Int? = null,
     val bibliokarma: Int? = null,
     val reservas: List<RangoReservaDTO> = emptyList(),
+    val miReservaFechaHasta: String? = null,
     val cantidadCalificaciones: Int = 0,
     val ultimasCalificaciones: List<CalificacionDTO> = emptyList()
 )

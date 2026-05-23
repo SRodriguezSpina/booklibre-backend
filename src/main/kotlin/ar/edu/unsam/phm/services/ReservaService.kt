@@ -117,6 +117,11 @@ class ReservaService(
                 throw BusinessException("No podés reservar tu propio libro")
             }
 
+            // Un usuario no puede reservar un libro si ya tiene una reserva activa sobre él
+            if (reservaJpa.existsByLibroIdAndUsuarioIdAndFechaHastaAfter(dto.libroId, dto.usuarioId, LocalDateTime.now())) {
+                throw BusinessException("Ya tenés una reserva activa para este libro")
+            }
+
             // Disponibilidad: el libro no puede reservarse si ya existe una reserva
             // que se solape con el período solicitado
             if (reservaJpa.estaReservadoEnPeriodo(dto.libroId, dto.fechaDesde, dto.fechaHasta)) {

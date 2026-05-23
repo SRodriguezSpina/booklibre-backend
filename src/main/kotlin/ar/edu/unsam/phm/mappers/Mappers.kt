@@ -62,6 +62,7 @@ fun Libro.toDTO(
     calificaciones: List<CalificacionDetalleView>,
     totalReservas: Int,
     reservas: List<RangoReservaDTO> = emptyList(),
+    miReservaFechaHasta: String? = null,
 ): LibroDTO = LibroDTO(
     id               = this.id,
     titulo           = this.titulo,
@@ -84,6 +85,7 @@ fun Libro.toDTO(
     alquiladoPorId   = alquiladoPorId,
     bibliokarma      = null,
     reservas         = reservas,
+    miReservaFechaHasta = miReservaFechaHasta,
     cantidadCalificaciones = calificaciones.firstOrNull()?.totalCalificaciones?.toInt() ?: 0,
     ultimasCalificaciones  = calificaciones.map { c ->
         CalificacionDTO(
