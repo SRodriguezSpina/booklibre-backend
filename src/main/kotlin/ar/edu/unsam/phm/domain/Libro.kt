@@ -115,6 +115,9 @@ abstract class Libro() : BaseEntity() {
     var calificaciones: MutableList<Calificacion> = mutableListOf()
     var reservas: MutableList<ReservaFecha> = mutableListOf()
 
+    fun estaDisponible(ahora: LocalDateTime = LocalDateTime.now()): Boolean =
+        reservas.none { it.fechaDesde <= ahora && it.fechaHasta >= ahora }
+
     constructor(data: LibroData) : this() {
         duenio          = data.duenio
         titulo          = validarTextoObligatorio(data.titulo, "título")

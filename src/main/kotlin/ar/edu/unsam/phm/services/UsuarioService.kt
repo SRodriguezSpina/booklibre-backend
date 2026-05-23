@@ -83,12 +83,11 @@ class UsuarioService(
         size: Int,
     ): PagedResponse<LibroUsuarioItemDTO> {
         val ahora = java.time.LocalDateTime.now()
-        val librosReservadosAhora = reservaJpa.obtenerIdsLibrosReservados(ahora, ahora)
         val paged = libroRepository.findPaginadoByDuenioId(
-            usuarioId, filtro, ordenarPor, direccion, page, size, librosReservadosAhora,
+            usuarioId, filtro, ordenarPor, direccion, page, size
         )
         val items = paged.content.map { libro ->
-            libro.toLibroUsuarioItemDTO().copy(disponible = libro.id !in librosReservadosAhora)
+            libro.toLibroUsuarioItemDTO().copy(disponible = libro.estaDisponible(ahora))
         }
         return PagedResponse(items, paged.page, paged.totalPages, paged.totalElements)
     }

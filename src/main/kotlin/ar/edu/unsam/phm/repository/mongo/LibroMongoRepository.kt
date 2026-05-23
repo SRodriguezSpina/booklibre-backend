@@ -14,6 +14,9 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.aggregation.Aggregation
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation
+import org.bson.Document
 import org.springframework.stereotype.Component
 import java.util.regex.Pattern
 import kotlin.math.ceil
@@ -85,29 +88,58 @@ class LibroMongoRepository(
         direccion: String,
         page: Int,
         size: Int,
-        librosReservadosAhora: Set<Int>,
     ): PagedResponse<Libro> {
+        val ahora = java.time.LocalDateTime.now()
         val criteria = Criteria.where("duenio.id").`is`(usuarioId)
         when (filtro.lowercase()) {
-            "disponibles" -> if (librosReservadosAhora.isNotEmpty()) criteria.and("libroId").nin(librosReservadosAhora)
-            "prestados"   -> criteria.and("libroId").`in`(
-                if (librosReservadosAhora.isEmpty()) listOf(Int.MIN_VALUE) else librosReservadosAhora
-            )
+            "disponibles" -> {
+                criteria.and("reservas").not().elemMatch(
+                    Criteria.where("fechaDesde").lte(ahora).and("fechaHasta").gte(ahora)
+                )
+            }
+            "prestados"   -> {
+                criteria.and("reservas").elemMatch(
+                    Criteria.where("fechaDesde").lte(ahora).and("fechaHasta").gte(ahora)
+                )
+            }
         }
 
-        val sortField = when (ordenarPor.lowercase()) {
-            "estado" -> "activo"
-            "fecha"  -> "fechaAgregado"
-            else     -> "titulo"
-        }
+        val total = mongoTemplate.count(Query(criteria), Libro::class.java)
+        val totalPages = if (total == 0L) 0 else ceil(total.toDouble() / size).toInt()
         val sortDir = if (direccion.lowercase() == "descendente") Sort.Direction.DESC else Sort.Direction.ASC
 
-        val baseQuery = Query(criteria)
-        baseQuery.fields().exclude("calificaciones").exclude("clicks").exclude("reservas")
-        val total = mongoTemplate.count(baseQuery, Libro::class.java)
-        val pageRequest = PageRequest.of(page, size, Sort.by(sortDir, sortField))
-        val items = mongoTemplate.find(baseQuery.with(pageRequest), Libro::class.java)
-        val totalPages = if (total == 0L) 0 else ceil(total.toDouble() / size).toInt()
+        val items = if (ordenarPor.lowercase() == "estado") {
+            val pipeline = mutableListOf<AggregationOperation>()
+            pipeline.add(Aggregation.match(criteria))
+            
+            val customProject = AggregationOperation { _ ->
+                Document("\$addFields", Document("disponible", Document("\$eq", listOf(
+                    Document("\$size", Document("\$filter", Document()
+                        .append("input", Document("\$ifNull", listOf("\$reservas", emptyList<Any>())))
+                        .append("as", "res")
+                        .append("cond", Document("\$and", listOf(
+                            Document("\$lte", listOf("\$\$res.fechaDesde", ahora)),
+                            Document("\$gte", listOf("\$\$res.fechaHasta", ahora))
+                        )))
+                    )),
+                    0
+                ))))
+            }
+            pipeline.add(customProject)
+            pipeline.add(Aggregation.sort(sortDir, "disponible").and(Sort.Direction.ASC, "titulo"))
+            pipeline.add(Aggregation.skip((page * size).toLong()))
+            pipeline.add(Aggregation.limit(size.toLong()))
+            
+            val agg = Aggregation.newAggregation(pipeline)
+            mongoTemplate.aggregate(agg, Libro::class.java, Libro::class.java).mappedResults
+        } else {
+            val sortField = if (ordenarPor.lowercase() == "fecha") "fechaAgregado" else "titulo"
+            val baseQuery = Query(criteria)
+            baseQuery.fields().exclude("calificaciones").exclude("clicks")
+            val pageRequest = PageRequest.of(page, size, Sort.by(sortDir, sortField))
+            mongoTemplate.find(baseQuery.with(pageRequest), Libro::class.java)
+        }
+
         return PagedResponse(items, page, totalPages, total)
     }
 
