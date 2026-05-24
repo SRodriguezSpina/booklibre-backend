@@ -247,6 +247,7 @@ services:
     restart: "no"
     depends_on:
       mongos-router1: { condition: service_healthy }
+      mongos-router2: { condition: service_healthy }
     volumes:
       - ./mongo-init:/scripts:ro
     command: ["mongosh", "--host", "mongos-router1", "--port", "27017", "/scripts/02-init-cluster.js"]
