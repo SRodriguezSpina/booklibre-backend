@@ -69,7 +69,7 @@ try {
 }
 '
 
-# [2/3] Shard 1 (PSA Setup: Primary, Secondary, Arbiter)
+# [2/3] Shard 1 (PSS Setup: Primary, Secondary, Secondary)
 echo ">>> [2/3] Iniciando replica set shard1rs"
 wait_for_mongo shard1a
 mongosh --host shard1a --port 27017 --quiet --eval '
@@ -79,7 +79,7 @@ try {
     members: [
       { _id: 0, host: "shard1a:27017" },
       { _id: 1, host: "shard1b:27017" },
-      { _id: 2, host: "shard1arbitro:27017", arbiterOnly: true }
+      { _id: 2, host: "shard1c:27017" }
     ]
   });
   print("shard1rs: initiate OK");
@@ -89,7 +89,7 @@ try {
 }
 '
 
-# [3/3] Shard 2 (PSA Setup: Primary, Secondary, Arbiter)
+# [3/3] Shard 2 (PSS Setup: Primary, Secondary, Secondary)
 echo ">>> [3/3] Iniciando replica set shard2rs"
 wait_for_mongo shard2a
 mongosh --host shard2a --port 27017 --quiet --eval '
@@ -99,7 +99,7 @@ try {
     members: [
       { _id: 0, host: "shard2a:27017" },
       { _id: 1, host: "shard2b:27017" },
-      { _id: 2, host: "shard2arbitro:27017", arbiterOnly: true }
+      { _id: 2, host: "shard2c:27017" }
     ]
   });
   print("shard2rs: initiate OK");
@@ -111,8 +111,8 @@ try {
 
 # Esperar a que cada replica set haya elegido primary
 wait_for_primary "configrs" "configrs/configsvr1:27017,configsvr2:27017,configsvr3:27017"
-wait_for_primary "shard1rs" "shard1rs/shard1a:27017,shard1b:27017,shard1arbitro:27017"
-wait_for_primary "shard2rs" "shard2rs/shard2a:27017,shard2b:27017,shard2arbitro:27017"
+wait_for_primary "shard1rs" "shard1rs/shard1a:27017,shard1b:27017,shard1c:27017"
+wait_for_primary "shard2rs" "shard2rs/shard2a:27017,shard2b:27017,shard2c:27017"
 
 # [4/6] Usuario admin en configrs
 echo ">>> [4/6] Creando usuario admin en configrs"
@@ -132,7 +132,7 @@ try {
 
 # [5/6] Usuario admin en shard1rs
 echo ">>> [5/6] Creando usuario admin en shard1rs"
-mongosh --host "shard1rs/shard1a:27017,shard1b:27017,shard1arbitro:27017" --quiet --eval '
+mongosh --host "shard1rs/shard1a:27017,shard1b:27017,shard1c:27017" --quiet --eval '
 try {
   db.getSiblingDB("admin").createUser({
     user: "admin",
@@ -148,7 +148,7 @@ try {
 
 # [6/6] Usuario admin en shard2rs
 echo ">>> [6/6] Creando usuario admin en shard2rs"
-mongosh --host "shard2rs/shard2a:27017,shard2b:27017,shard2arbitro:27017" --quiet --eval '
+mongosh --host "shard2rs/shard2a:27017,shard2b:27017,shard2c:27017" --quiet --eval '
 try {
   db.getSiblingDB("admin").createUser({
     user: "admin",

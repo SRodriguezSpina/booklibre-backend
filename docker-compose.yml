@@ -105,12 +105,12 @@ services:
       retries: 10
       start_period: 20s
 
-  shard1arbitro:
+  shard1c:
     image: mongo:7
-    container_name: shard1arbitro
+    container_name: shard1c
     command: ["mongod", "--shardsvr", "--replSet", "shard1rs", "--bind_ip_all", "--port", "27017"]
     volumes:
-      - booklibre_mongo_shard1arbitro_data:/data/db
+      - booklibre_mongo_shard1c_data:/data/db
     networks:
       - booklibre-net
     healthcheck:
@@ -153,12 +153,12 @@ services:
       retries: 10
       start_period: 20s
 
-  shard2arbitro:
+  shard2c:
     image: mongo:7
-    container_name: shard2arbitro
+    container_name: shard2c
     command: ["mongod", "--shardsvr", "--replSet", "shard2rs", "--bind_ip_all", "--port", "27017"]
     volumes:
-      - booklibre_mongo_shard2arbitro_data:/data/db
+      - booklibre_mongo_shard2c_data:/data/db
     networks:
       - booklibre-net
     healthcheck:
@@ -181,10 +181,10 @@ services:
       configsvr3: { condition: service_healthy }
       shard1a:    { condition: service_healthy }
       shard1b:    { condition: service_healthy }
-      shard1arbitro: { condition: service_healthy }
+      shard1c:    { condition: service_healthy }
       shard2a:    { condition: service_healthy }
       shard2b:    { condition: service_healthy }
-      shard2arbitro: { condition: service_healthy }
+      shard2c:    { condition: service_healthy }
     volumes:
       - ./mongo-init:/scripts:ro
     command: ["bash", "/scripts/01-init-replicasets.sh"]
@@ -194,9 +194,9 @@ services:
   # -----------------------------------------------------------------------------
   # Router (mongos-router)
   # -----------------------------------------------------------------------------
-  mongos-router:
+  mongos-router1:
     image: mongo:7
-    container_name: mongos-router
+    container_name: mongos-router1
     command: >
       mongos
       --configdb configrs/configsvr1:27017,configsvr2:27017,configsvr3:27017
@@ -204,6 +204,28 @@ services:
       --port 27017
     ports:
       - "27017:27017"
+    depends_on:
+      mongo-rs-init:
+        condition: service_completed_successfully
+    networks:
+      - booklibre-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--port", "27017", "--eval", "db.adminCommand('ping').ok", "--quiet"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  mongos-router2:
+    image: mongo:7
+    container_name: mongos-router2
+    command: >
+      mongos
+      --configdb configrs/configsvr1:27017,configsvr2:27017,configsvr3:27017
+      --bind_ip_all
+      --port 27017
+    ports:
+      - "27018:27017"
     depends_on:
       mongo-rs-init:
         condition: service_completed_successfully
@@ -224,10 +246,10 @@ services:
     container_name: mongo
     restart: "no"
     depends_on:
-      mongos-router: { condition: service_healthy }
+      mongos-router1: { condition: service_healthy }
     volumes:
       - ./mongo-init:/scripts:ro
-    command: ["mongosh", "--host", "mongos-router", "--port", "27017", "/scripts/02-init-cluster.js"]
+    command: ["mongosh", "--host", "mongos-router1", "--port", "27017", "/scripts/02-init-cluster.js"]
     networks:
       - booklibre-net
 
@@ -242,7 +264,7 @@ services:
     restart: unless-stopped
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - MONGODB_URI=mongodb://mongos-router:27017/booklibreMongo
+      - MONGODB_URI=mongodb://mongos-router1:27017,mongos-router2:27017/booklibreMongo?wtimeoutMS=5000&socketTimeoutMS=5000&connectTimeoutMS=5000
     ports:
       - "8080:8080"
     networks:
@@ -292,7 +314,7 @@ volumes:
   booklibre_mongo_configsvr3_data:
   booklibre_mongo_shard1a_data:
   booklibre_mongo_shard1b_data:
-  booklibre_mongo_shard1arbitro_data:
+  booklibre_mongo_shard1c_data:
   booklibre_mongo_shard2a_data:
   booklibre_mongo_shard2b_data:
-  booklibre_mongo_shard2arbitro_data:
+  booklibre_mongo_shard2c_data:
