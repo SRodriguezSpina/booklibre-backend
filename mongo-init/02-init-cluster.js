@@ -17,7 +17,7 @@ try {
 // 1. Agregar shards
 print("=== Agregando Shard 1 (shard1rs) ===");
 try {
-  sh.addShard("shard1rs/shard1a:27017,shard1b:27017,shard1arbitro:27017");
+  sh.addShard("shard1rs/shard1a:27017,shard1b:27017,shard1c:27017");
   print("Shard 1 agregado.");
 } catch(e) {
   print("Shard 1 ya existe o error ignorable:", e.codeName || e.message);
@@ -25,7 +25,7 @@ try {
 
 print("=== Agregando Shard 2 (shard2rs) ===");
 try {
-  sh.addShard("shard2rs/shard2a:27017,shard2b:27017,shard2arbitro:27017");
+  sh.addShard("shard2rs/shard2a:27017,shard2b:27017,shard2c:27017");
   print("Shard 2 agregado.");
 } catch(e) {
   print("Shard 2 ya existe o error ignorable:", e.codeName || e.message);
