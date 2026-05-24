@@ -250,6 +250,17 @@ class LibroMongoRepository(
         return mongoTemplate.find(query, Libro::class.java)
     }
 
+    fun findLibrosConReservasCumplidas(ahora: java.time.LocalDateTime = java.time.LocalDateTime.now()): List<Libro> {
+        val criteria = Criteria.where("activo").`is`(true)
+            .and("reservas.0").exists(true)
+            .and("reservas").not().elemMatch(
+                Criteria.where("fechaHasta").gte(ahora)
+            )
+        val query = Query(criteria)
+        query.fields().exclude("calificaciones").exclude("clicks").exclude("reservas")
+        return mongoTemplate.find(query, Libro::class.java)
+    }
+
     // Helper implementations targeting Spring Data Mongo equivalent behavior
     private fun findByIdAndActivoTrue(libroId: Int): Libro? =
         mongoTemplate.findOne(Query(Criteria.where("libroId").`is`(libroId).and("activo").`is`(true)), Libro::class.java)
