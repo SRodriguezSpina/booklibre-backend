@@ -79,10 +79,8 @@ class LibroService(
     fun getRating(libroId: Int): Double =
         (libroRepository.getById(libroId) ?: throw NotFoundException("Libro $libroId no encontrado")).calificacion
 
-    fun getLibrosConReservasCumplidas(): List<Libro> {
-        val libroIds = reservaJpa.findLibrosConTodasReservasCumplidas(LocalDateTime.now())
-        return libroRepository.findAllByIds(libroIds)
-    }
+    fun getLibrosConReservasCumplidas(): List<Libro> =
+        libroRepository.findLibrosConReservasCumplidas()
 
     fun getLibrosConReservasActivasMayorA(minReservas: Long = 3L): List<Libro> {
         val libroIds = reservaJpa.findLibroIdsConAlMenosNReservasActivas(LocalDateTime.now(), minReservas)
