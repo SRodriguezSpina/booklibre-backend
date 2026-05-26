@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm.testing.inmemory.services
 
 import ar.edu.unsam.phm.domain.Calificacion
+import ar.edu.unsam.phm.domain.DuenioRef
 import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.LibroColeccionable
 import ar.edu.unsam.phm.domain.LibroComun
@@ -160,7 +161,7 @@ class LibroServiceInMemory(
             ?: throw NotFoundException("Usuario no encontrado")
 
         val data = LibroData(
-            duenio = duenio,
+            duenio = DuenioRef(id = duenio.id, nombre = duenio.nombre),
             titulo = dto.titulo,
             autor = dto.autor,
             descripcion = dto.descripcion,

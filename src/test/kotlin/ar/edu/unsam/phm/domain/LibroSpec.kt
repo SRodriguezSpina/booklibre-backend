@@ -18,7 +18,8 @@ class LibroSpec : DescribeSpec({
             nombre = "Ana García",
             desc = "Publicadora",
             bibliokarmas = 500,
-        )
+        ).apply { id = 10 }
+        val duenioRef = DuenioRef(id = duenio.id, nombre = duenio.nombre)
 
         val usuarioPobre   = Usuario("p", "p", "Pobre",   "sin karma", bibliokarmas = 0)
         val usuarioRico    = Usuario("r", "r", "Rico",    "con karma", bibliokarmas = 2000)
@@ -31,7 +32,7 @@ class LibroSpec : DescribeSpec({
 
             val libro = LibroComun(
                 LibroData(
-                    duenio = duenio,
+                    duenio = duenioRef,
                     titulo = "1984", autor = "George Orwell",
                     descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
                     cantidadPaginas = 300, isbn = "9780000000001", idioma = Idioma.ESPANOL,
@@ -76,7 +77,7 @@ class LibroSpec : DescribeSpec({
                     assertThrows<BusinessException> {
                         LibroComun(
                             LibroData(
-                                duenio = duenio, titulo = "Test", autor = "Test",
+                                duenio = duenioRef, titulo = "Test", autor = "Test",
                                 descripcion = "Descripción de prueba", genero = Genero.DRAMA, cantidadPaginas = 0,
                                 isbn = "9780000000005", idioma = Idioma.ESPANOL, editorial = "Editorial de prueba",
                                 fechaPublicacion = LocalDate.now(), estado = EstadoLibro.BUENO, imagenUrl = "",
@@ -92,7 +93,7 @@ class LibroSpec : DescribeSpec({
 
             val libro = LibroConDedicatoria(
                 LibroData(
-                    duenio = duenio,
+                    duenio = duenioRef,
                     titulo = "El Principito", autor = "Saint-Exupéry",
                     descripcion = "Clásico", genero = Genero.LITERATURA_CLASICA,
                     cantidadPaginas = 100, isbn = "9780000000002", idioma = Idioma.ESPANOL,
@@ -119,7 +120,7 @@ class LibroSpec : DescribeSpec({
 
             val libro = LibroColeccionable(
                 LibroData(
-                    duenio = duenio,
+                    duenio = duenioRef,
                     titulo = "Dune", autor = "Frank Herbert",
                     descripcion = "Sci-fi épico", genero = Genero.CIENCIA_FICCION,
                     cantidadPaginas = 500, isbn = "9780000000003", idioma = Idioma.ESPANOL,
@@ -160,7 +161,7 @@ class LibroSpec : DescribeSpec({
 
             val libro = LibroComun(
                 LibroData(
-                    duenio = duenio,
+                    duenio = duenioRef,
                     titulo = "Sapiens", autor = "Yuval Harari",
                     descripcion = "Historia", genero = Genero.LITERATURA_CLASICA,
                     cantidadPaginas = 400, isbn = "9780000000004", idioma = Idioma.ESPANOL,
@@ -227,7 +228,7 @@ class LibroSpec : DescribeSpec({
                 assertThrows<BusinessException> {
                     LibroComun(
                         LibroData(
-                            duenio = duenio,
+                            duenio = duenioRef,
                             titulo = "Test",
                             autor = "Test",
                             descripcion = "Descripción de prueba",
@@ -248,7 +249,7 @@ class LibroSpec : DescribeSpec({
                 assertThrows<BusinessException> {
                     LibroComun(
                         LibroData(
-                            duenio = duenio,
+                            duenio = duenioRef,
                             titulo = "Test",
                             autor = "Test",
                             descripcion = "Descripción de prueba",

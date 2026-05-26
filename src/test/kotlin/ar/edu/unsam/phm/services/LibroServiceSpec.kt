@@ -427,7 +427,7 @@ class LibroServiceSpec : DescribeSpec({
             paginas: Int = 300,
         ) = LibroComun(
             LibroData(
-                duenio = duenio,
+                duenio = DuenioRef(id = duenio.id, nombre = duenio.nombre),
                 titulo = titulo,
                 autor = autor,
                 descripcion = "Descripción de prueba",

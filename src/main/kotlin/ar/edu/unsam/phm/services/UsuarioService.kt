@@ -42,7 +42,8 @@ class UsuarioService(
         validarEmailDisponible(email, id)
         validarCelularDisponible(celular, id)
 
-        val tipoAnterior = usuario.tipoUsuarioDomain()
+        val tipoAnterior  = usuario.tipoUsuarioDomain()
+        val nombreAnterior = usuario.nombre
 
         if (request.tipoUsuario != usuario.tipoUsuario && tieneReservasActivas(id)) {
             throw BusinessException("No podés cambiar el tipo de usuario mientras tenés reservas activas")
@@ -62,6 +63,10 @@ class UsuarioService(
         manejarCambioDeTipo(usuario, tipoAnterior, tipoActual)
 
         val actualizado = usuarioJpa.save(usuario)
+        if (actualizado.nombre != nombreAnterior) {
+            libroRepository.actualizarNombreDuenio(actualizado.id, actualizado.nombre)
+        }
+
         val roles = UserDetailsServiceImpl.rolesParaTipo(actualizado.tipoUsuario).map { it.authority }
         val nuevoToken = jwtTokenUtils.generateToken(actualizado.email, roles)
 

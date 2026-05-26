@@ -45,7 +45,7 @@ data class LibroFiltros(
 }
 
 data class LibroData(
-    val duenio: Usuario,
+    val duenio: DuenioRef,
     val titulo: String,
     val autor: String,
     val descripcion: String,
@@ -93,7 +93,7 @@ abstract class Libro() : BaseEntity() {
         }
     }
 
-    lateinit var duenio: Usuario
+    lateinit var duenio: DuenioRef
     var titulo: String = ""
     var autor: String = ""
     var descripcion: String = ""

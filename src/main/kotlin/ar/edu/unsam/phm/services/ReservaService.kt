@@ -128,9 +128,11 @@ class ReservaService(
             )
             reserva.confirmar(libro)
 
-            libro.duenio.sumaLibroReservado()
+            val duenioJpa = usuarioJpa.findById(libro.duenio.id)
+                .orElseThrow { NotFoundException("Usuario dueño ${libro.duenio.id} no encontrado") }
+            duenioJpa.sumaLibroReservado()
             solicitante.sumaLibroLeido()
-            usuarioJpa.save(libro.duenio)
+            usuarioJpa.save(duenioJpa)
             usuarioJpa.save(solicitante)
 
             // Guardar reserva en Mongo y limpiar las finalizadas/vencidas

@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.domain.Calificacion
+import ar.edu.unsam.phm.domain.DuenioRef
 import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
@@ -49,7 +50,7 @@ class ReservaServiceSpec : DescribeSpec({
 
         val libro = LibroComun(
             LibroData(
-                duenio = duenio,
+                duenio = DuenioRef(id = duenio.id, nombre = duenio.nombre),
                 titulo = "1984", autor = "George Orwell",
                 descripcion = "Distopía", genero = Genero.LITERATURA_CLASICA,
                 cantidadPaginas = 300, isbn = "9780000000001", idioma = Idioma.ESPANOL,
@@ -129,7 +130,7 @@ class ReservaServiceSpec : DescribeSpec({
         it("OBTENER RESERVAS CON MULTIPLES RESERVAS DEVUELVE TODOS LOS DTOs") {
             val libro2 = LibroComun(
                 LibroData(
-                    duenio = duenio,
+                    duenio = DuenioRef(id = duenio.id, nombre = duenio.nombre),
                     titulo = "Dune", autor = "Frank Herbert",
                     descripcion = "Sci-fi", genero = Genero.CIENCIA_FICCION,
                     cantidadPaginas = 500, isbn = "9780000000002", idioma = Idioma.ESPANOL,

@@ -52,7 +52,7 @@ class LibroController(
 
         // Registrar el click solo si hay un usuario autenticado y NO es el propietario del libro
         auth?.name?.let { nombreUsuario ->
-            if (nombreUsuario != libro.duenio.email) {
+            if (usuarioId == null || usuarioId != libro.duenio.id) {
                 clickLogService.registrarClick(libroId, libro.titulo, nombreUsuario)
             }
         }
@@ -100,15 +100,8 @@ class LibroController(
     ): List<LibroHomeDTO> =
         libroService.getLibrosConReservasActivasMayorA(minReservas)
             .map { it.toHomeDTO(libroService.calcularBiblioKarma(it, usuarioId)) }
-            
+
     // Query: Saber qué libros tienen más de 4 puntos de calificación
-    // Alternativa con bibliokarma por usuario:
-    // @GetMapping("/mejor-calificados")
-    // fun getLibrosMejorCalificados(
-    //     @RequestParam(required = false) usuarioId: Int?
-    // ): List<LibroHomeDTO> =
-    //     libroService.getLibrosConPromedioMayorA4()
-    //         .map { it.toHomeDTO(libroService.calcularBiblioKarma(it, usuarioId)) }
     @GetMapping("/mejor-calificados")
     fun getLibrosMejorCalificados(): List<LibroHomeDTO> =
         libroService.getLibrosConPromedioMayorA4()

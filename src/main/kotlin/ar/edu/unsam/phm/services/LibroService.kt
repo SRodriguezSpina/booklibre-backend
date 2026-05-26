@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.domain.*
+import ar.edu.unsam.phm.domain.DuenioRef
 import ar.edu.unsam.phm.dtos.CalificacionDTO
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.NewCalificacionDTO
@@ -94,8 +95,9 @@ class LibroService(
     fun crearLibro(dto: LibroDTO, usuarioId: Int): Libro {
         val duenio = usuarioJpa.findById(usuarioId)
             .orElseThrow { NotFoundException("Usuario $usuarioId no encontrado") }
+        val duenioRef = DuenioRef(id = duenio.id, nombre = duenio.nombre)
         val data = LibroData(
-            duenio           = duenio,
+            duenio           = duenioRef,
             titulo           = dto.titulo,
             autor            = dto.autor,
             descripcion      = dto.descripcion,
