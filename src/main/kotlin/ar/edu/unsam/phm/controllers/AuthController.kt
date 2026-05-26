@@ -6,6 +6,7 @@ import ar.edu.unsam.phm.dtos.LoginRequest
 import ar.edu.unsam.phm.services.AuthService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import jakarta.validation.Valid
 
 // Response compatible con el formato OAuth2 que espera Swagger UI
 data class OAuth2TokenResponse(
@@ -17,12 +18,12 @@ data class OAuth2TokenResponse(
 @RequestMapping("/api")
 class AuthController (private val authService: AuthService) {
     @PostMapping("/login")
-    fun login(@RequestBody request: LoginRequest): ResponseEntity<AuthResponseUsuario> {
+    fun login(@Valid @RequestBody request: LoginRequest): ResponseEntity<AuthResponseUsuario> {
         return ResponseEntity.ok(authService.login(request))
     }
 
     @PostMapping("/register")
-    fun register(@RequestBody request: RegisterRequest): ResponseEntity<AuthResponseUsuario> {
+    fun register(@Valid @RequestBody request: RegisterRequest): ResponseEntity<AuthResponseUsuario> {
         return ResponseEntity.ok(authService.register(request))
     }
 
