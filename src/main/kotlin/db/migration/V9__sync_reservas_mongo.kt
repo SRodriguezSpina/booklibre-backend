@@ -12,7 +12,7 @@ import java.util.Date
 class V9__sync_reservas_mongo : BaseJavaMigration() {
 
   override fun migrate(context: Context) {
-    val mongoUri = System.getenv("MONGODB_URI") ?: "mongodb://localhost:27017/booklibreMongo"
+    val mongoUri = System.getenv("MONGODB_URI") ?: "mongodb://booklibre_app:booklibre_app_secret@localhost:27017,localhost:27018/booklibreMongo?authSource=booklibreMongo&wtimeoutMS=5000&socketTimeoutMS=5000&connectTimeoutMS=5000"
     val dbName = mongoUri.substringAfterLast("/").substringBefore("?")
 
     val reservasPorLibro = loadReservasPorLibro(context.connection)
