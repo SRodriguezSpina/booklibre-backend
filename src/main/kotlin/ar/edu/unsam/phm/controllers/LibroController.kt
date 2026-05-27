@@ -80,7 +80,7 @@ class LibroController(
             ?: mapOf("mensaje" to "Todavía no hay clicks registrados")
 
     // Query: Saber cuántos libros son del tipo coleccionables s/aggregation
-    @GetMapping("/colecionables/count")
+    @GetMapping("/coleccionables/count")
     fun contarColeccionables(): Map<String, Long> =
         mapOf("cantidad" to libroService.contarLibrosColecciones())
 
