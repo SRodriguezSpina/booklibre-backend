@@ -15,6 +15,10 @@ import ar.edu.unsam.phm.services.UsuarioService
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
+import org.springframework.http.HttpHeaders
+import org.springframework.http.ResponseCookie
+import org.springframework.http.ResponseEntity
+
 @RestController
 @RequestMapping("/api/usuarios")
 class UsuarioController(
@@ -32,15 +36,30 @@ class UsuarioController(
         @PathVariable id: Int,
         @RequestBody request: UsuarioUpdateRequest,
         auth: Authentication,
-    ): UsuarioUpdateResponse {
+    ): ResponseEntity<UsuarioUpdateResponse> {
         val isAdmin = auth.authorities.any { it.authority == "ROLE_ADMIN" }
         val isOwner = usuarioService.obtenerUsuario(id).email == auth.name
         if (!isAdmin && !isOwner) throw ForbiddenException("No tenés permiso para modificar este usuario")
         val resultado = usuarioService.actualizarUsuario(id, request)
-        return UsuarioUpdateResponse(
-            usuario = resultado.usuario.toResponse(),
-            token = resultado.token,
+        
+        val responseBody = UsuarioUpdateResponse(
+            usuario = resultado.usuario.toResponse()
         )
+        
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, createCookie("accessToken", resultado.tokens.accessToken, 900).toString())
+            .header(HttpHeaders.SET_COOKIE, createCookie("refreshToken", resultado.tokens.refreshToken, 604800).toString())
+            .body(responseBody)
+    }
+
+    private fun createCookie(name: String, value: String, maxAge: Long): ResponseCookie {
+        return ResponseCookie.from(name, value)
+            .httpOnly(true)
+            // .secure(true) // Descomentar en producción (requiere HTTPS)
+            .path("/")
+            .maxAge(maxAge)
+            .sameSite("Strict")
+            .build()
     }
 
     @GetMapping("/{id}/libros")

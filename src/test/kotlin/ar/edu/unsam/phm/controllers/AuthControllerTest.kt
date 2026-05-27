@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie
 
 @WebMvcTest(AuthController::class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -100,6 +101,10 @@ class AuthControllerTest {
             .andExpect(jsonPath("$.usuario.id").value(1))
             .andExpect(jsonPath("$.usuario.email").value("juan@mail.com"))
             .andExpect(jsonPath("$.usuario.nombre").value("Juan Pérez"))
+            .andExpect(cookie().exists("accessToken"))
+            .andExpect(cookie().httpOnly("accessToken", true))
+            .andExpect(cookie().exists("refreshToken"))
+            .andExpect(cookie().httpOnly("refreshToken", true))
     }
 
     @Test
@@ -199,6 +204,10 @@ class AuthControllerTest {
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.message").value("Registro exitoso"))
             .andExpect(jsonPath("$.usuario.email").value("juan@mail.com"))
+            .andExpect(cookie().exists("accessToken"))
+            .andExpect(cookie().httpOnly("accessToken", true))
+            .andExpect(cookie().exists("refreshToken"))
+            .andExpect(cookie().httpOnly("refreshToken", true))
     }
 
     @Test

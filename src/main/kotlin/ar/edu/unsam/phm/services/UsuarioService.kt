@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.TipoUsuario
 import ar.edu.unsam.phm.domain.Usuario
+import ar.edu.unsam.phm.dtos.AuthTokens
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
@@ -18,9 +19,9 @@ import ar.edu.unsam.phm.security.UserDetailsServiceImpl
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-data class UsuarioActualizadoConToken(
+data class UsuarioActualizadoConTokens(
     val usuario: Usuario,
-    val token: String,
+    val tokens: AuthTokens,
 )
 
 @Service
@@ -34,7 +35,7 @@ class UsuarioService(
         usuarioJpa.findById(id).orElseThrow { NotFoundException("Usuario $id no encontrado") }
 
     @Transactional
-    fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioActualizadoConToken {
+    fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioActualizadoConTokens {
         val usuario = usuarioJpa.findById(id).orElseThrow { NotFoundException("Usuario $id no encontrado") }
         val email   = Usuario.normalizarYValidarEmail(request.email)
         val celular = Usuario.normalizarYValidarCelular(request.celular)
@@ -68,11 +69,12 @@ class UsuarioService(
         }
 
         val roles = UserDetailsServiceImpl.rolesParaTipo(actualizado.tipoUsuario).map { it.authority }
-        val nuevoToken = jwtTokenUtils.generateToken(actualizado.email, roles)
+        val accessToken = jwtTokenUtils.generateToken(actualizado.email, roles)
+        val refreshToken = jwtTokenUtils.generateRefreshToken(actualizado.email)
 
-        return UsuarioActualizadoConToken(
+        return UsuarioActualizadoConTokens(
             usuario = actualizado,
-            token = nuevoToken,
+            tokens = AuthTokens(accessToken, refreshToken),
         )
     }
 

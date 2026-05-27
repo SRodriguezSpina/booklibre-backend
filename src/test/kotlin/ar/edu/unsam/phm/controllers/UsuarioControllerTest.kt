@@ -5,11 +5,12 @@ import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.domain.UsuarioPublicador
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
+import ar.edu.unsam.phm.dtos.AuthTokens
 import ar.edu.unsam.phm.dtos.UsuarioResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.security.JwtTokenUtils
-import ar.edu.unsam.phm.services.UsuarioActualizadoConToken
+import ar.edu.unsam.phm.services.UsuarioActualizadoConTokens
 import ar.edu.unsam.phm.services.ReservaService
 import ar.edu.unsam.phm.services.UsuarioService
 import ar.edu.unsam.phm.services.ClickLogService
@@ -112,9 +113,9 @@ class UsuarioControllerTest {
 
         Mockito.`when`(usuarioService.obtenerUsuario(id)).thenReturn(usuarioActualizado)
         Mockito.`when`(usuarioService.actualizarUsuario(id, request)).thenReturn(
-            UsuarioActualizadoConToken(
+            UsuarioActualizadoConTokens(
                 usuario = usuarioActualizado,
-                token = "nuevo-jwt",
+                tokens = AuthTokens(accessToken = "nuevo-jwt", refreshToken = "nuevo-refresh-jwt")
             )
         )
 
@@ -136,7 +137,10 @@ class UsuarioControllerTest {
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.jsonPath("$.usuario.nombre").value("Juan Actualizado"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.usuario.ciudad").value("Rosario"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.token").value("nuevo-jwt"))
+            .andExpect(MockMvcResultMatchers.cookie().exists("accessToken"))
+            .andExpect(MockMvcResultMatchers.cookie().httpOnly("accessToken", true))
+            .andExpect(MockMvcResultMatchers.cookie().exists("refreshToken"))
+            .andExpect(MockMvcResultMatchers.cookie().httpOnly("refreshToken", true))
 
         Mockito.verify(usuarioService).actualizarUsuario(id, request)
     }
