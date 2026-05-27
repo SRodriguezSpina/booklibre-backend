@@ -16,6 +16,9 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
+# Utilidades mínimas para healthchecks (compose)
+RUN apk add --no-cache wget
+
 # Usuario
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring
