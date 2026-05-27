@@ -2,6 +2,7 @@ package ar.edu.unsam.phm.controllers
 
 import ar.edu.unsam.phm.dtos.*
 import ar.edu.unsam.phm.domain.Disponibilidad
+import ar.edu.unsam.phm.domain.DuenioRef
 import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
@@ -64,7 +65,7 @@ class LibroControllerTest(
         val u = duenioUsuario()
         return LibroComun(
             LibroData(
-                duenio = u,
+                duenio = DuenioRef(id = u.id, nombre = u.nombre),
                 titulo = titulo,
                 autor = autor,
                 descripcion = "Distopía",

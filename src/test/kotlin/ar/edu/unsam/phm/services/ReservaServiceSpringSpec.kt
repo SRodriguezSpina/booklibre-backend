@@ -1,5 +1,6 @@
 package ar.edu.unsam.phm.services
 
+import ar.edu.unsam.phm.domain.DuenioRef
 import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
@@ -42,7 +43,7 @@ class ReservaServiceSpringSpec : DescribeSpec({
     ).apply { id = 3 }
 
     fun libroBase() = LibroComun(LibroData(
-        duenio = duenio,
+        duenio = DuenioRef(id = duenio.id, nombre = duenio.nombre),
         titulo = "1984",
         autor = "George Orwell",
         descripcion = "Distopía",
@@ -117,6 +118,8 @@ class ReservaServiceSpringSpec : DescribeSpec({
             every { libroRepository.getByIdCompleto(10) } returns libro
             every { libroRepository.save(any()) } answers { firstArg() }
             every { usuarioJpa.findById(1) } returns Optional.of(user)
+            // duenio.id = 3 — el service lo busca en JPA al crear la reserva
+            every { usuarioJpa.findById(3) } returns Optional.of(duenio)
             every { reservaJpa.estaReservadoEnPeriodo(10, desde, hasta) } returns false
             every { usuarioJpa.save(any()) } answers { firstArg() }
             every { reservaJpa.save(any()) } answers { firstArg<Reserva>().apply { id = 500 } }

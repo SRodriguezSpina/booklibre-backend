@@ -1,5 +1,6 @@
 package ar.edu.unsam.phm.controllers
 
+import ar.edu.unsam.phm.domain.DuenioRef
 import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
@@ -63,7 +64,7 @@ class ReservaControllerTest(
         isbn: String = "9780000000001",
     ): LibroComun {
         val data = LibroData(
-            duenio = duenio,
+            duenio = DuenioRef(id = duenio.id, nombre = duenio.nombre),
             titulo = titulo,
             autor = autor,
             descripcion = "Desc",

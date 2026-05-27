@@ -4,6 +4,7 @@ import ar.edu.unsam.phm.dtos.AuthResponseUsuario
 import ar.edu.unsam.phm.dtos.LoginRequest
 import ar.edu.unsam.phm.dtos.RegisterRequest
 import ar.edu.unsam.phm.dtos.UsuarioResponse
+import ar.edu.unsam.phm.dtos.AuthTokens
 import ar.edu.unsam.phm.exceptions.AuthExceptionHandler
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie
 
 @WebMvcTest(AuthController::class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -65,6 +67,8 @@ class AuthControllerTest {
         usuario = usuarioMock
     )
 
+    val tokensMock = AuthTokens("access-token", "refresh-token")
+
     val registroExitoso = AuthResponseUsuario(
         success = true,
         message = "Registro exitoso",
@@ -84,7 +88,7 @@ class AuthControllerTest {
     @DisplayName("login exitoso retorna 200 con datos del usuario")
     fun loginExitoso() {
         `when`(authService.login(LoginRequest("juan@mail.com", "123")))
-            .thenReturn(loginExitoso)
+            .thenReturn(Pair(loginExitoso, tokensMock))
 
         mockMvc.perform(
             post("/api/login")
@@ -97,6 +101,10 @@ class AuthControllerTest {
             .andExpect(jsonPath("$.usuario.id").value(1))
             .andExpect(jsonPath("$.usuario.email").value("juan@mail.com"))
             .andExpect(jsonPath("$.usuario.nombre").value("Juan Pérez"))
+            .andExpect(cookie().exists("accessToken"))
+            .andExpect(cookie().httpOnly("accessToken", true))
+            .andExpect(cookie().exists("refreshToken"))
+            .andExpect(cookie().httpOnly("refreshToken", true))
     }
 
     @Test
@@ -148,7 +156,7 @@ class AuthControllerTest {
     @DisplayName("login llama al servicio con los datos del body")
     fun loginLlamaAlServicio() {
         `when`(authService.login(LoginRequest("ana@mail.com", "mypass")))
-            .thenReturn(loginExitoso)
+            .thenReturn(Pair(loginExitoso, tokensMock))
 
         mockMvc.perform(
             post("/api/login")
@@ -185,7 +193,7 @@ class AuthControllerTest {
     @DisplayName("registro exitoso retorna 200 con datos del usuario")
     fun registroExitoso() {
         `when`(authService.register(RegisterRequest("Juan", "juan@mail.com", "123456")))
-            .thenReturn(registroExitoso)
+            .thenReturn(Pair(registroExitoso, tokensMock))
 
         mockMvc.perform(
             post("/api/register")
@@ -196,6 +204,10 @@ class AuthControllerTest {
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.message").value("Registro exitoso"))
             .andExpect(jsonPath("$.usuario.email").value("juan@mail.com"))
+            .andExpect(cookie().exists("accessToken"))
+            .andExpect(cookie().httpOnly("accessToken", true))
+            .andExpect(cookie().exists("refreshToken"))
+            .andExpect(cookie().httpOnly("refreshToken", true))
     }
 
     @Test
@@ -217,7 +229,7 @@ class AuthControllerTest {
     @DisplayName("registro llama al servicio con los datos del body")
     fun registroLlamaAlServicio() {
         `when`(authService.register(RegisterRequest("Carlos", "carlos@mail.com", "pass123")))
-            .thenReturn(registroExitoso)
+            .thenReturn(Pair(registroExitoso, tokensMock))
 
         mockMvc.perform(
             post("/api/register")
@@ -254,7 +266,7 @@ class AuthControllerTest {
     @DisplayName("registro llama al servicio exactamente una vez")
     fun registroLlamaAlServicioUnaVez() {
         `when`(authService.register(RegisterRequest("Juan", "juan@mail.com", "123456")))
-            .thenReturn(registroExitoso)
+            .thenReturn(Pair(registroExitoso, tokensMock))
 
         mockMvc.perform(
             post("/api/register")

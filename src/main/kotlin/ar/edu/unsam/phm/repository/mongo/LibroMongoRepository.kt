@@ -238,6 +238,12 @@ class LibroMongoRepository(
         mongoTemplate.updateMulti(query, update, Libro::class.java)
     }
 
+    fun actualizarNombreDuenio(usuarioId: Int, nuevoNombre: String) {
+        val query = Query(Criteria.where("duenio.id").`is`(usuarioId))
+        val update = org.springframework.data.mongodb.core.query.Update().set("duenio.nombre", nuevoNombre)
+        mongoTemplate.updateMulti(query, update, Libro::class.java)
+    }
+
     fun liberarReservasVencidas(now: java.time.LocalDateTime): Int = 0
 
     fun contarLibrosCollecionables(): Long =

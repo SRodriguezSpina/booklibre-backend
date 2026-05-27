@@ -15,10 +15,11 @@ class ReservaSpec : DescribeSpec({
         // Asignamos IDs distintos para que la lógica de Reserva sepa que son personas diferentes
         val duenio = Usuario("ana", "pass", "Ana", "").apply { id = 1 }
         val solicitante = Usuario("juan", "pass", "Juan", "").apply { id = 2 }
+        val duenioRef = DuenioRef(id = duenio.id, nombre = duenio.nombre)
 
         val libro = LibroComun(
             LibroData(
-                duenio = duenio, titulo = "1984", autor = "Orwell",
+                duenio = duenioRef, titulo = "1984", autor = "Orwell",
                 descripcion = "Novela distópica", genero = Genero.DRAMA, cantidadPaginas = 300,
                 isbn = "9780000000006", idioma = Idioma.ESPANOL, editorial = "Debolsillo",
                 fechaPublicacion = LocalDate.now(), estado = EstadoLibro.BUENO, imagenUrl = "",

@@ -136,19 +136,8 @@ class V7__seed_massive_libros_mongo : BaseJavaMigration() {
                 while (rs.next()) {
                     duenios.add(
                         Document()
-                            .append("id", rs.getInt("id"))
-                            .append("email", rs.getString("email"))
-                            .append("password", rs.getString("password"))
+                            .append("_id", rs.getInt("id"))
                             .append("nombre", rs.getString("nombre"))
-                            .append("desc", rs.getString("descripcion"))
-                            .append("celular", rs.getString("celular"))
-                            .append("ciudad", rs.getString("ciudad"))
-                            .append("tipoUsuario", rs.getString("tipo_usuario"))
-                            .append("bibliokarmas", rs.getInt("bibliokarmas"))
-                            .append("imagenUrl", rs.getString("imagen_url"))
-                            .append("fechaRegistro", toDate(rs.getDate("fecha_registro").toLocalDate()))
-                            .append("leidos", rs.getInt("leidos"))
-                            .append("reservados", rs.getInt("reservados"))
                     )
                 }
             }

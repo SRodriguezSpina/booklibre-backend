@@ -1,5 +1,6 @@
 package ar.edu.unsam.phm.services
 
+import ar.edu.unsam.phm.domain.DuenioRef
 import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
@@ -48,7 +49,7 @@ class LibroServiceSpringSpec : DescribeSpec({
     ).apply { id = 3 }
 
     fun libroDataBase() = LibroData(
-        duenio = duenio,
+        duenio = DuenioRef(id = duenio.id, nombre = duenio.nombre),
         titulo = "Clean Code",
         autor = "Robert C. Martin",
         descripcion = "Buenas prácticas",

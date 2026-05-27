@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.bind.MethodArgumentNotValidException
 import java.time.Instant
 
 data class ErrorResponse(
@@ -47,4 +48,12 @@ class AuthExceptionHandler {
         ResponseEntity.status(HttpStatus.FORBIDDEN).body(
             ErrorResponse(status = 403, error = "Forbidden", message = error.message.toString(), path = request.requestURI)
         )
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidation(error: MethodArgumentNotValidException, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
+        val errorMessage = error.bindingResult.fieldErrors.joinToString(", ") { it.defaultMessage ?: "Error de validación" }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            ErrorResponse(status = 400, error = "Bad Request", message = errorMessage, path = request.requestURI)
+        )
+    }
 }
