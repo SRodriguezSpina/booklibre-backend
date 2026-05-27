@@ -2,6 +2,7 @@ package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.domain.Usuario
 import ar.edu.unsam.phm.dtos.AuthResponseUsuario
+import ar.edu.unsam.phm.dtos.AuthTokens
 import ar.edu.unsam.phm.dtos.LoginRequest
 import ar.edu.unsam.phm.dtos.RegisterRequest
 import ar.edu.unsam.phm.exceptions.ConflictException
@@ -22,7 +23,7 @@ class AuthService(
 ) {
     private val logger = LoggerFactory.getLogger(AuthService::class.java)
 
-    fun login(request: LoginRequest): AuthResponseUsuario {
+    fun login(request: LoginRequest): Pair<AuthResponseUsuario, AuthTokens> {
         val email = Usuario.normalizarYValidarEmail(request.email)
         val usuario = usuarioJpa.findByEmail(email)
             ?: throw UnauthorizedException("Usuario o contraseña incorrectos")
@@ -33,11 +34,16 @@ class AuthService(
             throw UnauthorizedException("Usuario o contraseña incorrectos")
         }
         val roles = UserDetailsServiceImpl.rolesParaTipo(usuario.tipoUsuario).map { it.authority }
-        val token = jwtTokenUtils.generateToken(email, roles)
-        return AuthResponseUsuario(true, "Login exitoso", usuario.toResponse(), token)
+        val accessToken = jwtTokenUtils.generateToken(email, roles)
+        val refreshToken = jwtTokenUtils.generateRefreshToken(email)
+        
+        return Pair(
+            AuthResponseUsuario(true, "Login exitoso", usuario.toResponse()),
+            AuthTokens(accessToken, refreshToken)
+        )
     }
 
-    fun register(request: RegisterRequest): AuthResponseUsuario {
+    fun register(request: RegisterRequest): Pair<AuthResponseUsuario, AuthTokens> {
         val email = Usuario.normalizarYValidarEmail(request.email)
         validarEmailDisponible(email)
         val nuevo = Usuario(
@@ -48,8 +54,28 @@ class AuthService(
         )
         val guardado = usuarioJpa.save(nuevo)
         val roles = UserDetailsServiceImpl.rolesParaTipo(guardado.tipoUsuario).map { it.authority }
-        val token = jwtTokenUtils.generateToken(email, roles)
-        return AuthResponseUsuario(true, "Registro exitoso", guardado.toResponse(), token)
+        val accessToken = jwtTokenUtils.generateToken(email, roles)
+        val refreshToken = jwtTokenUtils.generateRefreshToken(email)
+        
+        return Pair(
+            AuthResponseUsuario(true, "Registro exitoso", guardado.toResponse()),
+            AuthTokens(accessToken, refreshToken)
+        )
+    }
+
+    fun refreshToken(refreshToken: String): AuthTokens {
+        if (!jwtTokenUtils.validateToken(refreshToken)) {
+            throw UnauthorizedException("Refresh token inválido o expirado")
+        }
+        val email = jwtTokenUtils.extractEmail(refreshToken)
+        val usuario = usuarioJpa.findByEmail(email)
+            ?: throw UnauthorizedException("Usuario no encontrado")
+            
+        val roles = UserDetailsServiceImpl.rolesParaTipo(usuario.tipoUsuario).map { it.authority }
+        val newAccessToken = jwtTokenUtils.generateToken(email, roles)
+        // Opcional: rotar el refresh token también. Por ahora mantenemos el mismo.
+        
+        return AuthTokens(newAccessToken, refreshToken)
     }
 
     private fun validarEmailDisponible(email: String) {

@@ -7,6 +7,8 @@ import ar.edu.unsam.phm.services.AuthService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import jakarta.validation.Valid
+import org.springframework.http.HttpHeaders
+import org.springframework.http.ResponseCookie
 
 // Response compatible con el formato OAuth2 que espera Swagger UI
 data class OAuth2TokenResponse(
@@ -19,12 +21,47 @@ data class OAuth2TokenResponse(
 class AuthController (private val authService: AuthService) {
     @PostMapping("/login")
     fun login(@Valid @RequestBody request: LoginRequest): ResponseEntity<AuthResponseUsuario> {
-        return ResponseEntity.ok(authService.login(request))
+        val (responseBody, tokens) = authService.login(request)
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, createCookie("accessToken", tokens.accessToken, 900).toString()) // 15 min
+            .header(HttpHeaders.SET_COOKIE, createCookie("refreshToken", tokens.refreshToken, 604800).toString()) // 7 dias
+            .body(responseBody)
     }
 
     @PostMapping("/register")
     fun register(@Valid @RequestBody request: RegisterRequest): ResponseEntity<AuthResponseUsuario> {
-        return ResponseEntity.ok(authService.register(request))
+        val (responseBody, tokens) = authService.register(request)
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, createCookie("accessToken", tokens.accessToken, 900).toString())
+            .header(HttpHeaders.SET_COOKIE, createCookie("refreshToken", tokens.refreshToken, 604800).toString())
+            .body(responseBody)
+    }
+
+    @PostMapping("/refresh")
+    fun refresh(@CookieValue(name = "refreshToken", required = true) refreshToken: String): ResponseEntity<Void> {
+        val newTokens = authService.refreshToken(refreshToken)
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, createCookie("accessToken", newTokens.accessToken, 900).toString())
+            .header(HttpHeaders.SET_COOKIE, createCookie("refreshToken", newTokens.refreshToken, 604800).toString())
+            .build()
+    }
+
+    @PostMapping("/logout")
+    fun logout(): ResponseEntity<Void> {
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, createCookie("accessToken", "", 0).toString())
+            .header(HttpHeaders.SET_COOKIE, createCookie("refreshToken", "", 0).toString())
+            .build()
+    }
+
+    private fun createCookie(name: String, value: String, maxAge: Long): ResponseCookie {
+        return ResponseCookie.from(name, value)
+            .httpOnly(true)
+            // .secure(true) // Descomentar en producción (requiere HTTPS)
+            .path("/")
+            .maxAge(maxAge)
+            .sameSite("Strict")
+            .build()
     }
 
     /**
@@ -37,8 +74,7 @@ class AuthController (private val authService: AuthService) {
         @RequestParam username: String,
         @RequestParam password: String,
     ): ResponseEntity<OAuth2TokenResponse> {
-        val result = authService.login(LoginRequest(email = username, password = password))
-        val token = result.token ?: throw IllegalStateException("Token no generado")
-        return ResponseEntity.ok(OAuth2TokenResponse(access_token = token))
+        val (_, tokens) = authService.login(LoginRequest(email = username, password = password))
+        return ResponseEntity.ok(OAuth2TokenResponse(access_token = tokens.accessToken))
     }
 }

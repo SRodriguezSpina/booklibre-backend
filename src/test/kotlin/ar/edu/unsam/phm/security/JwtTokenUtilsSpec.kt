@@ -11,7 +11,7 @@ private const val ONE_HOUR_MS = 3_600_000L
 
 class JwtTokenUtilsSpec : DescribeSpec({
 
-    val tokenUtils = JwtTokenUtils(secret = TEST_SECRET, expiration = ONE_HOUR_MS)
+    val tokenUtils = JwtTokenUtils(secret = TEST_SECRET, expiration = ONE_HOUR_MS, refreshExpiration = 604_800_000L)
 
     describe("generateToken") {
         it("genera un token no vacío") {
@@ -43,13 +43,13 @@ class JwtTokenUtilsSpec : DescribeSpec({
         }
 
         it("token generado con otro secret no es válido") {
-            val otroUtils = JwtTokenUtils(secret = "otro-secret-completamente-diferente-y-largo", expiration = ONE_HOUR_MS)
+            val otroUtils = JwtTokenUtils(secret = "otro-secret-completamente-diferente-y-largo", expiration = ONE_HOUR_MS, refreshExpiration = 604_800_000L)
             val token = otroUtils.generateToken("user@test.com", listOf("ROLE_LECTOR"))
             tokenUtils.validateToken(token) shouldBe false
         }
 
         it("token expirado no es válido") {
-            val expiredUtils = JwtTokenUtils(secret = TEST_SECRET, expiration = -1000L)
+            val expiredUtils = JwtTokenUtils(secret = TEST_SECRET, expiration = -1000L, refreshExpiration = -1000L)
             val token = expiredUtils.generateToken("user@test.com", listOf("ROLE_LECTOR"))
             expiredUtils.validateToken(token) shouldBe false
         }

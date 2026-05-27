@@ -30,14 +30,21 @@ class JwtAuthFilter(
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
-        val authHeader = request.getHeader("Authorization")
+        // 1. Intentar obtener el token de la cookie HttpOnly
+        var token: String? = request.cookies?.find { it.name == "accessToken" }?.value
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        // 2. Si no hay cookie, intentar el header Authorization (para Swagger UI y retrocompatibilidad)
+        if (token == null) {
+            val authHeader = request.getHeader("Authorization")
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.removePrefix("Bearer ")
+            }
+        }
+
+        if (token == null) {
             filterChain.doFilter(request, response)
             return
         }
-
-        val token = authHeader.removePrefix("Bearer ")
 
         if (!jwtTokenUtils.validateToken(token)) {
             SecurityContextHolder.clearContext()
