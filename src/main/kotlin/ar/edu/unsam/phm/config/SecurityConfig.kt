@@ -50,6 +50,7 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(HttpMethod.POST, "/api/login", "/api/register", "/api/auth/token", "/api/refresh", "/api/logout").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/libros/reservas-cumplidas").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET, "/api/libros/home").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/mas-clickeado").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/mejor-calificados").permitAll()

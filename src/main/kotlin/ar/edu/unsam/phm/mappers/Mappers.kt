@@ -17,6 +17,7 @@ fun Usuario.toResponse(): UsuarioResponse {
     val tipoStr = when (tipoUsuario.trim().uppercase().replace(" ", "_")) {
         "PUBLICADOR"                              -> "Publicador"
         "LECTOR_PUBLICADOR", "LECTORPUBLICADOR"  -> "LectorPublicador"
+        "ADMIN"                                   -> "ADMIN"
         else                                      -> "Lector"
     }
     return UsuarioResponse(
