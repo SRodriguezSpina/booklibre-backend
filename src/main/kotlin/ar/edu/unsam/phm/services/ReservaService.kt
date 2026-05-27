@@ -62,18 +62,23 @@ class ReservaService(
     }
 
     fun obtenerReservasAnuales(usuarioId: Int): List<ReservaAnualUsuarioDTO> {
-        usuarioJpa.findById(usuarioId).orElseThrow { NotFoundException("Usuario $usuarioId no encontrado") }
-        return reservaJpa.findReservasAnualesByUsuarioId(usuarioId).map {
+        val usuario = usuarioJpa.findById(usuarioId).orElseThrow { NotFoundException("Usuario $usuarioId no encontrado") }
+        val reservas = reservaJpa.findByUsuarioId(usuarioId).sortedBy { it.fechaDesde }
+        val libroIds = reservas.map { it.libroId }.distinct()
+        val librosPorId = libroRepository.findAllByIds(libroIds).associateBy { it.id }
+
+        return reservas.map { reserva ->
+            val libro = librosPorId[reserva.libroId]
             ReservaAnualUsuarioDTO(
-                reservaId     = it.reservaId,
-                usuarioId     = it.usuarioId,
-                usuarioNombre = it.usuarioNombre,
-                libroId       = it.libroId,
-                libroTitulo   = it.libroTitulo,
-                libroAutor    = it.libroAutor,
-                fechaDesde    = it.fechaDesde.toLocalDate(),
-                fechaHasta    = it.fechaHasta.toLocalDate(),
-                anioReserva   = it.anioReserva,
+                reservaId     = reserva.id,
+                usuarioId     = usuario.id,
+                usuarioNombre = usuario.nombre,
+                libroId       = reserva.libroId,
+                libroTitulo   = libro?.titulo ?: "Desconocido",
+                libroAutor    = libro?.autor ?: "Desconocido",
+                fechaDesde    = reserva.fechaDesde.toLocalDate(),
+                fechaHasta    = reserva.fechaHasta.toLocalDate(),
+                anioReserva   = reserva.fechaDesde.year,
             )
         }
     }
