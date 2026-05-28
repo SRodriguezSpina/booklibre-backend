@@ -1,9 +1,9 @@
 package ar.edu.unsam.phm.controllers
 
+import ar.edu.unsam.phm.domain.DuenioRef
 import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
-import ar.edu.unsam.phm.domain.Disponibilidad
 import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.LibroComun
 import ar.edu.unsam.phm.domain.LibroData
@@ -13,6 +13,7 @@ import ar.edu.unsam.phm.domain.TipoReserva
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.services.ReservaService
+import ar.edu.unsam.phm.mappers.toDTO
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.mockk
 import org.junit.jupiter.api.DisplayName
@@ -28,9 +29,13 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.test.Test
 
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+
 @WebMvcTest(ReservaController::class)
+@AutoConfigureMockMvc(addFilters = false)
 @WithMockUser
 @DisplayName("Dado un ReservaController")
 class ReservaControllerTest(
@@ -59,7 +64,7 @@ class ReservaControllerTest(
         isbn: String = "9780000000001",
     ): LibroComun {
         val data = LibroData(
-            duenio = duenio,
+            duenio = DuenioRef(id = duenio.id, nombre = duenio.nombre),
             titulo = titulo,
             autor = autor,
             descripcion = "Desc",
@@ -72,7 +77,6 @@ class ReservaControllerTest(
             estado = estado,
             imagenUrl = "",
             fechaAgregado = LocalDate.now(),
-            
         )
         return LibroComun(data).apply { this.id = id }
     }
@@ -84,7 +88,7 @@ class ReservaControllerTest(
         desde: LocalDate,
         hasta: LocalDate,
         karma: Int,
-    ) = Reserva(libro, lector, desde, hasta).apply {
+    ) = Reserva(libroId = libro.id, usuario = lector, fechaDesde = desde.atStartOfDay(), fechaHasta = hasta.atTime(23, 59, 59)).apply {
         id = prestamoId
         bibliokarmas = karma
     }
@@ -101,7 +105,9 @@ class ReservaControllerTest(
             reservaDominio(501, libro2, lector, LocalDate.of(2026, 3, 15), LocalDate.of(2026, 3, 25), 1200),
         )
 
-        whenever(reservaService.obtenerReservas(1, TipoReserva.HECHAS)).thenReturn(reservas)
+        val reservasDTO = reservas.map { it.toDTO(libro = if (it.libroId == 1) libro1 else libro2, estaDisponible = true, yaCalificadoPorUsuario = false) }
+
+        whenever(reservaService.obtenerReservas(1, TipoReserva.HECHAS)).thenReturn(reservasDTO)
 
         mockMvc.perform(get("/api/reservas?usuarioId=1&tipo=HECHAS"))
             .andExpect(status().isOk)
@@ -141,14 +147,14 @@ class ReservaControllerTest(
         val dto = ar.edu.unsam.phm.dtos.CrearReservaDTO(
             libroId = 1,
             usuarioId = 2,
-            fechaDesde = LocalDate.of(2026, 5, 1),
-            fechaHasta = LocalDate.of(2026, 5, 10),
+            fechaDesde = LocalDate.of(2026, 5, 1).atStartOfDay(),
+            fechaHasta = LocalDate.of(2026, 5, 10).atTime(23, 59, 59),
         )
 
         whenever(reservaService.crearReserva(any())).thenReturn(mockk())
 
         mockMvc.perform(
-            post("/api/reservas")
+            post("/api/reservas/crear")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)),
         ).andExpect(status().isOk)

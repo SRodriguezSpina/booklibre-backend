@@ -2,6 +2,7 @@ package ar.edu.unsam.phm.controllers
 
 import ar.edu.unsam.phm.dtos.*
 import ar.edu.unsam.phm.domain.Disponibilidad
+import ar.edu.unsam.phm.domain.DuenioRef
 import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
@@ -26,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
@@ -34,6 +36,7 @@ import java.time.LocalDate
 import kotlin.test.Test
 
 @WebMvcTest(LibroController::class)
+@AutoConfigureMockMvc(addFilters = false)
 @WithMockUser(roles = ["PUBLICADOR"])
 @DisplayName("Dado un LibroController")
 class LibroControllerTest(
@@ -41,6 +44,7 @@ class LibroControllerTest(
     @Autowired val objectMapper: ObjectMapper,
 ) {
     @MockBean lateinit var libroService: LibroService
+    @MockBean lateinit var clickLogService: ar.edu.unsam.phm.services.ClickLogService
     @MockBean lateinit var jwtTokenUtils: JwtTokenUtils
 
     private fun duenioUsuario() = Usuario(
@@ -61,7 +65,7 @@ class LibroControllerTest(
         val u = duenioUsuario()
         return LibroComun(
             LibroData(
-                duenio = u,
+                duenio = DuenioRef(id = u.id, nombre = u.nombre),
                 titulo = titulo,
                 autor = autor,
                 descripcion = "Distopía",

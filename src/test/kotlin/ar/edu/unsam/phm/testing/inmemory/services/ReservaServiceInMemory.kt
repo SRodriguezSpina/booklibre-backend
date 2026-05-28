@@ -4,11 +4,9 @@ import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.domain.TipoReserva
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
 import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
-import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
-import ar.edu.unsam.phm.mappers.toDTO
 import ar.edu.unsam.phm.testing.inmemory.repository.EntityNotFoundException
 import ar.edu.unsam.phm.testing.inmemory.repository.LibroRepository
 import ar.edu.unsam.phm.testing.inmemory.repository.ReservaRepository
@@ -28,7 +26,10 @@ class ReservaServiceInMemory(
         val reservas = reservaRepository.getReservasDeUsuario(usuarioId)
         return when (tipo) {
             TipoReserva.HECHAS -> reservas.filter { it.usuario.id == usuarioId }
-            TipoReserva.RECIBIDAS -> reservas.filter { it.libro.duenio.id == usuarioId }
+            TipoReserva.RECIBIDAS -> reservas.filter {
+                val libro = libroRepository.getById(it.libroId)
+                libro.duenio.id == usuarioId
+            }
         }
     }
 
@@ -41,13 +42,14 @@ class ReservaServiceInMemory(
             .filter { it.usuario.id == usuarioId && it.fechaDesde.year == anioActual }
             .sortedBy { it.fechaDesde }
             .map {
+                val libro = libroRepository.getById(it.libroId)
                 ReservaAnualUsuarioDTO(
                     reservaId = it.id,
                     usuarioId = it.usuario.id,
                     usuarioNombre = it.usuario.nombre,
-                    libroId = it.libro.id,
-                    libroTitulo = it.libro.titulo,
-                    libroAutor = it.libro.autor,
+                    libroId = libro.id,
+                    libroTitulo = libro.titulo,
+                    libroAutor = libro.autor,
                     fechaDesde = it.fechaDesde.toLocalDate(),
                     fechaHasta = it.fechaHasta.toLocalDate(),
                     anioReserva = it.fechaDesde.year,
@@ -69,15 +71,17 @@ class ReservaServiceInMemory(
                 throw BusinessException("No podés reservar tu propio libro")
             }
 
-            if (!libro.estaDisponible()) {
-                throw ConflictException("El libro no está disponible para préstamo")
+            val sePisa = reservaRepository.findByLibroId(libro.id).any {
+                it.sePisaCon(dto.fechaDesde, dto.fechaHasta)
+            }
+            if (sePisa) {
+                throw BusinessException("El libro ya está reservado en ese período")
             }
 
             val reserva = reservaRepository.create(
-                Reserva(libro, solicitante, dto.fechaDesde, dto.fechaHasta),
+                Reserva(libro.id, solicitante, dto.fechaDesde, dto.fechaHasta),
             )
-            reserva.confirmar()
-            libro.actualizoDisponibilidad(false)
+            reserva.confirmar(libro)
             usuarioRepository.update(solicitante)
             return reserva
         }

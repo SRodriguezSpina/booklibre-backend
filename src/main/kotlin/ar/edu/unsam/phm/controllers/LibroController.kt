@@ -52,7 +52,7 @@ class LibroController(
 
         // Registrar el click solo si hay un usuario autenticado y NO es el propietario del libro
         auth?.name?.let { nombreUsuario ->
-            if (nombreUsuario != libro.duenio.email) {
+            if (usuarioId == null || usuarioId != libro.duenio.id) {
                 clickLogService.registrarClick(libroId, libro.titulo, nombreUsuario)
             }
         }
@@ -60,7 +60,7 @@ class LibroController(
         val alquiladoPorId = libroService.obtenerPrestatarioActual(libroId)
         val totalReservas = libroService.contarReservasPorLibro(libroId)
         val calificaciones = libroService.getCalificacionesDetalle(libroId)
-        val reservasActivas = libroService.obtenerRangosReservasActivas(libroId)
+        val reservasActivas = libroService.obtenerRangosReservasActivas(libro)
         val estoyReservado = usuarioId?.let { libroService.usuarioTieneReservaPendiente(libroId, it) } ?: false
         val miReservaHasta = if (estoyReservado && usuarioId != null) libroService.obtenerMiReservaHasta(libroId, usuarioId) else null
         return libro.toDTO(
@@ -80,7 +80,7 @@ class LibroController(
             ?: mapOf("mensaje" to "Todavía no hay clicks registrados")
 
     // Query: Saber cuántos libros son del tipo coleccionables s/aggregation
-    @GetMapping("/colecionables/count")
+    @GetMapping("/coleccionables/count")
     fun contarColeccionables(): Map<String, Long> =
         mapOf("cantidad" to libroService.contarLibrosColecciones())
 
@@ -100,15 +100,8 @@ class LibroController(
     ): List<LibroHomeDTO> =
         libroService.getLibrosConReservasActivasMayorA(minReservas)
             .map { it.toHomeDTO(libroService.calcularBiblioKarma(it, usuarioId)) }
-            
+
     // Query: Saber qué libros tienen más de 4 puntos de calificación
-    // Alternativa con bibliokarma por usuario:
-    // @GetMapping("/mejor-calificados")
-    // fun getLibrosMejorCalificados(
-    //     @RequestParam(required = false) usuarioId: Int?
-    // ): List<LibroHomeDTO> =
-    //     libroService.getLibrosConPromedioMayorA4()
-    //         .map { it.toHomeDTO(libroService.calcularBiblioKarma(it, usuarioId)) }
     @GetMapping("/mejor-calificados")
     fun getLibrosMejorCalificados(): List<LibroHomeDTO> =
         libroService.getLibrosConPromedioMayorA4()
@@ -150,4 +143,13 @@ class LibroController(
         @PathVariable libroId: Int,
         @RequestParam usuarioId: Int,
     ) = libroService.reactivar(libroId, usuarioId)
+
+    @DeleteMapping("/{libroId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun eliminarLibro(
+        @PathVariable libroId: Int,
+        @RequestParam usuarioId: Int,
+    ) {
+        libroService.eliminarLibro(libroId, usuarioId)
+    }
 }

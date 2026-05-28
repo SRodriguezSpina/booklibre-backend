@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.domain.Reserva
+import ar.edu.unsam.phm.domain.ReservaFecha
 import ar.edu.unsam.phm.domain.TipoReserva
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
@@ -11,10 +12,9 @@ import ar.edu.unsam.phm.dtos.UsuarioReservasDevueltasDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.mappers.toDTO
-import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.mongo.LibroMongoRepository
 import ar.edu.unsam.phm.repository.ReservaJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioJpaRepository
-import ar.edu.unsam.phm.repository.mongo.CalificacionMongoRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.scheduling.annotation.Scheduled
@@ -25,10 +25,9 @@ import java.time.LocalDateTime
 
 @Service
 class ReservaService(
-    private val libroRepository: LibroRepository,
+    private val libroRepository: LibroMongoRepository,
     private val usuarioJpa: UsuarioJpaRepository,
     private val reservaJpa: ReservaJpaRepository,
-    private val calificacionesMongo: CalificacionMongoRepository,
 ) {
 
     private val locks = java.util.concurrent.ConcurrentHashMap<Int, Any>()
@@ -50,17 +49,16 @@ class ReservaService(
         val ahora = LocalDateTime.now()
         // Batch: one query for all reserved libro IDs right now
         val librosReservadosAhora = reservaJpa.obtenerIdsLibrosReservados(ahora, ahora)
-        // Batch: one MongoDB query for all already-rated libro IDs by this user
-        val librosYaCalificados = calificacionesMongo
-            .findByLibroIdInAndUsuarioId(idsLibros, usuarioId)
-            .map { it.libroId }
-            .toSet()
         val contenido = reservas.mapNotNull { reserva ->
             val libro = librosPorId[reserva.libroId] ?: return@mapNotNull null
+            val estaDisponible = reserva.libroId !in librosReservadosAhora
+            val yaCalificado = libroRepository.usuarioYaCalifico(
+                reserva.libroId, reserva.usuario.id,
+            )
             reserva.toDTO(
                 libro = libro,
-                estaDisponible = reserva.libroId !in librosReservadosAhora,
-                yaCalificadoPorUsuario = reserva.libroId in librosYaCalificados,
+                estaDisponible = estaDisponible,
+                yaCalificadoPorUsuario = yaCalificado,
             )
         }
         val totalPaginas = if (paginaReservas.totalElements == 0L) 0 else paginaReservas.totalPages
@@ -78,18 +76,23 @@ class ReservaService(
     }
 
     fun obtenerReservasAnuales(usuarioId: Int): List<ReservaAnualUsuarioDTO> {
-        usuarioJpa.findById(usuarioId).orElseThrow { NotFoundException("Usuario $usuarioId no encontrado") }
-        return reservaJpa.findReservasAnualesByUsuarioId(usuarioId).map {
+        val usuario = usuarioJpa.findById(usuarioId).orElseThrow { NotFoundException("Usuario $usuarioId no encontrado") }
+        val reservas = reservaJpa.findByUsuarioId(usuarioId).sortedBy { it.fechaDesde }
+        val libroIds = reservas.map { it.libroId }.distinct()
+        val librosPorId = libroRepository.findAllByIds(libroIds).associateBy { it.id }
+
+        return reservas.map { reserva ->
+            val libro = librosPorId[reserva.libroId]
             ReservaAnualUsuarioDTO(
-                reservaId     = it.reservaId,
-                usuarioId     = it.usuarioId,
-                usuarioNombre = it.usuarioNombre,
-                libroId       = it.libroId,
-                libroTitulo   = it.libroTitulo,
-                libroAutor    = it.libroAutor,
-                fechaDesde    = it.fechaDesde.toLocalDate(),
-                fechaHasta    = it.fechaHasta.toLocalDate(),
-                anioReserva   = it.anioReserva,
+                reservaId     = reserva.id,
+                usuarioId     = usuario.id,
+                usuarioNombre = usuario.nombre,
+                libroId       = reserva.libroId,
+                libroTitulo   = libro?.titulo ?: "Desconocido",
+                libroAutor    = libro?.autor ?: "Desconocido",
+                fechaDesde    = reserva.fechaDesde.toLocalDate(),
+                fechaHasta    = reserva.fechaHasta.toLocalDate(),
+                anioReserva   = reserva.fechaDesde.year,
             )
         }
     }
@@ -118,19 +121,12 @@ class ReservaService(
         if (dto.fechaDesde.isBefore(LocalDateTime.now())) {
             throw BusinessException("La fecha de inicio no puede ser en el pasado")
         }
-        if (!dto.fechaHasta.isAfter(dto.fechaDesde)) {
-            throw BusinessException("La fecha de fin debe ser posterior a la fecha de inicio")
-        }
-
         val lock = locks.computeIfAbsent(dto.libroId) { Any() }
         synchronized(lock) {
-            val libro = libroRepository.getById(dto.libroId)
+            val libro = libroRepository.getByIdCompleto(dto.libroId)
+                ?: throw NotFoundException("Libro ${dto.libroId} no encontrado")
             val solicitante = usuarioJpa.findById(dto.usuarioId)
                 .orElseThrow { NotFoundException("Usuario ${dto.usuarioId} no encontrado") }
-
-            if (libro.duenio.id == solicitante.id) {
-                throw BusinessException("No podés reservar tu propio libro")
-            }
 
             // Un usuario no puede reservar un libro si ya tiene una reserva activa sobre él
             if (reservaJpa.existsByLibroIdAndUsuarioIdAndFechaHastaAfter(dto.libroId, dto.usuarioId, LocalDateTime.now())) {
@@ -151,10 +147,19 @@ class ReservaService(
             )
             reserva.confirmar(libro)
 
-            libro.duenio.sumaLibroReservado()
+            val duenioJpa = usuarioJpa.findById(libro.duenio.id)
+                .orElseThrow { NotFoundException("Usuario dueño ${libro.duenio.id} no encontrado") }
+            duenioJpa.sumaLibroReservado()
             solicitante.sumaLibroLeido()
-            usuarioJpa.save(libro.duenio)
+            usuarioJpa.save(duenioJpa)
             usuarioJpa.save(solicitante)
+
+            // Guardar reserva en Mongo y limpiar las finalizadas/vencidas
+            val ahora = LocalDateTime.now()
+            libro.reservas.removeIf { it.fechaHasta.isBefore(ahora) }
+            libro.reservas.add(ReservaFecha(dto.fechaDesde, dto.fechaHasta))
+            libroRepository.save(libro)
+
             return reservaJpa.save(reserva)
         }
     }

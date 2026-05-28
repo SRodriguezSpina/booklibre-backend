@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.TipoUsuario
 import ar.edu.unsam.phm.domain.Usuario
+import ar.edu.unsam.phm.dtos.AuthTokens
 import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
@@ -10,7 +11,7 @@ import ar.edu.unsam.phm.mappers.toLibroUsuarioItemDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
-import ar.edu.unsam.phm.repository.LibroRepository
+import ar.edu.unsam.phm.repository.mongo.LibroMongoRepository
 import ar.edu.unsam.phm.repository.ReservaJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import ar.edu.unsam.phm.security.JwtTokenUtils
@@ -18,15 +19,15 @@ import ar.edu.unsam.phm.security.UserDetailsServiceImpl
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-data class UsuarioActualizadoConToken(
+data class UsuarioActualizadoConTokens(
     val usuario: Usuario,
-    val token: String,
+    val tokens: AuthTokens,
 )
 
 @Service
 class UsuarioService(
     private val usuarioJpa: UsuarioJpaRepository,
-    private val libroRepository: LibroRepository,
+    private val libroRepository: LibroMongoRepository,
     private val reservaJpa: ReservaJpaRepository,
     private val jwtTokenUtils: JwtTokenUtils,
 ) {
@@ -34,7 +35,7 @@ class UsuarioService(
         usuarioJpa.findById(id).orElseThrow { NotFoundException("Usuario $id no encontrado") }
 
     @Transactional
-    fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioActualizadoConToken {
+    fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioActualizadoConTokens {
         val usuario = usuarioJpa.findById(id).orElseThrow { NotFoundException("Usuario $id no encontrado") }
         val email   = Usuario.normalizarYValidarEmail(request.email)
         val celular = Usuario.normalizarYValidarCelular(request.celular)
@@ -42,7 +43,8 @@ class UsuarioService(
         validarEmailDisponible(email, id)
         validarCelularDisponible(celular, id)
 
-        val tipoAnterior = usuario.tipoUsuarioDomain()
+        val tipoAnterior  = usuario.tipoUsuarioDomain()
+        val nombreAnterior = usuario.nombre
 
         if (request.tipoUsuario != usuario.tipoUsuario && tieneReservasActivas(id)) {
             throw BusinessException("No podés cambiar el tipo de usuario mientras tenés reservas activas")
@@ -62,12 +64,17 @@ class UsuarioService(
         manejarCambioDeTipo(usuario, tipoAnterior, tipoActual)
 
         val actualizado = usuarioJpa.save(usuario)
-        val roles = UserDetailsServiceImpl.rolesParaTipo(actualizado.tipoUsuario).map { it.authority }
-        val nuevoToken = jwtTokenUtils.generateToken(actualizado.email, roles)
+        if (actualizado.nombre != nombreAnterior) {
+            libroRepository.actualizarNombreDuenio(actualizado.id, actualizado.nombre)
+        }
 
-        return UsuarioActualizadoConToken(
+        val roles = UserDetailsServiceImpl.rolesParaTipo(actualizado.tipoUsuario).map { it.authority }
+        val accessToken = jwtTokenUtils.generateToken(actualizado.email, roles)
+        val refreshToken = jwtTokenUtils.generateRefreshToken(actualizado.email)
+
+        return UsuarioActualizadoConTokens(
             usuario = actualizado,
-            token = nuevoToken,
+            tokens = AuthTokens(accessToken, refreshToken),
         )
     }
 
@@ -83,12 +90,11 @@ class UsuarioService(
         size: Int,
     ): PagedResponse<LibroUsuarioItemDTO> {
         val ahora = java.time.LocalDateTime.now()
-        val librosReservadosAhora = reservaJpa.obtenerIdsLibrosReservados(ahora, ahora)
         val paged = libroRepository.findPaginadoByDuenioId(
-            usuarioId, filtro, ordenarPor, direccion, page, size, librosReservadosAhora,
+            usuarioId, filtro, ordenarPor, direccion, page, size
         )
         val items = paged.content.map { libro ->
-            libro.toLibroUsuarioItemDTO().copy(disponible = libro.id !in librosReservadosAhora)
+            libro.toLibroUsuarioItemDTO().copy(disponible = libro.estaDisponible(ahora))
         }
         return PagedResponse(items, paged.page, paged.totalPages, paged.totalElements)
     }

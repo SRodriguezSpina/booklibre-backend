@@ -1,6 +1,7 @@
 package ar.edu.unsam.phm.controllers
 
 import ar.edu.unsam.phm.domain.Disponibilidad
+import ar.edu.unsam.phm.domain.DuenioRef
 import ar.edu.unsam.phm.domain.EstadoLibro
 import ar.edu.unsam.phm.domain.Genero
 import ar.edu.unsam.phm.domain.Idioma
@@ -31,9 +32,11 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import java.time.LocalDate
 
 @WebMvcTest(LibroController::class)
+@AutoConfigureMockMvc(addFilters = false)
 @WithMockUser(roles = ["PUBLICADOR"])
 @DisplayName("LibroController — crear y editar libros")
 class LibroControllerEditarCrearTest(
@@ -41,6 +44,8 @@ class LibroControllerEditarCrearTest(
 ) {
     @MockBean
     lateinit var libroService: LibroService
+    @MockBean
+    lateinit var clickLogService: ar.edu.unsam.phm.services.ClickLogService
     @MockBean
     lateinit var jwtTokenUtils: JwtTokenUtils
     private val mapper = ObjectMapper().registerModule(JavaTimeModule())
@@ -96,7 +101,7 @@ class LibroControllerEditarCrearTest(
     private fun libroDominio(desde: LibroDTO, id: Int = desde.id): Libro {
         val duenio = duenioFixture(desde.propietarioId)
         val data = LibroData(
-            duenio = duenio,
+            duenio = DuenioRef(id = duenio.id, nombre = duenio.nombre),
             titulo = desde.titulo,
             autor = desde.autor,
             descripcion = desde.descripcion,

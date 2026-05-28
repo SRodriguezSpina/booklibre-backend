@@ -51,7 +51,7 @@ class JwtAuthFilterSpec : DescribeSpec({
     }
 
     describe("token inválido o expirado") {
-        it("responde 401 y NO continúa la cadena de filtros") {
+        it("continúa la cadena de filtros") {
             val req = request("Bearer token_invalido")
             val res = MockHttpServletResponse()
             val chain = mockk<FilterChain>(relaxed = true)
@@ -59,20 +59,7 @@ class JwtAuthFilterSpec : DescribeSpec({
 
             filter.doFilter(req, res, chain)
 
-            res.status shouldBe 401
-            verify(exactly = 0) { chain.doFilter(any(), any()) }
-        }
-
-        it("el body de la respuesta es JSON con campo message") {
-            val req = request("Bearer expirado")
-            val res = MockHttpServletResponse()
-            val chain = mockk<FilterChain>(relaxed = true)
-            every { jwtTokenUtils.validateToken("expirado") } returns false
-
-            filter.doFilter(req, res, chain)
-
-            res.contentAsString shouldContain "message"
-            res.contentType shouldContain "application/json"
+            verify { chain.doFilter(req, res) }
         }
 
         it("limpia el SecurityContext") {

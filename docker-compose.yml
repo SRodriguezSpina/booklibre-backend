@@ -1,8 +1,8 @@
 services:
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # PostgreSQL — persiste usuarios, reservas, historial de puntajes
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
+  # PostgreSQL - Persiste usuarios, reservas, historial de puntajes
+  # -----------------------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
     container_name: booklibre-db
@@ -24,17 +24,21 @@ services:
       retries: 5
       start_period: 30s
 
-  # 2 ROUTERS
-  # ─────────────────────────────────────────────────────────────────────────────
-  # MongoDB — Config Servers (replica set: configrs)
-  # Almacenan los metadatos del cluster (rangos de chunks, ubicación de shards)
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
+  # MongoDB - Config Servers (replica set: configrs)
+  # -----------------------------------------------------------------------------
   configsvr1:
     image: mongo:7
     container_name: configsvr1
-    command: ["mongod", "--configsvr", "--replSet", "configrs", "--bind_ip_all", "--port", "27017"]
+    environment:
+      - RS_NAME=configrs
+      - RS_IS_CONFIG=true
+      - RS_MEMBERS=configsvr1:27017,configsvr2:27017,configsvr3:27017
+    entrypoint: ["bash", "/scripts/entrypoint.sh"]
+    command: ["mongod", "--configsvr", "--replSet", "configrs", "--bind_ip_all", "--port", "27017", "--wiredTigerCacheSizeGB", "0.25", "--keyFile", "/tmp/mongo.key"]
     volumes:
       - booklibre_mongo_configsvr1_data:/data/db
+      - ./mongo-init:/scripts:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -47,9 +51,11 @@ services:
   configsvr2:
     image: mongo:7
     container_name: configsvr2
-    command: ["mongod", "--configsvr", "--replSet", "configrs", "--bind_ip_all", "--port", "27017"]
+    entrypoint: ["bash", "/scripts/entrypoint.sh"]
+    command: ["mongod", "--configsvr", "--replSet", "configrs", "--bind_ip_all", "--port", "27017", "--wiredTigerCacheSizeGB", "0.25", "--keyFile", "/tmp/mongo.key"]
     volumes:
       - booklibre_mongo_configsvr2_data:/data/db
+      - ./mongo-init:/scripts:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -62,9 +68,11 @@ services:
   configsvr3:
     image: mongo:7
     container_name: configsvr3
-    command: ["mongod", "--configsvr", "--replSet", "configrs", "--bind_ip_all", "--port", "27017"]
+    entrypoint: ["bash", "/scripts/entrypoint.sh"]
+    command: ["mongod", "--configsvr", "--replSet", "configrs", "--bind_ip_all", "--port", "27017", "--wiredTigerCacheSizeGB", "0.25", "--keyFile", "/tmp/mongo.key"]
     volumes:
       - booklibre_mongo_configsvr3_data:/data/db
+      - ./mongo-init:/scripts:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -74,15 +82,21 @@ services:
       retries: 10
       start_period: 20s
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # MongoDB — Shard 1 (replica set: shard1rs)
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
+  # MongoDB - Shard 1 (replica set: shard1rs) - PSA Architecture
+  # -----------------------------------------------------------------------------
   shard1a:
     image: mongo:7
     container_name: shard1a
-    command: ["mongod", "--shardsvr", "--replSet", "shard1rs", "--bind_ip_all", "--port", "27017"]
+    environment:
+      - RS_NAME=shard1rs
+      - RS_IS_CONFIG=false
+      - RS_MEMBERS=shard1a:27017,shard1b:27017,shard1c:27017
+    entrypoint: ["bash", "/scripts/entrypoint.sh"]
+    command: ["mongod", "--shardsvr", "--replSet", "shard1rs", "--bind_ip_all", "--port", "27017", "--wiredTigerCacheSizeGB", "0.25", "--keyFile", "/tmp/mongo.key"]
     volumes:
       - booklibre_mongo_shard1a_data:/data/db
+      - ./mongo-init:/scripts:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -95,9 +109,11 @@ services:
   shard1b:
     image: mongo:7
     container_name: shard1b
-    command: ["mongod", "--shardsvr", "--replSet", "shard1rs", "--bind_ip_all", "--port", "27017"]
+    entrypoint: ["bash", "/scripts/entrypoint.sh"]
+    command: ["mongod", "--shardsvr", "--replSet", "shard1rs", "--bind_ip_all", "--port", "27017", "--wiredTigerCacheSizeGB", "0.25", "--keyFile", "/tmp/mongo.key"]
     volumes:
       - booklibre_mongo_shard1b_data:/data/db
+      - ./mongo-init:/scripts:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -110,9 +126,11 @@ services:
   shard1c:
     image: mongo:7
     container_name: shard1c
-    command: ["mongod", "--shardsvr", "--replSet", "shard1rs", "--bind_ip_all", "--port", "27017"]
+    entrypoint: ["bash", "/scripts/entrypoint.sh"]
+    command: ["mongod", "--shardsvr", "--replSet", "shard1rs", "--bind_ip_all", "--port", "27017", "--wiredTigerCacheSizeGB", "0.25", "--keyFile", "/tmp/mongo.key"]
     volumes:
       - booklibre_mongo_shard1c_data:/data/db
+      - ./mongo-init:/scripts:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -122,15 +140,21 @@ services:
       retries: 10
       start_period: 20s
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # MongoDB — Shard 2 (replica set: shard2rs)
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
+  # MongoDB - Shard 2 (replica set: shard2rs) - PSA Architecture
+  # -----------------------------------------------------------------------------
   shard2a:
     image: mongo:7
     container_name: shard2a
-    command: ["mongod", "--shardsvr", "--replSet", "shard2rs", "--bind_ip_all", "--port", "27017"]
+    environment:
+      - RS_NAME=shard2rs
+      - RS_IS_CONFIG=false
+      - RS_MEMBERS=shard2a:27017,shard2b:27017,shard2c:27017
+    entrypoint: ["bash", "/scripts/entrypoint.sh"]
+    command: ["mongod", "--shardsvr", "--replSet", "shard2rs", "--bind_ip_all", "--port", "27017", "--wiredTigerCacheSizeGB", "0.25", "--keyFile", "/tmp/mongo.key"]
     volumes:
       - booklibre_mongo_shard2a_data:/data/db
+      - ./mongo-init:/scripts:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -143,9 +167,11 @@ services:
   shard2b:
     image: mongo:7
     container_name: shard2b
-    command: ["mongod", "--shardsvr", "--replSet", "shard2rs", "--bind_ip_all", "--port", "27017"]
+    entrypoint: ["bash", "/scripts/entrypoint.sh"]
+    command: ["mongod", "--shardsvr", "--replSet", "shard2rs", "--bind_ip_all", "--port", "27017", "--wiredTigerCacheSizeGB", "0.25", "--keyFile", "/tmp/mongo.key"]
     volumes:
       - booklibre_mongo_shard2b_data:/data/db
+      - ./mongo-init:/scripts:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -158,9 +184,11 @@ services:
   shard2c:
     image: mongo:7
     container_name: shard2c
-    command: ["mongod", "--shardsvr", "--replSet", "shard2rs", "--bind_ip_all", "--port", "27017"]
+    entrypoint: ["bash", "/scripts/entrypoint.sh"]
+    command: ["mongod", "--shardsvr", "--replSet", "shard2rs", "--bind_ip_all", "--port", "27017", "--wiredTigerCacheSizeGB", "0.25", "--keyFile", "/tmp/mongo.key"]
     volumes:
       - booklibre_mongo_shard2c_data:/data/db
+      - ./mongo-init:/scripts:ro
     networks:
       - booklibre-net
     healthcheck:
@@ -170,10 +198,9 @@ services:
       retries: 10
       start_period: 20s
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Init — Fase 1: inicializa los 3 replica sets
-  # Sale con exit 0 cuando termina; permite que router arranque.
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
+  # Init - Fase 1: inicializa los 3 replica sets
+  # -----------------------------------------------------------------------------
   mongo-rs-init:
     image: mongo:7
     container_name: mongo-rs-init
@@ -194,21 +221,23 @@ services:
     networks:
       - booklibre-net
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Router (mongos) — router del cluster sharded
-  # Arranca solo después de que configrs ya está inicializado.
-  # La app Spring se conecta únicamente a este nodo.
-  # ─────────────────────────────────────────────────────────────────────────────
-  router:
+  # -----------------------------------------------------------------------------
+  # Router (mongos-router)
+  # -----------------------------------------------------------------------------
+  mongos-router1:
     image: mongo:7
-    container_name: router
+    container_name: mongos-router1
+    entrypoint: ["bash", "/scripts/entrypoint.sh"]
     command: >
       mongos
       --configdb configrs/configsvr1:27017,configsvr2:27017,configsvr3:27017
       --bind_ip_all
       --port 27017
+      --keyFile /tmp/mongo.key
     ports:
       - "27017:27017"
+    volumes:
+      - ./mongo-init:/scripts:ro
     depends_on:
       mongo-rs-init:
         condition: service_completed_successfully
@@ -221,24 +250,51 @@ services:
       retries: 15
       start_period: 30s
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Init — Fase 2: agrega shards a router y habilita sharding en las colecciones
-  # ─────────────────────────────────────────────────────────────────────────────
+  mongos-router2:
+    image: mongo:7
+    container_name: mongos-router2
+    entrypoint: ["bash", "/scripts/entrypoint.sh"]
+    command: >
+      mongos
+      --configdb configrs/configsvr1:27017,configsvr2:27017,configsvr3:27017
+      --bind_ip_all
+      --port 27017
+      --keyFile /tmp/mongo.key
+    ports:
+      - "27018:27017"
+    volumes:
+      - ./mongo-init:/scripts:ro
+    depends_on:
+      mongo-rs-init:
+        condition: service_completed_successfully
+    networks:
+      - booklibre-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--port", "27017", "--eval", "db.adminCommand('ping').ok", "--quiet"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  # -----------------------------------------------------------------------------
+  # Init - Fase 2: agrega shards a router y habilita sharding en las colecciones
+  # -----------------------------------------------------------------------------
   mongo:
     image: mongo:7
     container_name: mongo
     restart: "no"
     depends_on:
-      router: { condition: service_healthy }
+      mongos-router1: { condition: service_healthy }
+      mongos-router2: { condition: service_healthy }
     volumes:
       - ./mongo-init:/scripts:ro
-    command: ["mongosh", "--host", "router", "--port", "27017", "/scripts/02-init-cluster.js"]
+    command: ["mongosh", "--host", "mongos-router1", "--port", "27017", "-u", "admin", "-p", "booklibre_admin_secret", "--authenticationDatabase", "admin", "/scripts/02-init-cluster.js"]
     networks:
       - booklibre-net
 
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
   # Backend Spring Boot
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
   backend:
     build:
       context: .
@@ -247,7 +303,8 @@ services:
     restart: unless-stopped
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - MONGODB_URI=mongodb://router:27017/booklibreMongo
+      - MONGODB_URI=mongodb://booklibre_app:booklibre_app_secret@mongos-router1:27017,mongos-router2:27017/booklibreMongo?authSource=booklibreMongo&wtimeoutMS=5000&socketTimeoutMS=5000&connectTimeoutMS=5000
+      - JAVA_OPTS=-Xmx256m -Xms128m
     ports:
       - "8080:8080"
     networks:
@@ -264,9 +321,9 @@ services:
       retries: 5
       start_period: 60s
 
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
   # Frontend React + Vite
-  # ─────────────────────────────────────────────────────────────────────────────
+  # -----------------------------------------------------------------------------
   frontend:
     build:
       context: ../frontend-2026-grupo-12
@@ -277,16 +334,15 @@ services:
       - "5173:5173"
     volumes:
       - ../frontend-2026-grupo-12:/app
-      - /app/node_modules
+      - booklibre_frontend_node_modules:/app/node_modules
     environment:
       - VITE_BACKEND_URL=http://backend:8080
+      - CI=true
     depends_on:
       backend:
         condition: service_healthy
     networks:
       - booklibre-net
-
-# AGREGAR ARBITRO
 
 networks:
   booklibre-net:
@@ -303,3 +359,4 @@ volumes:
   booklibre_mongo_shard2a_data:
   booklibre_mongo_shard2b_data:
   booklibre_mongo_shard2c_data:
+  booklibre_frontend_node_modules:

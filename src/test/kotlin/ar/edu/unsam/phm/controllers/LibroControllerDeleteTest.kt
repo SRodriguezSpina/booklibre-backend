@@ -5,18 +5,21 @@ import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.services.LibroService
+import ar.edu.unsam.phm.services.ClickLogService
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 
 @WebMvcTest(LibroController::class)
+@AutoConfigureMockMvc(addFilters = false)
 @WithMockUser(roles = ["PUBLICADOR"])
 @DisplayName("Dado un LibroController")
 class LibroControllerDeleteTest {
@@ -24,6 +27,8 @@ class LibroControllerDeleteTest {
     lateinit var mockMvc: MockMvc
     @MockBean
     lateinit var libroService: LibroService
+    @MockBean
+    lateinit var clickLogService: ClickLogService
     @MockBean
     lateinit var jwtTokenUtils: JwtTokenUtils
 

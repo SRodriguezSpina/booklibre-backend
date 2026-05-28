@@ -1,7 +1,9 @@
 package ar.edu.unsam.phm.domain
 
 import ar.edu.unsam.phm.exceptions.BusinessException
+import ar.edu.unsam.phm.exceptions.ConflictException
 import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.Sharded
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -43,7 +45,7 @@ data class LibroFiltros(
 }
 
 data class LibroData(
-    val duenio: Usuario,
+    val duenio: DuenioRef,
     val titulo: String,
     val autor: String,
     val descripcion: String,
@@ -59,6 +61,7 @@ data class LibroData(
 )
 
 @Document(collection = "libros")
+@Sharded(shardKey = ["libroId"])
 abstract class Libro() : BaseEntity() {
     companion object {
         private val ISBN_REGEX = Regex("^\\d{13}$")
@@ -79,9 +82,18 @@ abstract class Libro() : BaseEntity() {
             if (!ISBN_REGEX.matches(isbn)) throw BusinessException("El ISBN debe contener exactamente 13 caracteres numéricos")
             return isbn
         }
+
+        fun crear(tipo: String, data: LibroData): Libro {
+            return when (tipo) {
+                "Comun"          -> LibroComun(data)
+                "ConDedicatoria" -> LibroConDedicatoria(data)
+                "Coleccionable"  -> LibroColeccionable(data)
+                else -> throw BusinessException("Tipo de libro inválido: $tipo")
+            }
+        }
     }
 
-    lateinit var duenio: Usuario
+    lateinit var duenio: DuenioRef
     var titulo: String = ""
     var autor: String = ""
     var descripcion: String = ""
@@ -97,6 +109,14 @@ abstract class Libro() : BaseEntity() {
     // Promedio de calificaciones (calculado por el service, guardado para ordenamiento)
     var calificacion: Double = 0.0
     var activo: Boolean = true
+
+    var libroId: Int = 0
+    var clicks: MutableList<ClickLog> = mutableListOf()
+    var calificaciones: MutableList<Calificacion> = mutableListOf()
+    var reservas: MutableList<ReservaFecha> = mutableListOf()
+
+    fun estaDisponible(ahora: LocalDateTime = LocalDateTime.now()): Boolean =
+        reservas.none { it.fechaDesde <= ahora && it.fechaHasta >= ahora }
 
     constructor(data: LibroData) : this() {
         duenio          = data.duenio
@@ -127,6 +147,16 @@ abstract class Libro() : BaseEntity() {
 
     fun actualizarPromedioCalificacion(promedioGeneral: Double) {
         calificacion = (promedioGeneral * 10.0).roundToInt() / 10.0
+    }
+
+    fun agregarCalificacion(nueva: Calificacion) {
+        if (nueva.valor !in 1..5) throw BusinessException("La calificación debe estar entre 1 y 5")
+        if (calificaciones.any { it.usuarioId == nueva.usuarioId }) {
+            throw ConflictException("Usuario ${nueva.usuarioId} ya calificó este libro")
+        }
+        calificaciones.add(nueva)
+        val promedio = calificaciones.map { it.valor }.average()
+        actualizarPromedioCalificacion(promedio)
     }
 
     abstract fun plusBiblioKarma(usuario: Usuario, cantidadReservasDelLibro: Int = 0): Int
@@ -189,3 +219,13 @@ class LibroColeccionable : Libro {
         return karmaParte + cantidadPaginas
     }
 }
+
+data class ClickLog(
+    val fechaHora: LocalDateTime = LocalDateTime.now(),
+    val nombreUsuario: String,
+)
+
+data class ReservaFecha(
+    val fechaDesde: LocalDateTime,
+    val fechaHasta: LocalDateTime,
+)

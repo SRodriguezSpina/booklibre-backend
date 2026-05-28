@@ -17,7 +17,6 @@ data class UsuarioResponse(
 
 data class UsuarioUpdateResponse(
     val usuario: UsuarioResponse,
-    val token: String,
 )
 
 data class UsuarioUpdateRequest(

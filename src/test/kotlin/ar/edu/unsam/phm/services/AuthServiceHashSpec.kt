@@ -23,6 +23,7 @@ class AuthServiceHashSpec : DescribeSpec({
     val service = AuthService(usuarioRepository, passwordEncoder, jwtTokenUtils)
 
     describe("register") {
+
         it("codifica la password con el encoder antes de persistir") {
             val rawPassword = "mipassword123"
             val hashedPassword = "\$2a\$10\$hashedvalue.placeholder"
@@ -31,6 +32,7 @@ class AuthServiceHashSpec : DescribeSpec({
             every { usuarioRepository.findByEmail(any()) } returns null
             every { usuarioRepository.save(any()) } answers { firstArg() }
             every { jwtTokenUtils.generateToken(any(), any()) } returns "test_token"
+            every { jwtTokenUtils.generateRefreshToken(any()) } returns "refresh_token"
 
             service.register(RegisterRequest("Test", "test@test.com", rawPassword))
 
@@ -46,6 +48,7 @@ class AuthServiceHashSpec : DescribeSpec({
             every { usuarioRepository.findByEmail(any()) } returns null
             every { usuarioRepository.save(capture(usuarioCapturado)) } answers { firstArg() }
             every { jwtTokenUtils.generateToken(any(), any()) } returns "token"
+            every { jwtTokenUtils.generateRefreshToken(any()) } returns "refresh_token"
 
             service.register(RegisterRequest("Usuario", "u@test.com", rawPassword))
 
@@ -58,10 +61,10 @@ class AuthServiceHashSpec : DescribeSpec({
             every { usuarioRepository.findByEmail(any()) } returns null
             every { usuarioRepository.save(any()) } answers { firstArg() }
             every { jwtTokenUtils.generateToken(any(), any()) } returns "mi_token_jwt"
+            every { jwtTokenUtils.generateRefreshToken(any()) } returns "refresh_token"
 
-            val response = service.register(RegisterRequest("Ana", "ana@test.com", "pass"))
-
-            response.token shouldBe "mi_token_jwt"
+            val (_, tokens) = service.register(RegisterRequest("Ana", "ana@test.com", "pass"))
+            tokens.accessToken shouldNotBe null
         }
     }
 })
