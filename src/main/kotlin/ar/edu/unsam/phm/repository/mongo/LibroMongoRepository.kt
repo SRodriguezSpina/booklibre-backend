@@ -177,8 +177,12 @@ class LibroMongoRepository(
         if (filtros.generos.isNotEmpty()) {
             criteria.and("genero").`in`(filtros.generos.map { it.trim().uppercase() })
         }
-        filtros.paginasMin?.let { criteria.and("cantidadPaginas").gte(it) }
-        filtros.paginasMax?.let { criteria.and("cantidadPaginas").lte(it) }
+        if (filtros.paginasMin != null && filtros.paginasMax != null) {
+            criteria.and("cantidadPaginas").gte(filtros.paginasMin).lte(filtros.paginasMax)
+        } else {
+            filtros.paginasMin?.let { criteria.and("cantidadPaginas").gte(it) }
+            filtros.paginasMax?.let { criteria.and("cantidadPaginas").lte(it) }
+        }
         filtros.isbn?.takeIf { it.isNotBlank() }?.let { criteria.and("isbn").`is`(it) }
         filtros.prestadoPor?.takeIf { it.isNotBlank() }?.let {
             criteria.and("duenio.nombre").regex(Pattern.quote(it), "i")
