@@ -2,7 +2,7 @@ server:
   port: 8080
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/booklibre
+    url: jdbc:postgresql://postgres:5432/booklibre?sslmode=disable
     username: booklibre
     password: booklibre
     driver-class-name: org.postgresql.Driver

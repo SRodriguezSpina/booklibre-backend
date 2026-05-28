@@ -114,7 +114,8 @@ class UsuarioService(
             throw ConflictException("El email ya está en uso")
     }
 
-    private fun validarCelularDisponible(celular: String, idActual: Int) {
+    private fun validarCelularDisponible(celular: String?, idActual: Int) {
+        if (celular == null) return  // celular opcional, NULL no viola unicidad
         val existente = usuarioJpa.findByCelular(celular)
         if (existente != null && existente.id != idActual)
             throw ConflictException("El celular ya está en uso")
