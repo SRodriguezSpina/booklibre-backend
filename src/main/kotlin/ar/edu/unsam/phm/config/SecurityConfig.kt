@@ -50,7 +50,6 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(HttpMethod.POST, "/api/login", "/api/register", "/api/auth/token", "/api/refresh", "/api/logout").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/libros/reservas-cumplidas").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET, "/api/libros/home").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/mas-clickeado").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/mejor-calificados").permitAll()
@@ -76,6 +75,8 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.POST, "/api/libros/nuevo").hasRole("PUBLICADOR")
                     .requestMatchers(HttpMethod.PUT, "/api/libros/baja").hasRole("PUBLICADOR")
                     .requestMatchers(HttpMethod.PUT, "/api/libros/reactivar").hasRole("PUBLICADOR")
+                    .requestMatchers(HttpMethod.GET, "/api/libros/coleccionables/count").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/libros/reservas-cumplidas").hasRole("ADMIN")
                     // usuario controller
                     .requestMatchers(HttpMethod.GET, "/api/usuarios/*/reservas/anuales").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET, "/api/usuarios/*/libros").hasRole("PUBLICADOR")
