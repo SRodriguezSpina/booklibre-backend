@@ -10,6 +10,7 @@ interface CalificacionMongoRepository : MongoRepository<CalificacionDocument, Ob
     fun findTop2ByLibroIdOrderByFechaDesc(libroId: Int): List<CalificacionDocument>
     fun countByLibroId(libroId: Int): Long
     fun existsByLibroIdAndUsuarioId(libroId: Int, usuarioId: Int): Boolean
+    fun findByLibroIdInAndUsuarioId(libroIds: Collection<Int>, usuarioId: Int): List<CalificacionDocument>
 
     /**
      * Query: libros con promedio de calificación > 4 */

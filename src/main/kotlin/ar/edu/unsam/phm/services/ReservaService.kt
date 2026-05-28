@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.services
 import ar.edu.unsam.phm.domain.Reserva
 import ar.edu.unsam.phm.domain.TipoReserva
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
+import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
 import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.dtos.UsuarioConMasReservasDTO
@@ -14,6 +15,8 @@ import ar.edu.unsam.phm.repository.LibroRepository
 import ar.edu.unsam.phm.repository.ReservaJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import ar.edu.unsam.phm.repository.mongo.CalificacionMongoRepository
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -30,26 +33,38 @@ class ReservaService(
 
     private val locks = java.util.concurrent.ConcurrentHashMap<Int, Any>()
 
-    fun obtenerReservas(usuarioId: Int, tipo: TipoReserva): List<ReservaDTO> {
+    fun obtenerReservas(usuarioId: Int, tipo: TipoReserva, pagina: Int = 0, tamanio: Int = 10): PagedResponse<ReservaDTO> {
         usuarioJpa.findById(usuarioId).orElseThrow { NotFoundException("Usuario $usuarioId no encontrado") }
-        val reservas = when (tipo) {
-            TipoReserva.HECHAS    -> reservaJpa.findByUsuarioId(usuarioId)
+        val paginacion = PageRequest.of(pagina, tamanio, Sort.by(Sort.Direction.DESC, "fechaDesde"))
+        val paginaReservas = when (tipo) {
+            TipoReserva.HECHAS    -> reservaJpa.findByUsuarioId(usuarioId, paginacion)
             TipoReserva.RECIBIDAS -> {
                 val librosDelUsuario = libroRepository.findLibroIdsByDuenioId(usuarioId)
-                if (librosDelUsuario.isEmpty()) emptyList()
-                else reservaJpa.findByLibroIdIn(librosDelUsuario)
+                if (librosDelUsuario.isEmpty()) return PagedResponse(emptyList(), page, 0, 0L)
+                reservaJpa.findByLibroIdIn(librosDelUsuario, paginacion)
             }
         }
-        val librosPorId = libroRepository.findAllByIds(reservas.map { it.libroId }).associateBy { it.id }
+        val reservas = paginaReservas.content
+        val idsLibros = reservas.map { it.libroId }
+        val librosPorId = libroRepository.findAllByIds(idsLibros).associateBy { it.id }
         val ahora = LocalDateTime.now()
-        return reservas.mapNotNull { reserva ->
+        // Batch: one query for all reserved libro IDs right now
+        val librosReservadosAhora = reservaJpa.obtenerIdsLibrosReservados(ahora, ahora)
+        // Batch: one MongoDB query for all already-rated libro IDs by this user
+        val librosYaCalificados = calificacionesMongo
+            .findByLibroIdInAndUsuarioId(idsLibros, usuarioId)
+            .map { it.libroId }
+            .toSet()
+        val contenido = reservas.mapNotNull { reserva ->
             val libro = librosPorId[reserva.libroId] ?: return@mapNotNull null
-            val estaDisponible = !reservaJpa.estaReservadoEnPeriodo(reserva.libroId, ahora, ahora)
-            val yaCalificado = calificacionesMongo.existsByLibroIdAndUsuarioId(
-                reserva.libroId, reserva.usuario.id,
+            reserva.toDTO(
+                libro = libro,
+                estaDisponible = reserva.libroId !in librosReservadosAhora,
+                yaCalificadoPorUsuario = reserva.libroId in librosYaCalificados,
             )
-            reserva.toDTO(libro = libro, estaDisponible = estaDisponible, yaCalificadoPorUsuario = yaCalificado)
         }
+        val totalPaginas = if (paginaReservas.totalElements == 0L) 0 else paginaReservas.totalPages
+        return PagedResponse(contenido, page, totalPaginas, paginaReservas.totalElements)
     }
 
     fun obtenerIdsLibrosReservados(fechaDesdeStr: String?, fechaHastaStr: String?): Set<Int>? {
