@@ -174,21 +174,15 @@ class LibroMongoRepository(
     fun buscarPaginado(filtros: LibroFiltros, page: Int, size: Int): PagedResponse<Libro> {
         val criteria = Criteria.where("activo").`is`(true)
 
-        val texto = filtros.query.trim()
-        if (texto.isNotBlank()) {
-            val escaped = Pattern.quote(texto)
-            criteria.orOperator(
-                Criteria.where("titulo").regex(escaped, "i"),
-                Criteria.where("autor").regex(escaped, "i"),
-                Criteria.where("descripcion").regex(escaped, "i"),
-            )
-        }
-
         if (filtros.generos.isNotEmpty()) {
             criteria.and("genero").`in`(filtros.generos.map { it.trim().uppercase() })
         }
-        filtros.paginasMin?.let { criteria.and("cantidadPaginas").gte(it) }
-        filtros.paginasMax?.let { criteria.and("cantidadPaginas").lte(it) }
+        if (filtros.paginasMin != null && filtros.paginasMax != null) {
+            criteria.and("cantidadPaginas").gte(filtros.paginasMin).lte(filtros.paginasMax)
+        } else {
+            filtros.paginasMin?.let { criteria.and("cantidadPaginas").gte(it) }
+            filtros.paginasMax?.let { criteria.and("cantidadPaginas").lte(it) }
+        }
         filtros.isbn?.takeIf { it.isNotBlank() }?.let { criteria.and("isbn").`is`(it) }
         filtros.prestadoPor?.takeIf { it.isNotBlank() }?.let {
             criteria.and("duenio.nombre").regex(Pattern.quote(it), "i")
@@ -205,7 +199,14 @@ class LibroMongoRepository(
         }
         val sortDir = if (sortField == "calificacion") Sort.Direction.DESC else Sort.Direction.ASC
 
-        val baseQuery = Query(criteria)
+        val texto = filtros.query.trim()
+        val baseQuery = if (texto.isNotBlank()) {
+            org.springframework.data.mongodb.core.query.TextQuery.queryText(
+                org.springframework.data.mongodb.core.query.TextCriteria.forDefaultLanguage().matching(texto)
+            ).addCriteria(criteria)
+        } else {
+            Query(criteria)
+        }
         baseQuery.fields().exclude("calificaciones").exclude("clicks").exclude("reservas")
         val total = mongoTemplate.count(baseQuery, Libro::class.java)
 
@@ -220,18 +221,34 @@ class LibroMongoRepository(
         historialJpa.getHistorialPuntajes(libroId)
 
     fun getCalificacionesDetalle(libroId: Int, limite: Int? = 2): List<CalificacionDetalleView> {
-        val libro = getByIdIncluyendoInactivosCompleto(libroId) ?: return emptyList()
-        val todas = libro.calificaciones.sortedByDescending { it.fecha }
-        val total = todas.size.toLong()
-        val seleccion = if (limite == null) todas else todas.take(limite)
-        return seleccion.map { cal ->
+        val filtrarPorLibro = Aggregation.match(Criteria.where("libroId").`is`(libroId))
+        
+        val proyeccionPersonalizada = AggregationOperation { _ ->
+            Document("\$project", Document("totalCalificaciones", Document("\$size", Document("\$ifNull", listOf("\$calificaciones", emptyList<Any>()))))
+                .append("calificacion", "\$calificaciones"))
+        }
+            
+        val separarCalificaciones = Aggregation.unwind("calificacion")
+        val ordenarPorFecha = Aggregation.sort(Sort.Direction.DESC, "calificacion.fecha")
+        
+        val operaciones = mutableListOf<AggregationOperation>(filtrarPorLibro, proyeccionPersonalizada, separarCalificaciones, ordenarPorFecha)
+        if (limite != null) {
+            operaciones.add(Aggregation.limit(limite.toLong()))
+        }
+        
+        val agregacion = Aggregation.newAggregation(operaciones)
+        val resultados = mongoTemplate.aggregate(agregacion, Libro::class.java, Document::class.java).mappedResults
+        
+        return resultados.map { documento ->
+            val docCalificacion = documento.get("calificacion", Document::class.java)
+            val usuarioId = docCalificacion.getInteger("usuarioId")
             CalificacionDetalleMongoView(
-                usuarioId = cal.usuarioId,
-                nombreUsuario = usuarioJpa.findById(cal.usuarioId).orElse(null)?.nombre
-                    ?: "Usuario ${cal.usuarioId}",
-                valor = cal.valor,
-                comentario = cal.comentario,
-                totalCalificaciones = total,
+                usuarioId = usuarioId,
+                nombreUsuario = usuarioJpa.findById(usuarioId).orElse(null)?.nombre
+                    ?: "Usuario $usuarioId",
+                valor = docCalificacion.getInteger("valor"),
+                comentario = docCalificacion.getString("comentario") ?: "",
+                totalCalificaciones = documento.getInteger("totalCalificaciones").toLong(),
             )
         }
     }
