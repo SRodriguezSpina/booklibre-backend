@@ -65,7 +65,7 @@ class ClickLogService(
     }
 
     /**
-     * Integrante 1 - Query: libro mas clickeado.
+     * Dante 1 - Query: libro mas clickeado.
      * Devuelve null si todavia no hay ningun click registrado.
      */
     fun getLibroMasClickeado(): LibroMasClickeadoResult? {
@@ -84,7 +84,7 @@ class ClickLogService(
     }
 
     /**
-     * Bonus: todos los clicks sobre los libros de un publicador.
+     * Caso de uso bonus: todos los clicks sobre los libros de un publicador.
      * Se usa para mostrar la seccion de clicks en el perfil del publicador.
      */
     fun getClicksDeLibrosDeUsuario(usuarioId: Int): List<ClickLogDocument> {
