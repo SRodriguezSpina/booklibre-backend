@@ -1,0 +1,14 @@
+.gradle
+.idea
+.vscode
+build
+out
+*.iml
+*.log
+
+# Evita subir secrets/local
+.env
+
+# VCS
+.git
+.gitignore
