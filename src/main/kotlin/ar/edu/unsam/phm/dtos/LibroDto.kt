@@ -7,6 +7,7 @@ import java.time.LocalDateTime
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.PastOrPresent
 import jakarta.validation.constraints.Positive
+import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Size
 
 // Bonus: historial de clicks sobre los libros de un publicador
@@ -38,6 +39,7 @@ data class LibroDTO(
     val id: Int = 0,
     
     @field:NotBlank(message = "El título es obligatorio")
+    @field:Size(max = 200, message = "El título no puede superar los 200 caracteres")
     val titulo: String,
     
     @field:NotBlank(message = "El tipo de libro es obligatorio")
@@ -50,9 +52,11 @@ data class LibroDTO(
     val genero: Genero,
     
     @field:NotBlank(message = "El autor es obligatorio")
+    @field:Size(max = 150, message = "El autor no puede superar los 150 caracteres")
     val autor: String,
     
     @field:Positive(message = "La cantidad de páginas debe ser positiva")
+    @field:Max(value = 9999, message = "La cantidad de páginas no puede superar 9999")
     val paginas: Int,
     
     @field:NotBlank(message = "El ISBN es obligatorio")
@@ -62,6 +66,7 @@ data class LibroDTO(
     val idioma: Idioma,
     
     @field:NotBlank(message = "La editorial es obligatoria")
+    @field:Size(max = 150, message = "La editorial no puede superar los 150 caracteres")
     val editorial: String,
     
     @field:NotBlank(message = "El estado es obligatorio")

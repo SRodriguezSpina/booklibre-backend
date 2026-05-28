@@ -20,7 +20,7 @@ class Usuario(
     @Column(nullable = false) var password: String,
     @Column(nullable = false) var nombre: String,
     @Column(name = "descripcion", nullable = false) var desc: String = "",
-    @Column(nullable = false) var celular: String = "",
+    @Column(nullable = true) var celular: String? = null,
     @Column(nullable = false) var ciudad: String = "",
     @Column(nullable = false) var tipoUsuario: String = "LECTOR",
     @Column(nullable = false) var bibliokarmas: Int = 0,
@@ -41,9 +41,10 @@ class Usuario(
             return email
         }
 
-        fun normalizarYValidarCelular(raw: String): String {
+        fun normalizarYValidarCelular(raw: String): String? {
             val celular = raw.trim()
-            if (celular.isBlank() || !celularRegex.matches(celular))
+            if (celular.isBlank()) return null  // celular opcional: vacío → NULL en BD
+            if (!celularRegex.matches(celular))
                 throw BusinessException("El celular no tiene un formato valido")
             return celular
         }
@@ -53,7 +54,7 @@ class Usuario(
     fun actualizarDatosPersonales(
         nuevoNombre:    String,
         nuevaDesc:      String,
-        nuevoCelular:   String,
+        nuevoCelular:   String?,
         nuevaCiudad:    String,
         nuevoTipo:      String,
         nuevaImagenUrl: String?,
