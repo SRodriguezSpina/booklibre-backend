@@ -4,6 +4,10 @@ import ar.edu.unsam.phm.domain.Idioma
 import ar.edu.unsam.phm.domain.Genero
 import java.time.LocalDate
 import java.time.LocalDateTime
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.PastOrPresent
+import jakarta.validation.constraints.Positive
+import jakarta.validation.constraints.Size
 
 // Bonus: historial de clicks sobre los libros de un publicador
 data class ClickLogDTO(
@@ -32,16 +36,38 @@ data class NewCalificacionDTO(
 
 data class LibroDTO(
     val id: Int = 0,
+    
+    @field:NotBlank(message = "El título es obligatorio")
     val titulo: String,
+    
+    @field:NotBlank(message = "El tipo de libro es obligatorio")
     val tipo: String,
+    
+    @field:NotBlank(message = "La descripción es obligatoria")
+    @field:Size(max = 2000, message = "La descripción no debe exceder 2000 caracteres")
     val descripcion: String,
+    
     val genero: Genero,
+    
+    @field:NotBlank(message = "El autor es obligatorio")
     val autor: String,
+    
+    @field:Positive(message = "La cantidad de páginas debe ser positiva")
     val paginas: Int,
+    
+    @field:NotBlank(message = "El ISBN es obligatorio")
+    @field:Size(min = 10, max = 13, message = "El ISBN debe tener entre 10 y 13 caracteres")
     val isbn: String,
+    
     val idioma: Idioma,
+    
+    @field:NotBlank(message = "La editorial es obligatoria")
     val editorial: String,
+    
+    @field:NotBlank(message = "El estado es obligatorio")
     val estado: String,
+    
+    @field:PastOrPresent(message = "La fecha de publicación no puede ser en el futuro")
     val fechaPublicacion: LocalDate,
     val fechaAgregado: LocalDate = LocalDate.now(),
     val propietarioId: Int = 0,

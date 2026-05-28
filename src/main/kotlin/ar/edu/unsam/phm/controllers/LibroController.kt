@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
+import jakarta.validation.Valid
 import java.time.LocalDateTime
 
 @RestController
@@ -121,11 +122,11 @@ class LibroController(
     fun updateLibro(
         @PathVariable libroId: Int,
         @RequestParam usuarioId: Int,
-        @RequestBody dto: LibroDTO,
+        @Valid @RequestBody dto: LibroDTO,
     ): LibroDTO = libroService.actualizarLibro(libroId, dto, usuarioId).toDTO()
 
     @PostMapping("/nuevo")
-    fun crearLibro(@RequestParam usuarioId: Int, @RequestBody dto: LibroDTO): LibroDTO =
+    fun crearLibro(@RequestParam usuarioId: Int, @Valid @RequestBody dto: LibroDTO): LibroDTO =
         libroService.crearLibro(dto, usuarioId).toDTO()
 
     @GetMapping("/{id}/historial-puntajes")
