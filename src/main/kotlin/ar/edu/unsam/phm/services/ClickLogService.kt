@@ -2,10 +2,14 @@ package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.domain.ClickLog
 import ar.edu.unsam.phm.repository.mongo.LibroMongoRepository
+import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.aggregation.Aggregation
 import org.springframework.data.domain.Sort
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -17,7 +21,7 @@ data class ClickLogDocument(
 )
 
 data class LibroMasClickeadoResult(
-    val id: Int,          // libroId (from projected id)
+    val libroId: Int,
     val libroTitulo: String,
     val total: Long,
 )
@@ -26,7 +30,11 @@ data class LibroMasClickeadoResult(
 class ClickLogService(
     private val libroRepository: LibroMongoRepository,
     private val mongoTemplate: MongoTemplate,
+    private val usuarioJpaRepository: UsuarioJpaRepository,
 ) {
+
+    fun esEmailDelDuenio(duenioId: Int, email: String): Boolean =
+        usuarioJpaRepository.findById(duenioId).orElse(null)?.email == email
 
     /**
      * Registra que un usuario entro al detalle de un libro.
@@ -35,14 +43,25 @@ class ClickLogService(
     fun registrarClick(libroId: Int, libroTitulo: String, nombreUsuario: String) {
         val ahora = LocalDateTime.now()
         val limiteDedupe = ahora.minusSeconds(5)
-        val libro = libroRepository.getByIdIncluyendoInactivosCompleto(libroId)
-            ?: throw NotFoundException("Libro $libroId no encontrado")
-        val yaExiste = libro.clicks.any {
-            it.nombreUsuario == nombreUsuario && it.fechaHora.isAfter(limiteDedupe)
+        val query = Query(
+            Criteria.where("libroId").`is`(libroId)
+                .and("clicks").not().elemMatch(
+                    Criteria.where("nombreUsuario").`is`(nombreUsuario)
+                        .and("fechaHora").gt(limiteDedupe)
+                )
+        )
+        val update = Update().push("clicks", ClickLog(fechaHora = ahora, nombreUsuario = nombreUsuario))
+        val result = mongoTemplate.updateFirst(query, update, "libros")
+
+        if (result.matchedCount > 0) {
+            return
         }
-        if (yaExiste) return
-        libro.clicks.add(ClickLog(fechaHora = ahora, nombreUsuario = nombreUsuario))
-        libroRepository.save(libro)
+
+        val existeLibro = mongoTemplate.exists(
+            Query(Criteria.where("libroId").`is`(libroId)),
+            "libros"
+        )
+        if (!existeLibro) throw NotFoundException("Libro $libroId no encontrado")
     }
 
     /**
@@ -51,7 +70,9 @@ class ClickLogService(
      */
     fun getLibroMasClickeado(): LibroMasClickeadoResult? {
         val aggregation = Aggregation.newAggregation(
-            Aggregation.project("id")
+            Aggregation.project()
+                .andExclude("_id")
+                .and("id").`as`("libroId")
                 .and("titulo").`as`("libroTitulo")
                 .and("clicks").size().`as`("total"),
             Aggregation.sort(Sort.Direction.DESC, "total"),

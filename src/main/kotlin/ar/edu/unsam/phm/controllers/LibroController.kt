@@ -53,7 +53,8 @@ class LibroController(
 
         // Registrar el click solo si hay un usuario autenticado y NO es el propietario del libro
         auth?.name?.let { nombreUsuario ->
-            if (usuarioId == null || usuarioId != libro.duenio.id) {
+            val esDuenio = clickLogService.esEmailDelDuenio(libro.duenio.id, nombreUsuario)
+            if (!esDuenio) {
                 clickLogService.registrarClick(libroId, libro.titulo, nombreUsuario)
             }
         }
@@ -77,8 +78,13 @@ class LibroController(
     // Integrante 1 — Query: libro más clickeado
     @GetMapping("/mas-clickeado")
     fun getLibroMasClickeado() =
-        clickLogService.getLibroMasClickeado()
-            ?: mapOf("mensaje" to "Todavía no hay clicks registrados")
+        clickLogService.getLibroMasClickeado()?.let {
+            mapOf(
+                "libroId" to it.libroId,
+                "libroTitulo" to it.libroTitulo,
+                "total" to it.total,
+            )
+        } ?: mapOf("mensaje" to "Todavía no hay clicks registrados")
 
     // Query: Saber cuántos libros son del tipo coleccionables s/aggregation
     @GetMapping("/coleccionables/count")
