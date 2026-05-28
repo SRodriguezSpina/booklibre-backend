@@ -75,7 +75,7 @@ class LibroController(
         )
     }
 
-    // Integrante 1 — Query: libro más clickeado
+    // Dante 1 — Query: libro más clickeado
     @GetMapping("/mas-clickeado")
     fun getLibroMasClickeado() =
         clickLogService.getLibroMasClickeado()?.let {

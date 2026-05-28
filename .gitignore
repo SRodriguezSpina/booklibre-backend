@@ -48,3 +48,7 @@ bin/
 .env
 certbot/
 .agents/
+
+### AI planning scaffolding (not project artifacts) ###
+docs/superpowers/
+/INFORME_BACK.*
