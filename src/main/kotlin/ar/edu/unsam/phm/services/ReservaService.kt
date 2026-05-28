@@ -39,7 +39,7 @@ class ReservaService(
             TipoReserva.HECHAS    -> reservaJpa.findByUsuarioId(usuarioId, paginacion)
             TipoReserva.RECIBIDAS -> {
                 val librosDelUsuario = libroRepository.findLibroIdsByDuenioId(usuarioId)
-                if (librosDelUsuario.isEmpty()) return PagedResponse(emptyList(), page, 0, 0L)
+                if (librosDelUsuario.isEmpty()) return PagedResponse(emptyList(), pagina, 0, 0L)
                 reservaJpa.findByLibroIdIn(librosDelUsuario, paginacion)
             }
         }
@@ -62,7 +62,7 @@ class ReservaService(
             )
         }
         val totalPaginas = if (paginaReservas.totalElements == 0L) 0 else paginaReservas.totalPages
-        return PagedResponse(contenido, page, totalPaginas, paginaReservas.totalElements)
+        return PagedResponse(contenido, pagina, totalPaginas, paginaReservas.totalElements)
     }
 
     fun obtenerIdsLibrosReservados(fechaDesdeStr: String?, fechaHastaStr: String?): Set<Int>? {
