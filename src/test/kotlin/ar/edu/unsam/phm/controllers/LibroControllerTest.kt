@@ -15,11 +15,13 @@ import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.security.JwtTokenUtils
+import ar.edu.unsam.phm.services.LibroMasClickeadoResult
 import ar.edu.unsam.phm.services.LibroService
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.DisplayName
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.hamcrest.Matchers.nullValue
@@ -183,6 +185,39 @@ class LibroControllerTest(
     }
 
     @Test
+    @DisplayName("cuando el autenticado no es el dueño, registra el click aunque usuarioId coincida con el dueño")
+    fun getLibro_registraClickParaNoDueno() {
+        val libro = sampleLibro()
+        whenever(libroService.obtenerLibro(1)).thenReturn(libro)
+        whenever(libroService.contarReservasPorLibro(1)).thenReturn(0)
+        whenever(libroService.getCalificacionesDetalle(1)).thenReturn(emptyList())
+        whenever(clickLogService.esEmailDelDuenio(3, "user")).thenReturn(false)
+
+        mockMvc.perform(get("/api/libros/1").param("usuarioId", "3"))
+            .andExpect(status().isOk)
+
+        verify(clickLogService).esEmailDelDuenio(3, "user")
+        verify(clickLogService).registrarClick(1, "1984", "user")
+    }
+
+    @Test
+    @WithMockUser(username = "ana@example.com", roles = ["PUBLICADOR"])
+    @DisplayName("cuando el autenticado es el dueño, no registra el click aunque usuarioId diga otra cosa")
+    fun getLibro_noRegistraClickParaDueno() {
+        val libro = sampleLibro()
+        whenever(libroService.obtenerLibro(1)).thenReturn(libro)
+        whenever(libroService.contarReservasPorLibro(1)).thenReturn(0)
+        whenever(libroService.getCalificacionesDetalle(1)).thenReturn(emptyList())
+        whenever(clickLogService.esEmailDelDuenio(3, "ana@example.com")).thenReturn(true)
+
+        mockMvc.perform(get("/api/libros/1").param("usuarioId", "999"))
+            .andExpect(status().isOk)
+
+        verify(clickLogService).esEmailDelDuenio(3, "ana@example.com")
+        verify(clickLogService, never()).registrarClick(any(), any(), any())
+    }
+
+    @Test
     @DisplayName("cuando se consulta un libro inexistente, devuelve 404 Not Found")
     fun getLibro_inexistente() {
         whenever(libroService.obtenerLibro(999)).thenThrow(NotFoundException("Libro.kt no encontrado"))
@@ -252,6 +287,29 @@ class LibroControllerTest(
             post("/api/libros/1/calificar")
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest)
+    }
+
+    @Test
+    @DisplayName("cuando existe un libro más clickeado, devuelve 200 con libroId, titulo y total")
+    fun getLibroMasClickeado_ok() {
+        whenever(clickLogService.getLibroMasClickeado())
+            .thenReturn(LibroMasClickeadoResult(libroId = 7, libroTitulo = "Dune", total = 4))
+
+        mockMvc.perform(get("/api/libros/mas-clickeado"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.libroId").value(7))
+            .andExpect(jsonPath("$.libroTitulo").value("Dune"))
+            .andExpect(jsonPath("$.total").value(4))
+    }
+
+    @Test
+    @DisplayName("cuando no hay clicks registrados, devuelve 200 con mensaje")
+    fun getLibroMasClickeado_sinClicks() {
+        whenever(clickLogService.getLibroMasClickeado()).thenReturn(null)
+
+        mockMvc.perform(get("/api/libros/mas-clickeado"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.mensaje").value("Todavía no hay clicks registrados"))
     }
 
     @Test
