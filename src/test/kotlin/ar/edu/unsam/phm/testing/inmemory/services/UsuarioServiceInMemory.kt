@@ -71,14 +71,16 @@ class UsuarioServiceInMemory(
         }
     }
 
-    private fun validarDuplicados(idUsuarioActual: Int, email: String, celular: String) {
+    private fun validarDuplicados(idUsuarioActual: Int, email: String, celular: String?) {
         val usuarioConEmail = usuarioRepository.findByEmail(email)
         if (usuarioConEmail != null && usuarioConEmail.id != idUsuarioActual) {
             throw ConflictException("El email ya esta en uso")
         }
-        val usuarioConCelular = usuarioRepository.findByCelular(celular)
-        if (usuarioConCelular != null && usuarioConCelular.id != idUsuarioActual) {
-            throw ConflictException("El celular ya esta en uso")
+        if (celular != null) {
+            val usuarioConCelular = usuarioRepository.findByCelular(celular)
+            if (usuarioConCelular != null && usuarioConCelular.id != idUsuarioActual) {
+                throw ConflictException("El celular ya esta en uso")
+            }
         }
     }
 }
