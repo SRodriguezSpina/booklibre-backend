@@ -1,8 +1,9 @@
 package ar.edu.unsam.phm.controllers
 
 import ar.edu.unsam.phm.domain.TipoReserva
-import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.dtos.CrearReservaDTO
+import ar.edu.unsam.phm.dtos.PagedResponse
+import ar.edu.unsam.phm.dtos.ReservaDTO
 import ar.edu.unsam.phm.dtos.UsuarioConMasReservasDTO
 import ar.edu.unsam.phm.dtos.UsuarioReservasDevueltasDTO
 import ar.edu.unsam.phm.services.ReservaService
@@ -16,8 +17,10 @@ class ReservaController(val reservaService: ReservaService) {
     @GetMapping
     fun getReservas(
         @RequestParam usuarioId: Int,
-        @RequestParam tipo: TipoReserva
-    ): List<ReservaDTO> = reservaService.obtenerReservas(usuarioId, tipo)
+        @RequestParam tipo: TipoReserva,
+        @RequestParam(name = "page", defaultValue = "0") page: Int,
+        @RequestParam(name = "size", defaultValue = "10") size: Int,
+    ): PagedResponse<ReservaDTO> = reservaService.obtenerReservas(usuarioId, tipo, page, size)
 
     @PostMapping("/crear")
     fun crearReserva(@RequestBody body: CrearReservaDTO) {

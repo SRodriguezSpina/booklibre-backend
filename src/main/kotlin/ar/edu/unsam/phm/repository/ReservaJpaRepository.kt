@@ -5,6 +5,8 @@ import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.readmodels.ReservaAnualUsuarioView
 import ar.edu.unsam.phm.readmodels.UsuarioConMasReservasView
 import ar.edu.unsam.phm.readmodels.UsuarioConReservasDevueltasView
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -14,7 +16,9 @@ import java.util.Optional
 interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
     fun findByLibroId(libroId: Int): List<Reserva>
     fun findByLibroIdIn(libroIds: Collection<Int>): List<Reserva>
+    fun findByLibroIdIn(libroIds: Collection<Int>, pageable: Pageable): Page<Reserva>
     fun findByUsuarioId(usuarioId: Int): List<Reserva>
+    fun findByUsuarioId(usuarioId: Int, pageable: Pageable): Page<Reserva>
     fun countByLibroId(libroId: Int): Long
     fun existsByUsuarioIdAndFechaHastaAfter(usuarioId: Int, now: java.time.LocalDateTime): Boolean
     fun existsByLibroIdInAndFechaHastaAfter(libroIds: Collection<Int>, now: java.time.LocalDateTime): Boolean
