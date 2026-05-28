@@ -143,9 +143,25 @@ class LibroMongoRepository(
         return PagedResponse(items, page, totalPages, total)
     }
 
+    @Synchronized
+    private fun getNextSequence(seqName: String): Int {
+        val query = Query(Criteria.where("_id").`is`(seqName))
+        val update = org.springframework.data.mongodb.core.query.Update().inc("seq", 1)
+        val options = org.springframework.data.mongodb.core.FindAndModifyOptions.options().returnNew(true)
+        
+        val counter = mongoTemplate.findAndModify(query, update, options, Document::class.java, "database_sequences")
+        if (counter == null) {
+            val maxId = findTopByOrderByIdDesc()?.id ?: 0
+            val doc = Document("_id", seqName).append("seq", maxId + 1)
+            mongoTemplate.insert(doc, "database_sequences")
+            return maxId + 1
+        }
+        return counter.getInteger("seq")
+    }
+
     fun save(libro: Libro): Libro {
         if (libro.id == 0) {
-            libro.id = (findTopByOrderByIdDesc()?.id ?: 0) + 1
+            libro.id = getNextSequence("libros_sequence")
         }
         libro.libroId = libro.id
         return mongoTemplate.save(libro)
