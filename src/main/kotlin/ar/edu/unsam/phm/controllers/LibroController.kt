@@ -46,7 +46,7 @@ class LibroController(
     @GetMapping("/populares")
     fun getLibrosPopulares(
         @RequestParam(required = false) usuarioId: Int?,
-    ): List<LibroHomeDTO> =
+    ): PagedResponse<LibroHomeDTO> =
         libroService.getLibrosPopulares(usuarioId)
 
     @Transactional(readOnly = true)

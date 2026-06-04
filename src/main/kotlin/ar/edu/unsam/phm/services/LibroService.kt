@@ -53,11 +53,11 @@ class LibroService(
         return libroRepository.buscarPaginado(filtros, page, size)
     }
 
-    fun getLibrosPopulares(usuarioId: Int?): List<LibroHomeDTO> {
+    fun getLibrosPopulares(usuarioId: Int?): PagedResponse<LibroHomeDTO> {
         val cache = topLibrosCacheRepository.findById("HOME").orElse(null)
         val topLibros = cache ?: actualizarCacheTopLibros()
         
-        return if (usuarioId != null) {
+        val content = if (usuarioId != null) {
             val librosIds = topLibros.libros.map { it.id }
             val libros = libroRepository.findAllByIds(librosIds)
             val librosMap = libros.associateBy { it.id }
@@ -73,6 +73,9 @@ class LibroService(
         } else {
             topLibros.libros
         }
+        
+        val totalPages = if (topLibros.totalElements == 0L) 0 else Math.ceil(topLibros.totalElements.toDouble() / 10.0).toInt()
+        return PagedResponse(content, page = 0, totalPages = totalPages, totalElements = topLibros.totalElements)
     }
 
     fun actualizarCacheTopLibros(): TopLibrosCache {
