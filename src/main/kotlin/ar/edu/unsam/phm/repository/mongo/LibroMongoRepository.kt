@@ -62,6 +62,30 @@ class LibroMongoRepository(
     fun findAllByIds(ids: Collection<Int>): List<Libro> =
         if (ids.isEmpty()) emptyList() else findByIdIn(ids)
 
+
+    fun findTopLibrosByClicks(limit: Int = 10): List<Libro> {
+        val aggregation = Aggregation.newAggregation(
+            Aggregation.match(Criteria.where("activo").`is`(true)),
+            Aggregation.project()
+                .and("id").`as`("id")
+                .and("clicks").size().`as`("totalClicks"),
+            Aggregation.sort(Sort.Direction.DESC, "totalClicks"),
+            Aggregation.limit(limit.toLong()),
+        )
+        val topIds = mongoTemplate
+            .aggregate(aggregation, "libros", Document::class.java)
+            .mappedResults
+            .mapNotNull { it.getInteger("id") }
+
+        if (topIds.isEmpty()) return emptyList()
+
+        val librosMap = findAllByIds(topIds).associateBy { it.id }
+        return topIds.mapNotNull { librosMap[it] }
+    }
+
+    fun contarLibrosActivos(): Long =
+        mongoTemplate.count(Query(Criteria.where("activo").`is`(true)), Libro::class.java)
+
     fun getTodosLosLibrosDeUsuario(usuarioId: Int): List<Libro> =
         findByDuenioId(usuarioId)
 
