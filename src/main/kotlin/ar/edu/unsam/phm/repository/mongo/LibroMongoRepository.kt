@@ -62,6 +62,9 @@ class LibroMongoRepository(
     fun findAllByIds(ids: Collection<Int>): List<Libro> =
         if (ids.isEmpty()) emptyList() else findByIdIn(ids)
 
+    fun findAllByIdsCompleto(ids: Collection<Int>): List<Libro> =
+        if (ids.isEmpty()) emptyList() else mongoTemplate.find(Query(Criteria.where("libroId").`in`(ids)), Libro::class.java)
+
 
     fun findTopLibrosByClicks(limit: Int = 10): List<Libro> {
         val aggregation = Aggregation.newAggregation(
@@ -79,7 +82,7 @@ class LibroMongoRepository(
 
         if (topIds.isEmpty()) return emptyList()
 
-        val librosMap = findAllByIds(topIds).associateBy { it.id }
+        val librosMap = findAllByIdsCompleto(topIds).associateBy { it.id }
         return topIds.mapNotNull { librosMap[it] }
     }
 

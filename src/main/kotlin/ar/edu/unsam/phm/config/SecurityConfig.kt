@@ -55,6 +55,8 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.GET, "/api/libros/mejor-calificados").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/*").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/*/calificaciones").permitAll()
+                    .requestMatchers("/api/graphql").hasRole("ADMIN")
+                    .requestMatchers("/api/graphiql/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET, "/api/usuarios/*/clicks").hasRole("PUBLICADOR")
                     .requestMatchers(HttpMethod.GET, "/api/reservas").authenticated()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

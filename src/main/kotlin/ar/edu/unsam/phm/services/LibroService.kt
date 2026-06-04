@@ -18,6 +18,7 @@ import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import ar.edu.unsam.phm.repository.redis.TopLibrosCacheRepository
 import ar.edu.unsam.phm.domain.TopLibrosCache
 import ar.edu.unsam.phm.mappers.toHomeDTO
+import ar.edu.unsam.phm.mappers.toPopularCacheDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -49,7 +50,8 @@ class LibroService(
     fun getLibrosPopulares(usuarioId: Int?): PagedResponse<LibroHomeDTO> {
         val topLibros = topLibrosCacheRepository.findById(TopLibrosCache.CACHE_KEY)
             .orElseGet { actualizarCacheTopLibros() }
-        val content = agregarBibliokarmaACadaLibro(topLibros.libros, usuarioId)
+        val homeDTOs = topLibros.libros.map { it.toHomeDTO() }
+        val content = agregarBibliokarmaACadaLibro(homeDTOs, usuarioId)
         return topLibros.toPagedResponse(content)
     }
 
@@ -57,7 +59,7 @@ class LibroService(
         val topLibros     = libroRepository.findTopLibrosByClicks()
         val totalElements = libroRepository.contarLibrosActivos()
         val cache = TopLibrosCache(
-            libros        = topLibros.map { it.toHomeDTO(null) },
+            libros        = topLibros.map { it.toPopularCacheDTO(null) },
             totalElements = totalElements,
         )
         return topLibrosCacheRepository.save(cache)

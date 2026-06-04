@@ -5,6 +5,12 @@ springdoc:
     path: /swagger-ui.html
     operationsSorter: method
 
+dgs:
+  graphql:
+    path: /api/graphql
+    graphiql:
+      path: /api/graphiql
+
 server:
   error:
     whitelabel:
