@@ -5,6 +5,7 @@ import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.readmodels.ReservaAnualUsuarioView
 import ar.edu.unsam.phm.readmodels.UsuarioConMasReservasView
 import ar.edu.unsam.phm.readmodels.UsuarioConReservasDevueltasView
+import ar.edu.unsam.phm.readmodels.LibroReservasCount
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
@@ -26,6 +27,14 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
     fun findByLibroIdAndFechaHastaAfter(libroId: Int, now: java.time.LocalDateTime): List<Reserva>
     fun findFirstByLibroIdAndUsuarioIdAndFechaHastaAfter(libroId: Int, usuarioId: Int, now: java.time.LocalDateTime): Optional<Reserva>
     fun findTopByLibroIdOrderByIdDesc(libroId: Int): Optional<Reserva>
+
+    @Query("""
+        SELECT r.libroId as libroId, COUNT(r) as count
+        FROM Reserva r
+        WHERE r.libroId IN :libroIds
+        GROUP BY r.libroId
+    """)
+    fun countReservasByLibroIds(@Param("libroIds") libroIds: Collection<Int>): List<LibroReservasCount>
 
     @Query("""
         SELECT r.libroId FROM Reserva r

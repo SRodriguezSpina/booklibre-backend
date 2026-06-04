@@ -53,6 +53,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     // redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    // dgs
+    implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:9.2.2"))
+    implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter")
 
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
     developmentOnly("org.springframework.boot:spring-boot-devtools")

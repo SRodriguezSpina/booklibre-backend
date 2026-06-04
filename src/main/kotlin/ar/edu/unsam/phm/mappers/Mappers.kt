@@ -3,6 +3,7 @@ package ar.edu.unsam.phm.mappers
 import ar.edu.unsam.phm.domain.*
 import ar.edu.unsam.phm.dtos.LibroDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
+import ar.edu.unsam.phm.dtos.LibroPopularCacheDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.dtos.RangoReservaDTO
 import ar.edu.unsam.phm.dtos.CalificacionDTO
@@ -138,6 +139,22 @@ fun Libro.toHomeDTO(bibliokarma: Int?): LibroHomeDTO = LibroHomeDTO(
     bibliokarma  = bibliokarma,
     estado       = this.estado.name,
     duenio       = this.duenio.nombre,
+)
+
+fun Libro.toPopularCacheDTO(bibliokarma: Int?): LibroPopularCacheDTO = LibroPopularCacheDTO(
+    id           = this.id,
+    imagenUrl    = this.imagenUrl ?: "",
+    genero       = this.genero,
+    titulo       = this.titulo,
+    autor        = this.autor,
+    calificacion = this.calificacion,
+    isbn         = this.isbn,
+    idioma       = this.idioma,
+    tipo         = this.javaClass.simpleName.replace("Libro", ""),
+    bibliokarma  = bibliokarma,
+    estado       = this.estado.name,
+    duenio       = this.duenio.nombre,
+    clicks       = this.clicks.size,
 )
 
 fun Libro.toLibroUsuarioItemDTO(): LibroUsuarioItemDTO = LibroUsuarioItemDTO(

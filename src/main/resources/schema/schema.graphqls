@@ -1,0 +1,11 @@
+type Query {
+    tasaConversion: [TasaConversionLibro!]!
+}
+
+type TasaConversionLibro {
+    libroId: Int!
+    titulo: String!
+    clicks: Int!
+    reservas: Int!
+    tasaConversion: Float!
+}
