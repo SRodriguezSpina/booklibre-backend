@@ -22,7 +22,6 @@ import ar.edu.unsam.phm.repository.ReservaJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import ar.edu.unsam.phm.repository.redis.TopLibrosCacheRepository
 import ar.edu.unsam.phm.domain.TopLibrosCache
-import org.springframework.data.mongodb.core.MongoTemplate
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -40,13 +39,14 @@ class LibroServiceSpringSpec : DescribeSpec({
     val reservaJpa = mockk<ReservaJpaRepository>()
     val reservaService = mockk<ReservaService>()
     val topLibrosCacheRepository = mockk<TopLibrosCacheRepository>(relaxed = true)
-    val mongoTemplate = mockk<MongoTemplate>(relaxed = true)
     val service = LibroService(
         libroRepository, usuarioJpa, reservaJpa, reservaService,
-        topLibrosCacheRepository, mongoTemplate
+        topLibrosCacheRepository,
     )
 
     every { libroRepository.findAllByIds(any()) } returns emptyList()
+    every { libroRepository.findTopLibrosByClicks() } returns emptyList()
+    every { libroRepository.contarLibrosActivos() } returns 0L
     every { topLibrosCacheRepository.save(any<TopLibrosCache>()) } answers { firstArg() }
 
     val duenio = Usuario(

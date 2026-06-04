@@ -19,16 +19,9 @@ import ar.edu.unsam.phm.repository.redis.TopLibrosCacheRepository
 import ar.edu.unsam.phm.domain.TopLibrosCache
 import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
-import org.springframework.data.mongodb.core.MongoTemplate
-import org.springframework.data.mongodb.core.aggregation.Aggregation
-import org.springframework.data.mongodb.core.query.Criteria
-import org.springframework.data.mongodb.core.query.Query
-import org.springframework.data.domain.Sort
-import org.bson.Document
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.LocalDateTime
-import kotlin.math.ceil
 
 @Service
 class LibroService(
@@ -37,8 +30,8 @@ class LibroService(
     private val reservaJpa: ReservaJpaRepository,
     private val reservaService: ReservaService,
     private val topLibrosCacheRepository: TopLibrosCacheRepository,
-    private val mongoTemplate: MongoTemplate,
 ) {
+
     fun search(
         query: String, generos: String, page: Int, size: Int,
         usuarioId: Int?, paginasMin: Int?, paginasMax: Int?,
@@ -54,51 +47,33 @@ class LibroService(
     }
 
     fun getLibrosPopulares(usuarioId: Int?): PagedResponse<LibroHomeDTO> {
-        val cache = topLibrosCacheRepository.findById("HOME").orElse(null)
-        val topLibros = cache ?: actualizarCacheTopLibros()
-        
-        val content = if (usuarioId != null) {
-            val librosIds = topLibros.libros.map { it.id }
-            val libros = libroRepository.findAllByIds(librosIds)
-            val librosMap = libros.associateBy { it.id }
-            
-            topLibros.libros.map { dto ->
-                val libro = librosMap[dto.id]
-                if (libro != null) {
-                    dto.copy(bibliokarma = calcularBiblioKarma(libro, usuarioId))
-                } else {
-                    dto
-                }
-            }
-        } else {
-            topLibros.libros
-        }
-        
-        val totalPages = if (topLibros.totalElements == 0L) 0 else Math.ceil(topLibros.totalElements.toDouble() / 10.0).toInt()
-        return PagedResponse(content, page = 0, totalPages = totalPages, totalElements = topLibros.totalElements)
+        val topLibros = topLibrosCacheRepository.findById(TopLibrosCache.CACHE_KEY)
+            .orElseGet { actualizarCacheTopLibros() }
+        val content = agregarBibliokarmaACadaLibro(topLibros.libros, usuarioId)
+        return topLibros.toPagedResponse(content)
     }
 
     fun actualizarCacheTopLibros(): TopLibrosCache {
-        val aggregation = Aggregation.newAggregation(
-            Aggregation.match(Criteria.where("activo").`is`(true)),
-            Aggregation.project()
-                .and("id").`as`("id")
-                .and("clicks").size().`as`("totalClicks"),
-            Aggregation.sort(Sort.Direction.DESC, "totalClicks"),
-            Aggregation.limit(10)
+        val topLibros     = libroRepository.findTopLibrosByClicks()
+        val totalElements = libroRepository.contarLibrosActivos()
+        val cache = TopLibrosCache(
+            libros        = topLibros.map { it.toHomeDTO(null) },
+            totalElements = totalElements,
         )
-        val results = mongoTemplate.aggregate(aggregation, "libros", Document::class.java).mappedResults
-        val topIds = results.mapNotNull { it.getInteger("id") }
-        
-        val libros = libroRepository.findAllByIds(topIds)
-        val librosMap = libros.associateBy { it.id }
-        val sortedLibros = topIds.mapNotNull { librosMap[it] }
-        
-        val librosDTO = sortedLibros.map { it.toHomeDTO(null) }
-        val totalElements = mongoTemplate.count(Query(Criteria.where("activo").`is`(true)), "libros")
-        
-        val cache = TopLibrosCache(id = "HOME", libros = librosDTO, totalElements = totalElements)
         return topLibrosCacheRepository.save(cache)
+    }
+
+    private fun agregarBibliokarmaACadaLibro(
+        dtos: List<LibroHomeDTO>,
+        usuarioId: Int?,
+    ): List<LibroHomeDTO> {
+        if (usuarioId == null) return dtos
+        val librosMap = libroRepository.findAllByIds(dtos.map { it.id }).associateBy { it.id }
+        return dtos.map { dto ->
+            librosMap[dto.id]
+                ?.let { dto.copy(bibliokarma = calcularBiblioKarma(it, usuarioId)) }
+                ?: dto
+        }
     }
 
     fun calcularBiblioKarma(libro: Libro, usuarioId: Int?): Int {
