@@ -1,6 +1,24 @@
 services:
 
   # -----------------------------------------------------------------------------
+  # Redis - Persiste top 10 libros clickeados
+  # -----------------------------------------------------------------------------
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    networks:
+      - booklibre-net
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
+    networks:
+      - booklibre-net
+  # -----------------------------------------------------------------------------
   # PostgreSQL - Persiste usuarios, reservas, historial de puntajes
   # -----------------------------------------------------------------------------
   postgres:
@@ -314,6 +332,8 @@ services:
         condition: service_healthy
       mongo:
         condition: service_completed_successfully
+      redis:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/libros/home?usuarioId=1 || exit 1"]
       interval: 15s

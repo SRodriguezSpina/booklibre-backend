@@ -20,3 +20,6 @@ spring:
       # Para levantar solo el cluster Mongo: docker compose up -d configsvr1 configsvr2 configsvr3 shard1a shard1b shard1c shard2a shard2b shard2c mongo-rs-init mongos-router1 mongos-router2 mongo
       uri: mongodb://booklibre_app:booklibre_app_secret@localhost:27017,localhost:27018/booklibreMongo?authSource=booklibreMongo&wtimeoutMS=5000&socketTimeoutMS=5000&connectTimeoutMS=5000
       database: booklibreMongo
+    redis:
+      host: localhost
+      port: 6379

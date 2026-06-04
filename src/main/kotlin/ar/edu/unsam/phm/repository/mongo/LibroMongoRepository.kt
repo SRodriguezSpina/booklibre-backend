@@ -201,8 +201,9 @@ class LibroMongoRepository(
 
         val texto = filtros.query.trim()
         val baseQuery = if (texto.isNotBlank()) {
+            val formattedQuery = texto.split("\\s+".toRegex()).joinToString(" ") { "$it*" }
             org.springframework.data.mongodb.core.query.TextQuery.queryText(
-                org.springframework.data.mongodb.core.query.TextCriteria.forDefaultLanguage().matching(texto)
+                org.springframework.data.mongodb.core.query.TextCriteria.forDefaultLanguage().matching(formattedQuery)
             ).addCriteria(criteria)
         } else {
             Query(criteria)

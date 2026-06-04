@@ -18,5 +18,8 @@ spring:
     mongodb:
       uri: ${MONGODB_URI:mongodb://mongos-router1:27017,mongos-router2:27017/booklibreMongo?wtimeoutMS=5000&socketTimeoutMS=5000&connectTimeoutMS=5000}
       database: booklibreMongo
+    redis:
+      host: redis
+      port: 6379
   main:
     allow-bean-definition-overriding: true

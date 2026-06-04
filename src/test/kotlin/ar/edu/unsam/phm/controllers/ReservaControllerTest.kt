@@ -14,6 +14,7 @@ import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.services.ReservaService
 import ar.edu.unsam.phm.mappers.toDTO
+import ar.edu.unsam.phm.dtos.PagedResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.mockk
 import org.junit.jupiter.api.DisplayName
@@ -107,38 +108,38 @@ class ReservaControllerTest(
 
         val reservasDTO = reservas.map { it.toDTO(libro = if (it.libroId == 1) libro1 else libro2, estaDisponible = true, yaCalificadoPorUsuario = false) }
 
-        whenever(reservaService.obtenerReservas(1, TipoReserva.HECHAS)).thenReturn(reservasDTO)
+        whenever(reservaService.obtenerReservas(1, TipoReserva.HECHAS, 0, 10)).thenReturn(PagedResponse(reservasDTO, 0, 1))
 
         mockMvc.perform(get("/api/reservas?usuarioId=1&tipo=HECHAS"))
             .andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$[0].id").value(1))
-            .andExpect(jsonPath("$[1].id").value(2))
+            .andExpect(jsonPath("$.content[0].id").value(1))
+            .andExpect(jsonPath("$.content[1].id").value(2))
 
-        verify(reservaService).obtenerReservas(1, TipoReserva.HECHAS)
+        verify(reservaService).obtenerReservas(1, TipoReserva.HECHAS, 0, 10)
     }
 
     @Test
     @DisplayName("cuando el usuario no tiene reservas, devuelve 200 con lista vacía")
     fun getReservas_listaVacia() {
-        whenever(reservaService.obtenerReservas(99, TipoReserva.HECHAS)).thenReturn(emptyList())
+        whenever(reservaService.obtenerReservas(99, TipoReserva.HECHAS, 0, 10)).thenReturn(PagedResponse(emptyList(), 0, 0))
 
         mockMvc.perform(get("/api/reservas?usuarioId=99&tipo=HECHAS"))
             .andExpect(status().isOk)
-            .andExpect(content().json("[]"))
+            .andExpect(content().json("{\"content\":[],\"page\":0,\"totalPages\":0,\"totalElements\":0}"))
 
-        verify(reservaService).obtenerReservas(99, TipoReserva.HECHAS)
+        verify(reservaService).obtenerReservas(99, TipoReserva.HECHAS, 0, 10)
     }
 
     @Test
     @DisplayName("cuando el usuario no existe, devuelve 404 Not Found")
     fun getReservas_usuarioInexistente() {
-        whenever(reservaService.obtenerReservas(999, TipoReserva.HECHAS)).thenThrow(NotFoundException("Usuario no encontrado"))
+        whenever(reservaService.obtenerReservas(999, TipoReserva.HECHAS, 0, 10)).thenThrow(NotFoundException("Usuario no encontrado"))
 
         mockMvc.perform(get("/api/reservas?usuarioId=999&tipo=HECHAS"))
             .andExpect(status().isNotFound)
 
-        verify(reservaService).obtenerReservas(999, TipoReserva.HECHAS)
+        verify(reservaService).obtenerReservas(999, TipoReserva.HECHAS, 0, 10)
     }
 
     @Test

@@ -20,6 +20,9 @@ import ar.edu.unsam.phm.exceptions.UnauthorizedException
 import ar.edu.unsam.phm.repository.mongo.LibroMongoRepository
 import ar.edu.unsam.phm.repository.ReservaJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioJpaRepository
+import ar.edu.unsam.phm.repository.redis.TopLibrosCacheRepository
+import ar.edu.unsam.phm.domain.TopLibrosCache
+import org.springframework.data.mongodb.core.MongoTemplate
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -36,7 +39,15 @@ class LibroServiceSpringSpec : DescribeSpec({
     val usuarioJpa = mockk<UsuarioJpaRepository>()
     val reservaJpa = mockk<ReservaJpaRepository>()
     val reservaService = mockk<ReservaService>()
-    val service = LibroService(libroRepository, usuarioJpa, reservaJpa, reservaService)
+    val topLibrosCacheRepository = mockk<TopLibrosCacheRepository>(relaxed = true)
+    val mongoTemplate = mockk<MongoTemplate>(relaxed = true)
+    val service = LibroService(
+        libroRepository, usuarioJpa, reservaJpa, reservaService,
+        topLibrosCacheRepository, mongoTemplate
+    )
+
+    every { libroRepository.findAllByIds(any()) } returns emptyList()
+    every { topLibrosCacheRepository.save(any<TopLibrosCache>()) } answers { firstArg() }
 
     val duenio = Usuario(
         email = "ana@example.com",

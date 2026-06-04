@@ -15,9 +15,20 @@ import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
 import ar.edu.unsam.phm.repository.mongo.LibroMongoRepository
 import ar.edu.unsam.phm.repository.ReservaJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioJpaRepository
+import ar.edu.unsam.phm.repository.redis.TopLibrosCacheRepository
+import ar.edu.unsam.phm.domain.TopLibrosCache
+import ar.edu.unsam.phm.mappers.toHomeDTO
+import ar.edu.unsam.phm.dtos.LibroHomeDTO
+import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.aggregation.Aggregation
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.domain.Sort
+import org.bson.Document
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.math.ceil
 
 @Service
 class LibroService(
@@ -25,6 +36,8 @@ class LibroService(
     private val usuarioJpa: UsuarioJpaRepository,
     private val reservaJpa: ReservaJpaRepository,
     private val reservaService: ReservaService,
+    private val topLibrosCacheRepository: TopLibrosCacheRepository,
+    private val mongoTemplate: MongoTemplate,
 ) {
     fun search(
         query: String, generos: String, page: Int, size: Int,
@@ -38,6 +51,54 @@ class LibroService(
             prestadoPor, usuarioId, librosReservadosIds, sortBy,
         )
         return libroRepository.buscarPaginado(filtros, page, size)
+    }
+
+    fun getLibrosPopulares(usuarioId: Int?): PagedResponse<LibroHomeDTO> {
+        val cache = topLibrosCacheRepository.findById("HOME").orElse(null)
+        val topLibros = cache ?: actualizarCacheTopLibros()
+        
+        val content = if (usuarioId != null) {
+            val librosIds = topLibros.libros.map { it.id }
+            val libros = libroRepository.findAllByIds(librosIds)
+            val librosMap = libros.associateBy { it.id }
+            
+            topLibros.libros.map { dto ->
+                val libro = librosMap[dto.id]
+                if (libro != null) {
+                    dto.copy(bibliokarma = calcularBiblioKarma(libro, usuarioId))
+                } else {
+                    dto
+                }
+            }
+        } else {
+            topLibros.libros
+        }
+        
+        val totalPages = if (topLibros.totalElements == 0L) 0 else Math.ceil(topLibros.totalElements.toDouble() / 10.0).toInt()
+        return PagedResponse(content, page = 0, totalPages = totalPages, totalElements = topLibros.totalElements)
+    }
+
+    fun actualizarCacheTopLibros(): TopLibrosCache {
+        val aggregation = Aggregation.newAggregation(
+            Aggregation.match(Criteria.where("activo").`is`(true)),
+            Aggregation.project()
+                .and("id").`as`("id")
+                .and("clicks").size().`as`("totalClicks"),
+            Aggregation.sort(Sort.Direction.DESC, "totalClicks"),
+            Aggregation.limit(10)
+        )
+        val results = mongoTemplate.aggregate(aggregation, "libros", Document::class.java).mappedResults
+        val topIds = results.mapNotNull { it.getInteger("id") }
+        
+        val libros = libroRepository.findAllByIds(topIds)
+        val librosMap = libros.associateBy { it.id }
+        val sortedLibros = topIds.mapNotNull { librosMap[it] }
+        
+        val librosDTO = sortedLibros.map { it.toHomeDTO(null) }
+        val totalElements = mongoTemplate.count(Query(Criteria.where("activo").`is`(true)), "libros")
+        
+        val cache = TopLibrosCache(id = "HOME", libros = librosDTO, totalElements = totalElements)
+        return topLibrosCacheRepository.save(cache)
     }
 
     fun calcularBiblioKarma(libro: Libro, usuarioId: Int?): Int {
@@ -112,7 +173,9 @@ class LibroService(
             fechaAgregado    = LocalDate.now(),
         )
         val libro = Libro.crear(dto.tipo, data)
-        return libroRepository.save(libro)
+        val saved = libroRepository.save(libro)
+        actualizarCacheTopLibros()
+        return saved
     }
 
     fun actualizarLibro(id: Int, dto: LibroDTO, usuarioId: Int): Libro {
@@ -131,7 +194,9 @@ class LibroService(
             nuevoEstado           = EstadoLibro.fromString(dto.estado),
             nuevaImagenUrl        = dto.imagenUrl,
         )
-        return libroRepository.save(libro)
+        val saved = libroRepository.save(libro)
+        actualizarCacheTopLibros()
+        return saved
     }
 
     fun agregarCalificacion(idLibro: Int, dto: NewCalificacionDTO) {
@@ -146,6 +211,7 @@ class LibroService(
             fecha      = LocalDateTime.now(),
         )
         libroRepository.agregarCalificacion(libro, calificacion)
+        actualizarCacheTopLibros()
     }
 
     fun darDeBaja(libroId: Int, usuarioId: Int) {
@@ -153,6 +219,7 @@ class LibroService(
         evaluarPermiso(libro, usuarioId)
         libro.activo = false
         libroRepository.save(libro)
+        actualizarCacheTopLibros()
     }
 
     fun eliminarLibro(libroId: Int, usuarioId: Int) {
@@ -163,6 +230,7 @@ class LibroService(
             throw ConflictException("No se puede eliminar el libro porque tiene reservas activas")
         }
         libroRepository.delete(libro)
+        actualizarCacheTopLibros()
     }
 
     fun reactivar(libroId: Int, usuarioId: Int) {
@@ -170,6 +238,7 @@ class LibroService(
         evaluarPermiso(libro, usuarioId)
         libro.activo = true
         libroRepository.save(libro)
+        actualizarCacheTopLibros()
     }
 
     fun obtenerHistorialDePuntajes(libroId: Int): List<HistorialPuntaje> =

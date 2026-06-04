@@ -43,6 +43,13 @@ class LibroController(
         ).toHomeDTO { libro -> libroService.calcularBiblioKarma(libro, usuarioId) }
 
     @Transactional(readOnly = true)
+    @GetMapping("/populares")
+    fun getLibrosPopulares(
+        @RequestParam(required = false) usuarioId: Int?,
+    ): PagedResponse<LibroHomeDTO> =
+        libroService.getLibrosPopulares(usuarioId)
+
+    @Transactional(readOnly = true)
     @GetMapping("/{libroId}")
     fun getLibro(
         @PathVariable libroId: Int,

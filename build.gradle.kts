@@ -51,6 +51,8 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     // mongo
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
+    // redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
