@@ -193,7 +193,8 @@ class LibroControllerTest(
         whenever(libroService.getCalificacionesDetalle(1)).thenReturn(emptyList())
         whenever(clickLogService.esEmailDelDuenio(3, "user")).thenReturn(false)
 
-        mockMvc.perform(get("/api/libros/1").param("usuarioId", "3"))
+        val principal = org.springframework.security.authentication.UsernamePasswordAuthenticationToken("user", "", emptyList())
+        mockMvc.perform(get("/api/libros/1").param("usuarioId", "3").principal(principal))
             .andExpect(status().isOk)
 
         verify(clickLogService).esEmailDelDuenio(3, "user")
@@ -201,7 +202,6 @@ class LibroControllerTest(
     }
 
     @Test
-    @WithMockUser(username = "ana@example.com", roles = ["PUBLICADOR"])
     @DisplayName("cuando el autenticado es el dueño, no registra el click aunque usuarioId diga otra cosa")
     fun getLibro_noRegistraClickParaDueno() {
         val libro = sampleLibro()
@@ -210,7 +210,8 @@ class LibroControllerTest(
         whenever(libroService.getCalificacionesDetalle(1)).thenReturn(emptyList())
         whenever(clickLogService.esEmailDelDuenio(3, "ana@example.com")).thenReturn(true)
 
-        mockMvc.perform(get("/api/libros/1").param("usuarioId", "999"))
+        val principal = org.springframework.security.authentication.UsernamePasswordAuthenticationToken("ana@example.com", "", emptyList())
+        mockMvc.perform(get("/api/libros/1").param("usuarioId", "999").principal(principal))
             .andExpect(status().isOk)
 
         verify(clickLogService).esEmailDelDuenio(3, "ana@example.com")

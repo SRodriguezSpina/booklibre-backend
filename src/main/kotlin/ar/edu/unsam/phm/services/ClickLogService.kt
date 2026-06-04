@@ -31,6 +31,7 @@ class ClickLogService(
     private val libroRepository: LibroMongoRepository,
     private val mongoTemplate: MongoTemplate,
     private val usuarioJpaRepository: UsuarioJpaRepository,
+    private val libroService: LibroService,
 ) {
 
     fun esEmailDelDuenio(duenioId: Int, email: String): Boolean =
@@ -54,6 +55,7 @@ class ClickLogService(
         val result = mongoTemplate.updateFirst(query, update, "libros")
 
         if (result.matchedCount > 0) {
+            libroService.actualizarCacheTopLibros()
             return
         }
 

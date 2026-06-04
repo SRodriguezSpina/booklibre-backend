@@ -8,5 +8,6 @@ import org.springframework.data.annotation.Id
 data class TopLibrosCache(
     @Id
     val id: String = "HOME",
-    val libros: MutableList<LibroHomeDTO> = mutableListOf()
+    val libros: List<LibroHomeDTO> = emptyList(),
+    val totalElements: Long = 0L
 )
