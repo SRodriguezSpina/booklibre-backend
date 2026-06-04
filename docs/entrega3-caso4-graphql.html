@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrega 3 - GraphQL Caso 4</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #111827;
+      --panel: #1f2937;
+      --text: #f9fafb;
+      --muted: #cbd5e1;
+      --accent: #38bdf8;
+      --border: #374151;
+      --code: #0f172a;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 22px 64px;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.2;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      margin-top: 34px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--accent);
+    }
+
+    p, li {
+      color: var(--muted);
+    }
+
+    strong {
+      color: var(--text);
+    }
+
+    code {
+      background: var(--code);
+      color: #e0f2fe;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    pre {
+      overflow-x: auto;
+      background: var(--code);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    pre code {
+      padding: 0;
+      background: transparent;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin: 18px 0;
+    }
+
+    .note {
+      border-left: 4px solid var(--accent);
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Entrega 3 - Parte 2 - Caso 4</h1>
+  <p><strong>Análisis de Calificaciones con GraphQL</strong></p>
+
+  <section class="card note">
+    <p>
+      Este caso agrega una métrica para el tablero administrador: promedio de calificación agrupado por tipo de libro.
+      La API GraphQL convive con la REST existente; no reemplaza ningún endpoint REST.
+    </p>
+  </section>
+
+  <h2>Qué se agregó en backend</h2>
+  <ul>
+    <li>Se extendió el schema GraphQL con la query <code>analisisCalificaciones</code>.</li>
+    <li>Se creó un <code>DataFetcher</code> DGS para resolver esa query.</li>
+    <li>Se creó un service específico: <code>AnalisisCalificacionesService</code>.</li>
+    <li>Se agregó una aggregation en <code>LibroMongoRepository</code>.</li>
+    <li>Se agregó un DTO de salida: <code>PromedioCalificacionPorTipoDTO</code>.</li>
+  </ul>
+
+  <h2>Query GraphQL</h2>
+  <pre><code>query {
+  analisisCalificaciones {
+    tipoLibro
+    promedioCalificacion
+  }
+}</code></pre>
+
+  <p>Respuesta esperada, con valores variables según los datos cargados:</p>
+  <pre><code>{
+  "data": {
+    "analisisCalificaciones": [
+      {
+        "tipoLibro": "Coleccionable",
+        "promedioCalificacion": 4.2
+      },
+      {
+        "tipoLibro": "Comun",
+        "promedioCalificacion": 3.9
+      }
+    ]
+  }
+}</code></pre>
+
+  <h2>De dónde sale la data</h2>
+  <p>
+    La data sale de MongoDB, colección <code>libros</code>. No se consulta PostgreSQL para este caso.
+    Cada documento de libro ya tiene un campo agregado llamado <code>calificacion</code>, que representa el promedio
+    calculado para ese libro.
+  </p>
+
+  <p>La aggregation hace esto:</p>
+  <ol>
+    <li>Filtra libros activos con <code>activo = true</code>.</li>
+    <li>Excluye libros sin reseñas con <code>calificaciones.0 exists true</code>.</li>
+    <li>Agrupa por <code>_class</code>, que distingue <code>LibroComun</code>, <code>LibroConDedicatoria</code> y <code>LibroColeccionable</code>.</li>
+    <li>Promedia el campo <code>calificacion</code> dentro de cada tipo.</li>
+    <li>Mapea el nombre de clase a un tipo más simple: <code>Comun</code>, <code>ConDedicatoria</code>, <code>Coleccionable</code>.</li>
+  </ol>
+
+  <section class="card note">
+    <p>
+      Importante: este caso pide un promedio de promedios por libro. Por eso no se hace <code>unwind</code> de reseñas
+      ni se promedian los valores crudos de <code>calificaciones.valor</code>. Cada libro calificado aporta un solo valor:
+      su <code>calificacion</code> ya agregada.
+    </p>
+  </section>
+
+  <h2>Cómo levantar el backend local</h2>
+  <p>Desde el worktree o repo backend:</p>
+  <pre><code>cd /Users/dantestefanotripodi/.config/superpowers/worktrees/backend-2026-grupo-12/caso4-graphql-backend</code></pre>
+
+  <p>Levantar dependencias locales:</p>
+  <pre><code>docker compose up -d redis postgres configsvr1 configsvr2 configsvr3 shard1a shard1b shard1c shard2a shard2b shard2c mongo-rs-init mongos-router1 mongos-router2 mongo</code></pre>
+
+  <p>Cuando Mongo termine la inicialización, correr la app Spring Boot:</p>
+  <pre><code>./gradlew bootRun</code></pre>
+
+  <p>El backend queda disponible en:</p>
+  <pre><code>http://localhost:8080</code></pre>
+
+  <h2>Cómo probar GraphQL con curl</h2>
+  <p>
+    El endpoint <code>/api/graphql</code> requiere rol admin. El usuario seed de admin es
+    <code>admin@booklibre.com</code> con contraseña <code>admin123</code>.
+  </p>
+
+  <p>Primero hacer login y guardar cookies:</p>
+  <pre><code>curl -i -c /tmp/booklibre-cookies.txt \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"admin@booklibre.com","password":"admin123"}' \
+  http://localhost:8080/api/login</code></pre>
+
+  <p>Después consultar GraphQL usando esas cookies:</p>
+  <pre><code>curl -s -b /tmp/booklibre-cookies.txt \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"query { analisisCalificaciones { tipoLibro promedioCalificacion } }"}' \
+  http://localhost:8080/api/graphql</code></pre>
+
+  <h2>Cómo probar desde el frontend</h2>
+  <p>En otra terminal, levantar el frontend desde la rama del caso 4:</p>
+  <pre><code>cd /Users/dantestefanotripodi/.config/superpowers/worktrees/frontend-2026-grupo-12/caso4-graphql-frontend
+pnpm dev</code></pre>
+
+  <p>Abrir:</p>
+  <pre><code>http://localhost:5173/consultas</code></pre>
+
+  <p>
+    Loguearse como admin si hace falta, expandir la tarjeta
+    <strong>Análisis de Calificaciones [GraphQL]</strong> y hacer click en <strong>Consultar</strong>.
+  </p>
+
+  <h2>Qué hace el frontend</h2>
+  <ul>
+    <li><code>adminService.obtenerAnalisisCalificaciones()</code> manda un POST GraphQL a <code>/graphql</code>.</li>
+    <li><code>ConsultasAdmin</code> guarda resultado, loading y error en estado local.</li>
+    <li>La tarjeta renderiza el tipo de libro con label humano usando <code>TIPO_LABEL</code>.</li>
+    <li>El promedio se muestra con dos decimales usando <code>toFixed(2)</code>.</li>
+  </ul>
+
+  <h2>Comandos de verificación</h2>
+  <pre><code># Backend
+./gradlew test -x jacocoTestReport
+./gradlew compileKotlin
+
+# Frontend
+pnpm test --run
+pnpm build</code></pre>
+
+  <p>
+    Nota: <code>pnpm lint</code> falla actualmente porque <code>eslint.config.js</code> importa
+    <code>@eslint/js</code> y esa dependencia no está instalada. Ese problema es de setup del repo y no fue introducido por este caso.
+  </p>
+</main>
+</body>
+</html>
