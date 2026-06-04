@@ -7,6 +7,7 @@ import ar.edu.unsam.phm.dtos.PagedResponse
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.persistence.entities.HistorialPuntaje
 import ar.edu.unsam.phm.readmodels.CalificacionDetalleView
+import ar.edu.unsam.phm.readmodels.PromedioCalificacionPorTipoView
 import ar.edu.unsam.phm.repository.HistorialPuntajeJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioJpaRepository
 import org.springframework.data.domain.PageRequest
@@ -34,6 +35,11 @@ class LibroMongoRepository(
         override val comentario: String,
         override val totalCalificaciones: Long,
     ) : CalificacionDetalleView
+
+    private data class PromedioCalificacionPorTipoMongoView(
+        override val tipoLibro: String,
+        override val promedioCalificacion: Double,
+    ) : PromedioCalificacionPorTipoView
 
     fun getById(id: Int): Libro? {
         val query = Query(Criteria.where("libroId").`is`(id).and("activo").`is`(true))
@@ -279,6 +285,24 @@ class LibroMongoRepository(
                 totalCalificaciones = documento.getInteger("totalCalificaciones").toLong(),
             )
         }
+    }
+
+    fun obtenerPromedioCalificacionPorTipo(): List<PromedioCalificacionPorTipoView> {
+        val aggregation = Aggregation.newAggregation(
+            Aggregation.match(Criteria.where("activo").`is`(true).and("calificaciones.0").exists(true)),
+            Aggregation.group("_class").avg("calificacion").`as`("promedioCalificacion"),
+            Aggregation.sort(Sort.Direction.ASC, "_id"),
+        )
+
+        return mongoTemplate.aggregate(aggregation, "libros", Document::class.java)
+            .mappedResults
+            .map { documento ->
+                val className = documento.getString("_id") ?: ""
+                PromedioCalificacionPorTipoMongoView(
+                    tipoLibro = className.substringAfterLast(".").removePrefix("Libro"),
+                    promedioCalificacion = documento.getDouble("promedioCalificacion") ?: 0.0,
+                )
+            }
     }
 
     fun usuarioYaCalifico(libroId: Int, usuarioId: Int): Boolean {

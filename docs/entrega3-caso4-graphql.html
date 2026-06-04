@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrega 3 - GraphQL Caso 4</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #111827;
+      --panel: #1f2937;
+      --text: #f9fafb;
+      --muted: #cbd5e1;
+      --accent: #38bdf8;
+      --border: #374151;
+      --code: #0f172a;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 22px 64px;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.2;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      margin-top: 34px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--accent);
+    }
+
+    p, li {
+      color: var(--muted);
+    }
+
+    strong {
+      color: var(--text);
+    }
+
+    code {
+      background: var(--code);
+      color: #e0f2fe;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    pre {
+      overflow-x: auto;
+      background: var(--code);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    pre code {
+      padding: 0;
+      background: transparent;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin: 18px 0;
+    }
+
+    .note {
+      border-left: 4px solid var(--accent);
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Entrega 3 - Parte 2 - Caso 4</h1>
+  <p><strong>Análisis de Calificaciones con GraphQL</strong></p>
+
+  <section class="card note">
+    <p>
+      Este caso agrega una métrica para el tablero administrador: promedio de calificación agrupado por tipo de libro.
+      La API GraphQL convive con la REST existente; no reemplaza ningún endpoint REST.
+    </p>
+  </section>
+
+  <h2>Qué se agregó en backend</h2>
+  <ul>
+    <li>Se extendió el schema GraphQL con la query <code>analisisCalificaciones</code>.</li>
+    <li>Se creó un <code>DataFetcher</code> DGS para resolver esa query.</li>
+    <li>Se creó un service específico: <code>AnalisisCalificacionesService</code>.</li>
+    <li>Se agregó una aggregation en <code>LibroMongoRepository</code>.</li>
+    <li>Se agregó un DTO de salida: <code>PromedioCalificacionPorTipoDTO</code>.</li>
+  </ul>
+
+  <h2>Query GraphQL</h2>
+  <pre><code>query {
+  analisisCalificaciones {
+    tipoLibro
+    promedioCalificacion
+  }
+}</code></pre>
+
+  <p>Respuesta esperada, con valores variables según los datos cargados:</p>
+  <pre><code>{
+  "data": {
+    "analisisCalificaciones": [
+      {
+        "tipoLibro": "Coleccionable",
+        "promedioCalificacion": 4.2
+      },
+      {
+        "tipoLibro": "Comun",
+        "promedioCalificacion": 3.9
+      }
+    ]
+  }
+}</code></pre>
+
+  <h2>De dónde sale la data</h2>
+  <p>
+    La data sale de MongoDB, colección <code>libros</code>. No se consulta PostgreSQL para este caso.
+    Cada documento de libro ya tiene un campo agregado llamado <code>calificacion</code>, que representa el promedio
+    calculado para ese libro.
+  </p>
+
+  <p>La aggregation hace esto:</p>
+  <ol>
+    <li>Filtra libros activos con <code>activo = true</code>.</li>
+    <li>Excluye libros sin reseñas con <code>calificaciones.0 exists true</code>.</li>
+    <li>Agrupa por <code>_class</code>, que distingue <code>LibroComun</code>, <code>LibroConDedicatoria</code> y <code>LibroColeccionable</code>.</li>
+    <li>Promedia el campo <code>calificacion</code> dentro de cada tipo.</li>
+    <li>Mapea el nombre de clase a un tipo más simple: <code>Comun</code>, <code>ConDedicatoria</code>, <code>Coleccionable</code>.</li>
+  </ol>
+
+  <section class="card note">
+    <p>
+      Importante: este caso pide un promedio de promedios por libro. Por eso no se hace <code>unwind</code> de reseñas
+      ni se promedian los valores crudos de <code>calificaciones.valor</code>. Cada libro calificado aporta un solo valor:
+      su <code>calificacion</code> ya agregada.
+    </p>
+  </section>
+
+  <section class="card note">
+    <p>
+      Los valores devueltos no estan mockeados ni hardcodeados. Son el resultado de consultar MongoDB en el momento
+      de ejecutar la query. Si se agregan nuevas calificaciones, cambian las calificaciones agregadas de los libros
+      o se modifican los datos iniciales, la respuesta de <code>analisisCalificaciones</code> puede cambiar.
+    </p>
+  </section>
+
+  <h2>Cómo funciona GraphQL en esta entrega</h2>
+  <p>
+    GraphQL es una API de consulta. A diferencia de REST, donde cada endpoint tiene una respuesta ya definida,
+    en GraphQL el cliente manda una query indicando exactamente que campos necesita. En esta entrega no reemplaza
+    la API REST: convive con ella. Los endpoints REST siguen existiendo para el flujo normal de la app, y GraphQL
+    se usa para resolver consultas de tablero administrador.
+  </p>
+
+  <p>En este proyecto el endpoint GraphQL es:</p>
+  <pre><code>POST http://localhost:8080/api/graphql</code></pre>
+
+  <p>
+    El contrato esta definido en <code>src/main/resources/schema/schema.graphqls</code>. Ahi se declaran las queries
+    disponibles y los tipos de respuesta. Actualmente el schema incluye:
+  </p>
+  <ul>
+    <li><code>tasaConversion</code>: caso 1, cruza clicks cacheados en Redis con reservas en PostgreSQL.</li>
+    <li><code>analisisCalificaciones</code>: caso 4, agrupa promedios de calificacion por tipo de libro desde MongoDB.</li>
+  </ul>
+
+  <p>Flujo de una consulta GraphQL:</p>
+  <ol>
+    <li>El frontend manda un <code>POST</code> a <code>/api/graphql</code> con una query.</li>
+    <li>Spring Security valida la sesion. Para este endpoint se requiere rol <code>ADMIN</code>.</li>
+    <li>Netflix DGS lee la query y busca el metodo anotado con <code>@DgsQuery</code> que tenga el mismo nombre.</li>
+    <li>El <code>DataFetcher</code> no hace logica pesada: delega en un service de dominio.</li>
+    <li>El service consulta la fuente de datos necesaria: Redis, PostgreSQL o MongoDB segun el KPI.</li>
+    <li>DGS arma la respuesta JSON solo con los campos que pidio el cliente.</li>
+  </ol>
+
+  <section class="card note">
+    <p>
+      En el caso 4, la query <code>analisisCalificaciones</code> se resuelve con
+      <code>AnalisisCalificacionesDataFetcher</code>. Ese fetcher llama a
+      <code>AnalisisCalificacionesService</code>, y el service usa <code>LibroMongoRepository</code> para ejecutar
+      la aggregation sobre MongoDB.
+    </p>
+  </section>
+
+  <h2>Por qué GraphQL sirve para KPIs</h2>
+  <p>
+    Un tablero de administrador suele necesitar datos de varios mundos al mismo tiempo: libros, usuarios, reservas,
+    clicks, rankings y actividad. Con REST se podria hacer, pero muchas veces el frontend termina llamando a muchos
+    endpoints distintos o recibiendo campos que no necesita. GraphQL permite pedir varias metricas en una sola request,
+    por ejemplo:
+  </p>
+  <pre><code>query {
+  tasaConversion {
+    titulo
+    clicks
+    reservas
+    tasaConversion
+  }
+  analisisCalificaciones {
+    tipoLibro
+    promedioCalificacion
+  }
+}</code></pre>
+
+  <p>
+    DGS orquesta esa consulta: llama a los resolvers necesarios y cada resolver delega en su service. Asi el cliente
+    puede armar un tablero flexible sin conocer todos los endpoints internos ni mezclar la logica de calculo en el front.
+  </p>
+
+  <h2>Cómo funciona Redis en esta entrega</h2>
+  <p>
+    Redis se usa como cache en memoria para datos muy consultados o costosos de calcular. La idea central es evitar
+    recalcular informacion pesada en cada request. En lugar de ir siempre a MongoDB o PostgreSQL, se guarda un resultado
+    preparado en Redis y se lee desde ahi cuando la pantalla lo necesita.
+  </p>
+
+  <p>
+    En la Parte 1, el home usa el cache de libros populares. El objeto cacheado se guarda bajo la entidad
+    <code>TopLibrosCache</code>, con key <code>HOME</code>, dentro del hash Redis <code>top_libros</code>.
+    Ese cache contiene una lista de libros populares y el total de libros activos.
+  </p>
+
+  <p>Flujo del cache de libros populares:</p>
+  <ol>
+    <li>Cuando el home necesita populares, <code>LibroService.getLibrosPopulares()</code> intenta leer Redis.</li>
+    <li>Si Redis tiene la key <code>HOME</code>, devuelve esos libros sin recalcular el ranking.</li>
+    <li>Si hay cache miss, <code>LibroService.actualizarCacheTopLibros()</code> consulta MongoDB y guarda el resultado en Redis.</li>
+    <li>Cuando un usuario entra al detalle de un libro, <code>ClickLogService.registrarClick()</code> registra el click en MongoDB.</li>
+    <li>Si el click fue valido, se vuelve a actualizar el cache de top libros para que el home refleje el nuevo ranking.</li>
+  </ol>
+
+  <section class="card note">
+    <p>
+      Redis no reemplaza a MongoDB ni a PostgreSQL. Redis guarda una vista rapida y temporal de datos ya calculados.
+      MongoDB sigue siendo la fuente de verdad para libros, clicks y calificaciones documentales; PostgreSQL sigue siendo
+      la fuente de verdad para usuarios, reservas y datos relacionales.
+    </p>
+  </section>
+
+  <h2>Redis y GraphQL juntos</h2>
+  <p>
+    Redis tambien puede participar en KPIs GraphQL. El ejemplo directo de esta rama es <code>tasaConversion</code>.
+    Esa query toma el top 5 de libros mas clickeados desde Redis y cruza esos libros con PostgreSQL para contar reservas.
+    Con esos dos datos calcula:
+  </p>
+  <pre><code>tasaConversion = reservas / clicks</code></pre>
+
+  <p>
+    Esto muestra la idea de la entrega: GraphQL actua como capa de orquestacion y cada service decide de donde trae
+    la informacion. Un KPI puede leer solo MongoDB, como <code>analisisCalificaciones</code>; otro puede combinar Redis
+    y PostgreSQL, como <code>tasaConversion</code>.
+  </p>
+
+  <h2>Resumen para defender</h2>
+  <ul>
+    <li>REST sigue funcionando para la aplicacion normal.</li>
+    <li>GraphQL agrega una API flexible para el tablero administrador.</li>
+    <li>El schema define que se puede consultar y que forma tiene cada respuesta.</li>
+    <li>Los <code>DataFetcher</code> DGS conectan cada query con un service.</li>
+    <li>Los services mantienen la logica de negocio y eligen la fuente de datos correcta.</li>
+    <li>Redis acelera lecturas frecuentes, especialmente el top de populares del home.</li>
+    <li>MongoDB mantiene libros, clicks y calificaciones; PostgreSQL mantiene reservas y usuarios.</li>
+    <li>El caso 4 no usa Redis porque su metrica sale directamente de calificaciones agregadas en MongoDB.</li>
+  </ul>
+
+  <h2>Cómo levantar el backend local</h2>
+  <p>Desde el worktree o repo backend:</p>
+  <pre><code>cd /Users/dantestefanotripodi/.config/superpowers/worktrees/backend-2026-grupo-12/caso4-graphql-backend</code></pre>
+
+  <p>Levantar dependencias locales:</p>
+  <pre><code>docker compose up -d redis postgres configsvr1 configsvr2 configsvr3 shard1a shard1b shard1c shard2a shard2b shard2c mongo-rs-init mongos-router1 mongos-router2 mongo</code></pre>
+
+  <p>Cuando Mongo termine la inicialización, correr la app Spring Boot:</p>
+  <pre><code>./gradlew bootRun</code></pre>
+
+  <p>El backend queda disponible en:</p>
+  <pre><code>http://localhost:8080</code></pre>
+
+  <h2>Cómo probar GraphQL con curl</h2>
+  <p>
+    El endpoint <code>/api/graphql</code> requiere rol admin. El usuario seed de admin es
+    <code>admin@booklibre.com</code> con contraseña <code>admin123</code>.
+  </p>
+
+  <p>Primero hacer login y guardar cookies:</p>
+  <pre><code>curl -i -c /tmp/booklibre-cookies.txt \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"admin@booklibre.com","password":"admin123"}' \
+  http://localhost:8080/api/login</code></pre>
+
+  <p>Después consultar GraphQL usando esas cookies:</p>
+  <pre><code>curl -s -b /tmp/booklibre-cookies.txt \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"query { analisisCalificaciones { tipoLibro promedioCalificacion } }"}' \
+  http://localhost:8080/api/graphql</code></pre>
+
+  <h2>Cómo probar desde el frontend</h2>
+  <p>En otra terminal, levantar el frontend desde la rama del caso 4:</p>
+  <pre><code>cd /Users/dantestefanotripodi/.config/superpowers/worktrees/frontend-2026-grupo-12/caso4-graphql-frontend
+pnpm dev</code></pre>
+
+  <p>Abrir:</p>
+  <pre><code>http://localhost:5173/consultas</code></pre>
+
+  <p>
+    Loguearse como admin si hace falta, expandir la tarjeta
+    <strong>Análisis de Calificaciones [GraphQL]</strong> y hacer click en <strong>Consultar</strong>.
+  </p>
+
+  <h2>Qué hace el frontend</h2>
+  <ul>
+    <li><code>adminService.obtenerAnalisisCalificaciones()</code> manda un POST GraphQL a <code>/graphql</code>.</li>
+    <li><code>ConsultasAdmin</code> guarda resultado, loading y error en estado local.</li>
+    <li>La tarjeta renderiza el tipo de libro con label humano usando <code>TIPO_LABEL</code>.</li>
+    <li>El promedio se muestra con dos decimales usando <code>toFixed(2)</code>.</li>
+  </ul>
+
+  <h2>Comandos de verificación</h2>
+  <pre><code># Backend
+./gradlew test -x jacocoTestReport
+./gradlew compileKotlin
+
+# Frontend
+pnpm test --run
+pnpm build</code></pre>
+
+  <p>
+    Nota: <code>pnpm lint</code> falla actualmente porque <code>eslint.config.js</code> importa
+    <code>@eslint/js</code> y esa dependencia no está instalada. Ese problema es de setup del repo y no fue introducido por este caso.
+  </p>
+</main>
+</body>
+</html>

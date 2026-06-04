@@ -1,5 +1,6 @@
 type Query {
     tasaConversion: [TasaConversionLibro!]!
+    analisisCalificaciones: [PromedioCalificacionPorTipo!]!
 }
 
 type TasaConversionLibro {
@@ -8,4 +9,9 @@ type TasaConversionLibro {
     clicks: Int!
     reservas: Int!
     tasaConversion: Float!
+}
+
+type PromedioCalificacionPorTipo {
+    tipoLibro: String!
+    promedioCalificacion: Float!
 }
