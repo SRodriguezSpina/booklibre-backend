@@ -1,15 +1,7 @@
 package ar.edu.unsam.phm.mappers
 
 import ar.edu.unsam.phm.domain.*
-import ar.edu.unsam.phm.dtos.LibroDTO
-import ar.edu.unsam.phm.dtos.LibroHomeDTO
-import ar.edu.unsam.phm.dtos.LibroPopularCacheDTO
-import ar.edu.unsam.phm.dtos.PagedResponse
-import ar.edu.unsam.phm.dtos.RangoReservaDTO
-import ar.edu.unsam.phm.dtos.CalificacionDTO
-import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
-import ar.edu.unsam.phm.dtos.ReservaDTO
-import ar.edu.unsam.phm.dtos.UsuarioResponse
+import ar.edu.unsam.phm.dtos.*
 import ar.edu.unsam.phm.readmodels.CalificacionDetalleView
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -17,7 +9,7 @@ import java.time.format.DateTimeFormatter
 fun Usuario.toResponse(): UsuarioResponse {
     val tipoStr = when (tipoUsuario.trim().uppercase().replace(" ", "_")) {
         "PUBLICADOR"                              -> "Publicador"
-        "LECTOR_PUBLICADOR", "LECTORPUBLICADOR"  -> "LectorPublicador"
+        "LECTOR_PUBLICADOR", "LECTORPUBLICADOR"   -> "LectorPublicador"
         "ADMIN"                                   -> "ADMIN"
         else                                      -> "Lector"
     }
@@ -37,6 +29,14 @@ fun Usuario.toResponse(): UsuarioResponse {
         esAdmin      = esAdmin,
     )
 }
+
+fun Usuario.toBibliokarmaDTO(): UsuarioBibliokarmaDTO =
+    UsuarioBibliokarmaDTO(
+        id = id,
+        nombre = nombre,
+        bibliokarma = bibliokarmas
+    )
+
 
 /** Mapping simple: sin calificaciones, sin rangos — usado en create/update. */
 fun Libro.toDTO(): LibroDTO = LibroDTO(
