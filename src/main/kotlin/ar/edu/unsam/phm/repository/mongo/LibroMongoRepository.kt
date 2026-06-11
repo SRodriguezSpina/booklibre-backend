@@ -336,6 +336,47 @@ class LibroMongoRepository(
         return mongoTemplate.find(query, Libro::class.java)
     }
 
+    // Buckets de salud del catálogo: condiciones disjuntas sobre el array embebido `reservas`
+    private fun reservaVigente(ahora: java.time.LocalDateTime): Criteria =
+        Criteria.where("fechaDesde").lte(ahora).and("fechaHasta").gte(ahora)
+
+    fun contarPrestados(ahora: java.time.LocalDateTime): Long =
+        mongoTemplate.count(
+            Query(Criteria.where("activo").`is`(true).and("reservas").elemMatch(reservaVigente(ahora))),
+            Libro::class.java,
+        )
+
+    fun contarNuncaReservados(): Long =
+        mongoTemplate.count(
+            Query(Criteria.where("activo").`is`(true).and("reservas.0").exists(false)),
+            Libro::class.java,
+        )
+
+    fun contarDevueltos(ahora: java.time.LocalDateTime): Long =
+        mongoTemplate.count(
+            Query(
+                Criteria().andOperator(
+                    Criteria.where("activo").`is`(true),
+                    Criteria.where("reservas").not().elemMatch(reservaVigente(ahora)),
+                    Criteria.where("reservas").elemMatch(Criteria.where("fechaHasta").lt(ahora)),
+                )
+            ),
+            Libro::class.java,
+        )
+
+    fun contarReservadosAFuturo(ahora: java.time.LocalDateTime): Long =
+        mongoTemplate.count(
+            Query(
+                Criteria().andOperator(
+                    Criteria.where("activo").`is`(true),
+                    Criteria.where("reservas.0").exists(true),
+                    Criteria.where("reservas").not().elemMatch(reservaVigente(ahora)),
+                    Criteria.where("reservas").not().elemMatch(Criteria.where("fechaHasta").lt(ahora)),
+                )
+            ),
+            Libro::class.java,
+        )
+
     fun findLibrosConReservasCumplidas(ahora: java.time.LocalDateTime = java.time.LocalDateTime.now()): List<Libro> {
         val criteria = Criteria.where("activo").`is`(true)
             .and("reservas.0").exists(true)
