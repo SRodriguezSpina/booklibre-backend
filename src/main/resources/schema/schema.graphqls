@@ -1,6 +1,16 @@
 type Query {
     tasaConversion: [TasaConversionLibro!]!
     analisisCalificaciones: [PromedioCalificacionPorTipo!]!
+    saludCatalogo: SaludCatalogo!
+}
+
+# Buckets disjuntos sobre libros activos: las cuatro cantidades suman total
+type SaludCatalogo {
+    total: Int!
+    prestados: Int!
+    disponiblesNuncaReservados: Int!
+    disponiblesReservadosAFuturo: Int!
+    disponiblesDevueltos: Int!
 }
 
 type TasaConversionLibro {
