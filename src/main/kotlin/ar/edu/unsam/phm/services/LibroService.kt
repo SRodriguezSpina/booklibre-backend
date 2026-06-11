@@ -20,6 +20,7 @@ import ar.edu.unsam.phm.domain.TopLibrosCache
 import ar.edu.unsam.phm.mappers.toHomeDTO
 import ar.edu.unsam.phm.mappers.toPopularCacheDTO
 import ar.edu.unsam.phm.dtos.LibroHomeDTO
+import ar.edu.unsam.phm.domain.LibrosClicks
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -31,6 +32,7 @@ class LibroService(
     private val reservaJpa: ReservaJpaRepository,
     private val reservaService: ReservaService,
     private val topLibrosCacheRepository: TopLibrosCacheRepository,
+    private val librosClicks: LibrosClicks,
 ) {
 
     fun search(
@@ -56,7 +58,22 @@ class LibroService(
     }
 
     fun actualizarCacheTopLibros(): TopLibrosCache {
-        val topLibros     = libroRepository.findTopLibrosByClicks()
+        val topIdsFromRedis = librosClicks.getTopLibrosIds(10)
+
+        val librosFromRedis = if (topIdsFromRedis.isNotEmpty()) {
+            val librosMap = libroRepository.findAllByIdsCompleto(topIdsFromRedis).associateBy { it.id }
+            topIdsFromRedis.mapNotNull { librosMap[it] }
+        } else {
+            emptyList()
+        }
+
+        val topLibros = if (librosFromRedis.size < 10) {
+            val fallbackLibros = libroRepository.findTop10Activos(10)
+            (librosFromRedis + fallbackLibros).distinctBy { it.id }.take(10)
+        } else {
+            librosFromRedis
+        }
+
         val totalElements = libroRepository.contarLibrosActivos()
         val cache = TopLibrosCache(
             libros        = topLibros.map { it.toPopularCacheDTO(null) },

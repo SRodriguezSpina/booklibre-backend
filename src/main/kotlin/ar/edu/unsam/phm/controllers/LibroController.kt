@@ -42,6 +42,7 @@ class LibroController(
             fechaDesde, fechaHasta, isbn, prestadoPor, sortBy,
         ).toHomeDTO { libro -> libroService.calcularBiblioKarma(libro, usuarioId) }
 
+    // Redis, Libros populares
     @Transactional(readOnly = true)
     @GetMapping("/populares")
     fun getLibrosPopulares(
