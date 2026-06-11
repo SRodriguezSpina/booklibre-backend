@@ -72,24 +72,19 @@ class LibroMongoRepository(
         if (ids.isEmpty()) emptyList() else mongoTemplate.find(Query(Criteria.where("libroId").`in`(ids)), Libro::class.java)
 
 
-    fun findTopLibrosByClicks(limit: Int = 10): List<Libro> {
-        val aggregation = Aggregation.newAggregation(
-            Aggregation.match(Criteria.where("activo").`is`(true)),
-            Aggregation.project()
-                .and("id").`as`("id")
-                .and("clicks").size().`as`("totalClicks"),
-            Aggregation.sort(Sort.Direction.DESC, "totalClicks"),
-            Aggregation.limit(limit.toLong()),
-        )
-        val topIds = mongoTemplate
-            .aggregate(aggregation, "libros", Document::class.java)
-            .mappedResults
-            .mapNotNull { it.getInteger("id") }
+    fun findTop10Activos(limit: Int = 10): List<Libro> {
+        val query = Query(Criteria.where("activo").`is`(true))
+            .with(Sort.by(Sort.Direction.DESC, "fechaAgregado"))
+            .limit(limit)
+        return mongoTemplate.find(query, Libro::class.java)
+    }
 
-        if (topIds.isEmpty()) return emptyList()
-
-        val librosMap = findAllByIdsCompleto(topIds).associateBy { it.id }
-        return topIds.mapNotNull { librosMap[it] }
+    fun findTopActivosExcluyendo(limit: Int, excludeIds: List<Int>): List<Libro> {
+        if (limit <= 0) return emptyList()
+        val query = Query(Criteria.where("activo").`is`(true).and("libroId").nin(excludeIds))
+            .with(Sort.by(Sort.Direction.DESC, "fechaAgregado"))
+            .limit(limit)
+        return mongoTemplate.find(query, Libro::class.java)
     }
 
     fun contarLibrosActivos(): Long =

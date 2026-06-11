@@ -10,6 +10,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
+import ar.edu.unsam.phm.domain.LibrosClicks
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -32,6 +33,7 @@ class ClickLogService(
     private val mongoTemplate: MongoTemplate,
     private val usuarioJpaRepository: UsuarioJpaRepository,
     private val libroService: LibroService,
+    private val librosClicks: LibrosClicks,
 ) {
 
     fun esEmailDelDuenio(duenioId: Int, email: String): Boolean =
@@ -55,6 +57,7 @@ class ClickLogService(
         val result = mongoTemplate.updateFirst(query, update, "libros")
 
         if (result.matchedCount > 0) {
+            librosClicks.registrarClick(libroId)
             libroService.actualizarCacheTopLibros()
             return
         }
@@ -71,18 +74,17 @@ class ClickLogService(
      * Devuelve null si todavia no hay ningun click registrado.
      */
     fun getLibroMasClickeado(): LibroMasClickeadoResult? {
-        val aggregation = Aggregation.newAggregation(
-            Aggregation.project()
-                .andExclude("_id")
-                .and("id").`as`("libroId")
-                .and("titulo").`as`("libroTitulo")
-                .and("clicks").size().`as`("total"),
-            Aggregation.sort(Sort.Direction.DESC, "total"),
-            Aggregation.limit(1)
-        )
-        val results = mongoTemplate.aggregate(aggregation, "libros", LibroMasClickeadoResult::class.java)
-        val result = results.uniqueMappedResult
-        return if (result != null && result.total > 0) result else null
+        val topElement = librosClicks.getLibroMasClickeadoIdYScore()
+        if (topElement != null) {
+            val id = topElement.first
+            val libro = libroRepository.getById(id) ?: return null
+            return LibroMasClickeadoResult(
+                libroId = id,
+                libroTitulo = libro.titulo,
+                total = topElement.second
+            )
+        }
+        return null
     }
 
     /**
