@@ -50,6 +50,11 @@ class UsuarioService(
             throw BusinessException("No podés cambiar el tipo de usuario mientras tenés reservas activas")
         }
 
+        // Solo un admin puede conservar el tipo ADMIN: bloquea la auto-escalación de privilegios
+        if (request.tipoUsuario.trim().uppercase().replace(" ", "_") == "ADMIN" && !usuario.esAdmin) {
+            throw BusinessException("Tipo de usuario inválido")
+        }
+
         usuario.actualizarDatosPersonales(
             nuevoNombre    = request.nombre,
             nuevaDesc      = request.desc,
@@ -68,7 +73,7 @@ class UsuarioService(
             libroRepository.actualizarNombreDuenio(actualizado.id, actualizado.nombre)
         }
 
-        val roles = UserDetailsServiceImpl.rolesParaTipo(actualizado.tipoUsuario).map { it.authority }
+        val roles = UserDetailsServiceImpl.rolesParaUsuario(actualizado).map { it.authority }
         val accessToken = jwtTokenUtils.generateToken(actualizado.email, roles)
         val refreshToken = jwtTokenUtils.generateRefreshToken(actualizado.email)
 

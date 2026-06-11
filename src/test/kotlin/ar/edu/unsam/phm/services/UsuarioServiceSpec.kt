@@ -6,6 +6,7 @@ import ar.edu.unsam.phm.domain.UsuarioLector
 import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
+import ar.edu.unsam.phm.security.UserDetailsServiceImpl
 import ar.edu.unsam.phm.testing.inmemory.repository.LibroRepository
 import ar.edu.unsam.phm.testing.inmemory.repository.ReservaRepository
 import ar.edu.unsam.phm.testing.inmemory.repository.UsuarioRepository
@@ -126,6 +127,53 @@ class UsuarioServiceSpec : DescribeSpec({
                         celular = "11111111",
                         ciudad = "CABA",
                         tipoUsuario = "LECTOR"
+                    )
+                )
+            }
+        }
+
+        it("un admin que cambia su tipo conserva el rol de admin y suma los roles del nuevo tipo") {
+            val admin = buildUsuario("Admin", "admin@booklibre.com", "00000000")
+            admin.tipoUsuario = "ADMIN"
+            admin.esAdmin = true
+            val repo = buildRepo(admin)
+            val service = buildService(repo)
+            val idAdmin = repo.lista.first().id
+
+            val response = service.actualizarUsuario(
+                idAdmin,
+                UsuarioUpdateRequest(
+                    nombre = "Admin",
+                    desc = "desc",
+                    email = "admin@booklibre.com",
+                    celular = "00000000",
+                    ciudad = "CABA",
+                    tipoUsuario = "LECTOR_PUBLICADOR"
+                )
+            )
+
+            response.tipoUsuario shouldBe "LectorPublicador"
+            response.esAdmin shouldBe true
+            val actualizado = repo.lista.first { it.id == idAdmin }
+            UserDetailsServiceImpl.rolesParaUsuario(actualizado).map { it.authority } shouldBe
+                listOf("ROLE_LECTOR", "ROLE_PUBLICADOR", "ROLE_ADMIN")
+        }
+
+        it("lanza BusinessException si un usuario no admin intenta asignarse el tipo ADMIN") {
+            val repo = buildRepo(buildUsuario("Juan", "juan@mail.com", "11111111"))
+            val service = buildService(repo)
+            val idJuan = repo.lista.first().id
+
+            shouldThrow<BusinessException> {
+                service.actualizarUsuario(
+                    idJuan,
+                    UsuarioUpdateRequest(
+                        nombre = "Juan",
+                        desc = "desc",
+                        email = "juan@mail.com",
+                        celular = "11111111",
+                        ciudad = "CABA",
+                        tipoUsuario = "ADMIN"
                     )
                 )
             }

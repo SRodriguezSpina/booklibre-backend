@@ -23,6 +23,7 @@ class Usuario(
     @Column(nullable = true) var celular: String? = null,
     @Column(nullable = false) var ciudad: String = "",
     @Column(nullable = false) var tipoUsuario: String = "LECTOR",
+    @Column(name = "es_admin", nullable = false) var esAdmin: Boolean = false,
     @Column(nullable = false) var bibliokarmas: Int = 0,
     @Column(nullable = true)  var imagenUrl: String? = null,
     @Column(nullable = false) var fechaRegistro: LocalDate = LocalDate.now(),
