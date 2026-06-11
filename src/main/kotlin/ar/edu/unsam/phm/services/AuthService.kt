@@ -33,10 +33,10 @@ class AuthService(
             }
             throw UnauthorizedException("Usuario o contraseña incorrectos")
         }
-        val roles = UserDetailsServiceImpl.rolesParaTipo(usuario.tipoUsuario).map { it.authority }
+        val roles = UserDetailsServiceImpl.rolesParaUsuario(usuario).map { it.authority }
         val accessToken = jwtTokenUtils.generateToken(email, roles)
         val refreshToken = jwtTokenUtils.generateRefreshToken(email)
-        
+
         return Pair(
             AuthResponseUsuario(true, "Login exitoso", usuario.toResponse()),
             AuthTokens(accessToken, refreshToken)
@@ -53,7 +53,7 @@ class AuthService(
             desc = "",
         )
         val guardado = usuarioJpa.save(nuevo)
-        val roles = UserDetailsServiceImpl.rolesParaTipo(guardado.tipoUsuario).map { it.authority }
+        val roles = UserDetailsServiceImpl.rolesParaUsuario(guardado).map { it.authority }
         val accessToken = jwtTokenUtils.generateToken(email, roles)
         val refreshToken = jwtTokenUtils.generateRefreshToken(email)
         
@@ -71,7 +71,7 @@ class AuthService(
         val usuario = usuarioJpa.findByEmail(email)
             ?: throw UnauthorizedException("Usuario no encontrado")
             
-        val roles = UserDetailsServiceImpl.rolesParaTipo(usuario.tipoUsuario).map { it.authority }
+        val roles = UserDetailsServiceImpl.rolesParaUsuario(usuario).map { it.authority }
         val newAccessToken = jwtTokenUtils.generateToken(email, roles)
         // Opcional: rotar el refresh token también. Por ahora mantenemos el mismo.
         

@@ -13,6 +13,7 @@ data class UsuarioResponse(
     val imagenUrl: String? = null,
     val reservados: Int,
     val leidos: Int,
+    val esAdmin: Boolean = false,
 )
 
 data class UsuarioUpdateResponse(

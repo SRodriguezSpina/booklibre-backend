@@ -34,6 +34,7 @@ fun Usuario.toResponse(): UsuarioResponse {
         imagenUrl    = imagenUrl,
         leidos       = leidos,
         reservados   = reservados,
+        esAdmin      = esAdmin,
     )
 }
 

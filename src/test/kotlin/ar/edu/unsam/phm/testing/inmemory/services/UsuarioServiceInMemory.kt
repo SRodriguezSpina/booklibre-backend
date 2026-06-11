@@ -42,6 +42,11 @@ class UsuarioServiceInMemory(
         val celular = Usuario.normalizarYValidarCelular(request.celular)
         validarDuplicados(id, email, celular)
 
+        // Solo un admin puede conservar el tipo ADMIN: bloquea la auto-escalación de privilegios
+        if (request.tipoUsuario.trim().uppercase().replace(" ", "_") == "ADMIN" && !existente.esAdmin) {
+            throw BusinessException("Tipo de usuario inválido")
+        }
+
         val actualizado = Usuario(
             email, existente.password,
             nombre = request.nombre,
@@ -49,6 +54,7 @@ class UsuarioServiceInMemory(
             celular = celular,
             ciudad = request.ciudad,
             tipoUsuario = request.tipoUsuario,
+            esAdmin = existente.esAdmin,
             bibliokarmas = existente.bibliokarmas,
             imagenUrl = request.imagenUrl ?: existente.imagenUrl,
             fechaRegistro = existente.fechaRegistro,
