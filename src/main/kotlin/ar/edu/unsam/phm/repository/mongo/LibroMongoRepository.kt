@@ -79,6 +79,14 @@ class LibroMongoRepository(
         return mongoTemplate.find(query, Libro::class.java)
     }
 
+    fun findTopActivosExcluyendo(limit: Int, excludeIds: List<Int>): List<Libro> {
+        if (limit <= 0) return emptyList()
+        val query = Query(Criteria.where("activo").`is`(true).and("libroId").nin(excludeIds))
+            .with(Sort.by(Sort.Direction.DESC, "fechaAgregado"))
+            .limit(limit)
+        return mongoTemplate.find(query, Libro::class.java)
+    }
+
     fun contarLibrosActivos(): Long =
         mongoTemplate.count(Query(Criteria.where("activo").`is`(true)), Libro::class.java)
 

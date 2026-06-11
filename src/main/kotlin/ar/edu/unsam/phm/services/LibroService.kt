@@ -68,7 +68,8 @@ class LibroService(
         }
 
         val topLibros = if (librosFromRedis.size < 10) {
-            val fallbackLibros = libroRepository.findTop10Activos(10)
+            val faltantes = 10 - librosFromRedis.size
+            val fallbackLibros = libroRepository.findTopActivosExcluyendo(limit = faltantes, excludeIds = topIdsFromRedis)
             (librosFromRedis + fallbackLibros).distinctBy { it.id }.take(10)
         } else {
             librosFromRedis
