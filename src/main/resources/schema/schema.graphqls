@@ -2,6 +2,7 @@ type Query {
     tasaConversion: [TasaConversionLibro!]!
     analisisCalificaciones: [PromedioCalificacionPorTipo!]!
     saludCatalogo: SaludCatalogo!
+    topBibliokarmas: [UsuarioBibliokarma!]!
 }
 
 # Buckets disjuntos sobre libros activos: las cuatro cantidades suman total
@@ -24,4 +25,10 @@ type TasaConversionLibro {
 type PromedioCalificacionPorTipo {
     tipoLibro: String!
     promedioCalificacion: Float!
+}
+
+type UsuarioBibliokarma {
+    id: Int!
+    nombre: String!
+    bibliokarma: Int!
 }

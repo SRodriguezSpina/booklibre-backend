@@ -80,8 +80,4 @@ class UsuarioController(
     fun getClicksDeLibrosDePublicador(@PathVariable id: Int): List<ClickLogDTO> =
         clickLogService.getClicksDeLibrosDeUsuario(id)
             .map { ClickLogDTO(it.libroId, it.libroTitulo, it.nombreUsuario, it.fechaHora.toString()) }
-
-    @GetMapping("/ranking/top-bibliokarmas")
-    fun topBibliokarmas(): List<UsuarioBibliokarmaDTO> =
-        usuarioService.obtenerTop5Bibliokarmas()
 }
