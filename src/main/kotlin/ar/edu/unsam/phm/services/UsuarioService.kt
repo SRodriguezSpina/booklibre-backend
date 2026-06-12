@@ -2,18 +2,18 @@ package ar.edu.unsam.phm.services
 
 import ar.edu.unsam.phm.domain.Libro
 import ar.edu.unsam.phm.domain.TipoUsuario
+import ar.edu.unsam.phm.domain.TopBibliokarmasCache
 import ar.edu.unsam.phm.domain.Usuario
-import ar.edu.unsam.phm.dtos.AuthTokens
-import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
-import ar.edu.unsam.phm.dtos.PagedResponse
-import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
+import ar.edu.unsam.phm.dtos.*
 import ar.edu.unsam.phm.mappers.toLibroUsuarioItemDTO
+import ar.edu.unsam.phm.mappers.toBibliokarmaDTO
 import ar.edu.unsam.phm.exceptions.BusinessException
 import ar.edu.unsam.phm.exceptions.ConflictException
 import ar.edu.unsam.phm.exceptions.NotFoundException
 import ar.edu.unsam.phm.repository.mongo.LibroMongoRepository
 import ar.edu.unsam.phm.repository.ReservaJpaRepository
 import ar.edu.unsam.phm.repository.UsuarioJpaRepository
+import ar.edu.unsam.phm.repository.redis.TopBibliokarmasCacheRepository
 import ar.edu.unsam.phm.security.JwtTokenUtils
 import ar.edu.unsam.phm.security.UserDetailsServiceImpl
 import org.springframework.stereotype.Service
@@ -30,6 +30,7 @@ class UsuarioService(
     private val libroRepository: LibroMongoRepository,
     private val reservaJpa: ReservaJpaRepository,
     private val jwtTokenUtils: JwtTokenUtils,
+    private val topBibliokarmasCacheRepository: TopBibliokarmasCacheRepository,
 ) {
     fun obtenerUsuario(id: Int): Usuario =
         usuarioJpa.findById(id).orElseThrow { NotFoundException("Usuario $id no encontrado") }
@@ -103,6 +104,27 @@ class UsuarioService(
         }
         return PagedResponse(items, paged.page, paged.totalPages, paged.totalElements)
     }
+
+    // me traigo de redis la info
+    fun obtenerTop5Bibliokarmas(): List<UsuarioBibliokarmaDTO> {
+        return topBibliokarmasCacheRepository
+            .findById(TopBibliokarmasCache.CACHE_KEY)
+            .orElseGet { actualizarCacheTopBibliokarmas() }
+            .usuarios
+    }
+    // si no está la busco en postgre
+    fun actualizarCacheTopBibliokarmas(): TopBibliokarmasCache {
+        val topUsuarios = obtenerTop5Postgres()     // acá
+        val cache = TopBibliokarmasCache(
+            usuarios = topUsuarios
+        )
+        return topBibliokarmasCacheRepository.save(cache)
+    }
+    // acá se hace la query de jpaUsuario, mapeo y listo el pollo
+    private fun obtenerTop5Postgres(): List<UsuarioBibliokarmaDTO> =
+        usuarioJpa
+            .findTop5ByOrderByBibliokarmasDesc()    // acá
+            .map { it.toBibliokarmaDTO() }
 
     private fun tieneReservasActivas(usuarioId: Int): Boolean {
         val ahora = java.time.LocalDateTime.now()
