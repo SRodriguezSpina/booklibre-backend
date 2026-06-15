@@ -57,7 +57,7 @@ data class LibroData(
     val fechaPublicacion: LocalDate,
     val estado: EstadoLibro,
     val imagenUrl: String? = null,
-    val fechaAgregado: LocalDate = LocalDate.now(),
+    val fechaAgregado: LocalDateTime = LocalDateTime.now(),
 )
 
 @Document(collection = "libros")
@@ -103,7 +103,7 @@ abstract class Libro() : BaseEntity() {
     var idioma: Idioma = Idioma.ESPANOL
     var editorial: String = ""
     var fechaPublicacion: LocalDate = LocalDate.now()
-    var fechaAgregado: LocalDate = LocalDate.now()
+    var fechaAgregado: LocalDateTime = LocalDateTime.now()
     var estado: EstadoLibro = EstadoLibro.BUENO
     var imagenUrl: String? = null
     // Promedio de calificaciones (calculado por el service, guardado para ordenamiento)

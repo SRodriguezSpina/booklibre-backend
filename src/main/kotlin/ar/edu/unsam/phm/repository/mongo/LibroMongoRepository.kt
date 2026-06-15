@@ -415,4 +415,12 @@ class LibroMongoRepository(
 
     private fun findTopByOrderByIdDesc(): Libro? =
         mongoTemplate.findOne(Query().with(Sort.by(Sort.Direction.DESC, "id")).limit(1), Libro::class.java)
+
+    fun findTopNByFechaAgregadoDesc(limit: Int = 5): List<Libro> {
+        val query = Query(Criteria.where("activo").`is`(true).and("fechaAgregado").exists(true))
+            .with(Sort.by(Sort.Direction.DESC, "fechaAgregado"))
+            .limit(limit)
+        query.fields().exclude("calificaciones").exclude("clicks").exclude("reservas")
+        return mongoTemplate.find(query, Libro::class.java)
+    }
 }

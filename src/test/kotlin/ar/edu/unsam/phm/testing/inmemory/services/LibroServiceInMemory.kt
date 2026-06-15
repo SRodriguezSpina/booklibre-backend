@@ -173,7 +173,7 @@ class LibroServiceInMemory(
             fechaPublicacion = dto.fechaPublicacion,
             estado = EstadoLibro.valueOf(dto.estado),
             imagenUrl = dto.imagenUrl,
-            fechaAgregado = LocalDate.now(),
+            fechaAgregado = LocalDateTime.now(),
         )
 
         val libro = when (dto.tipo) {

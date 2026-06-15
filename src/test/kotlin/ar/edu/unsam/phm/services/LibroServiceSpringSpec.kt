@@ -31,6 +31,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class LibroServiceSpringSpec : DescribeSpec({
 
@@ -39,13 +40,13 @@ class LibroServiceSpringSpec : DescribeSpec({
     val reservaJpa = mockk<ReservaJpaRepository>()
     val reservaService = mockk<ReservaService>()
     val topLibrosCacheRepository = mockk<TopLibrosCacheRepository>(relaxed = true)
+    val librosClicks = mockk<ar.edu.unsam.phm.domain.LibrosClicks>(relaxed = true)
     val service = LibroService(
         libroRepository, usuarioJpa, reservaJpa, reservaService,
-        topLibrosCacheRepository,
+        topLibrosCacheRepository, librosClicks,
     )
 
     every { libroRepository.findAllByIds(any()) } returns emptyList()
-    every { libroRepository.findTopLibrosByClicks() } returns emptyList()
     every { libroRepository.contarLibrosActivos() } returns 0L
     every { topLibrosCacheRepository.save(any<TopLibrosCache>()) } answers { firstArg() }
 
@@ -72,7 +73,7 @@ class LibroServiceSpringSpec : DescribeSpec({
         fechaPublicacion = LocalDate.of(2008, 8, 1),
         estado = EstadoLibro.EXCELENTE,
         imagenUrl = "https://example.com/cover.jpg",
-        fechaAgregado = LocalDate.now(),
+        fechaAgregado = LocalDateTime.now(),
     )
 
     fun libroDto(tipo: String = "Comun") = LibroDTO(
@@ -96,7 +97,7 @@ class LibroServiceSpringSpec : DescribeSpec({
         rating = 0.0,
         cantidadReservas = 0,
         reservas = emptyList(),
-        fechaAgregado = LocalDate.now(),
+        fechaAgregado = LocalDateTime.now(),
         cantidadCalificaciones = 0,
         ultimasCalificaciones = emptyList(),
     )
