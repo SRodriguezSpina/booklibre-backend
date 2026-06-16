@@ -35,6 +35,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.test.Test
 
 @WebMvcTest(LibroController::class)
@@ -79,7 +80,7 @@ class LibroControllerTest(
                 fechaPublicacion = LocalDate.of(1949, 6, 8),
                 estado = EstadoLibro.EXCELENTE,
                 imagenUrl = "",
-                fechaAgregado = LocalDate.now(),
+                fechaAgregado = LocalDateTime.now(),
                 
             ),
         ).apply { this.id = id }
@@ -101,7 +102,7 @@ class LibroControllerTest(
         cantidadReservas = 0,
         ultimasCalificaciones = emptyList(),
         reservas = emptyList(),
-        fechaAgregado = LocalDate.now(),
+        fechaAgregado = LocalDateTime.now(),
         cantidadCalificaciones = 0
     )
 

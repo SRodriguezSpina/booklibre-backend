@@ -77,7 +77,7 @@ class ReservaControllerTest(
             fechaPublicacion = LocalDate.of(1949, 1, 1),
             estado = estado,
             imagenUrl = "",
-            fechaAgregado = LocalDate.now(),
+            fechaAgregado = LocalDateTime.now(),
         )
         return LibroComun(data).apply { this.id = id }
     }

@@ -74,7 +74,7 @@ data class LibroDTO(
     
     @field:PastOrPresent(message = "La fecha de publicación no puede ser en el futuro")
     val fechaPublicacion: LocalDate,
-    val fechaAgregado: LocalDate = LocalDate.now(),
+    val fechaAgregado: LocalDateTime = LocalDateTime.now(),
     val propietarioId: Int = 0,
     val imagenUrl: String = "",
     val estoyReservado: Boolean = false,
