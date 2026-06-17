@@ -55,7 +55,7 @@ class ReservaServiceSpringSpec : DescribeSpec({
         fechaPublicacion = LocalDate.of(1949, 6, 8),
         estado = EstadoLibro.EXCELENTE,
         imagenUrl = "",
-        fechaAgregado = LocalDate.now(),
+        fechaAgregado = LocalDateTime.now(),
     )).apply { id = 10 }
 
     fun lector(id: Int = 1) = Usuario(

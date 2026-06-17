@@ -165,7 +165,7 @@ class LibroService(
             fechaPublicacion = dto.fechaPublicacion,
             estado           = EstadoLibro.fromString(dto.estado),
             imagenUrl        = dto.imagenUrl,
-            fechaAgregado    = LocalDate.now(),
+            fechaAgregado    = LocalDateTime.now(),
         )
         val libro = Libro.crear(dto.tipo, data)
         val saved = libroRepository.save(libro)

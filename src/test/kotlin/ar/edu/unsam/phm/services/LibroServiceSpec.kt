@@ -20,6 +20,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class LibroServiceSpec : DescribeSpec({
     isolationMode = IsolationMode.InstancePerTest
@@ -78,7 +79,7 @@ class LibroServiceSpec : DescribeSpec({
         rating = 0.0,
         cantidadReservas = 0,
         reservas = emptyList(),
-        fechaAgregado = LocalDate.now(),
+        fechaAgregado = LocalDateTime.now(),
         cantidadCalificaciones = 0,
         ultimasCalificaciones = emptyList(),
     )

@@ -1,12 +1,6 @@
 package ar.edu.unsam.phm.controllers
 
-import ar.edu.unsam.phm.dtos.ClickLogDTO
-import ar.edu.unsam.phm.dtos.LibroUsuarioItemDTO
-import ar.edu.unsam.phm.dtos.PagedResponse
-import ar.edu.unsam.phm.dtos.ReservaAnualUsuarioDTO
-import ar.edu.unsam.phm.dtos.UsuarioResponse
-import ar.edu.unsam.phm.dtos.UsuarioUpdateResponse
-import ar.edu.unsam.phm.dtos.UsuarioUpdateRequest
+import ar.edu.unsam.phm.dtos.*
 import ar.edu.unsam.phm.mappers.toResponse
 import ar.edu.unsam.phm.exceptions.ForbiddenException
 import ar.edu.unsam.phm.services.ClickLogService

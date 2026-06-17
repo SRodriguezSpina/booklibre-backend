@@ -14,6 +14,7 @@ import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
 import java.util.Optional
 
+
 interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
     fun findByLibroId(libroId: Int): List<Reserva>
     fun findByLibroIdIn(libroIds: Collection<Int>): List<Reserva>
@@ -134,4 +135,11 @@ interface ReservaJpaRepository : JpaRepository<Reserva, Int> {
         @Param("now") now: LocalDateTime,
         @Param("minReservas") minReservas: Long,
     ): List<Int>
+
+    @Query("""
+        SELECT r FROM Reserva r
+        JOIN FETCH r.usuario u
+        ORDER BY r.fechaDesde DESC
+    """)
+    fun findTopNRecentesConUsuario(pageable: Pageable): List<Reserva>
 }

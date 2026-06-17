@@ -34,6 +34,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @WebMvcTest(LibroController::class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -82,7 +83,7 @@ class LibroControllerEditarCrearTest(
         cantidadReservas = 0,
         ultimasCalificaciones = emptyList(),
         reservas = emptyList(),
-        fechaAgregado = LocalDate.now(),
+        fechaAgregado = LocalDateTime.now(),
         cantidadCalificaciones = 0
     )
 

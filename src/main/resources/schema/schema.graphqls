@@ -2,6 +2,8 @@ type Query {
     tasaConversion: [TasaConversionLibro!]!
     analisisCalificaciones: [PromedioCalificacionPorTipo!]!
     saludCatalogo: SaludCatalogo!
+    topBibliokarmas: [UsuarioBibliokarma!]!
+    feedActividad: [EventoActividad!]!
 }
 
 # Buckets disjuntos sobre libros activos: las cuatro cantidades suman total
@@ -24,4 +26,35 @@ type TasaConversionLibro {
 type PromedioCalificacionPorTipo {
     tipoLibro: String!
     promedioCalificacion: Float!
+}
+
+type UsuarioBibliokarma {
+    id: Int!
+    nombre: String!
+    bibliokarma: Int!
+}
+
+# Feed de actividad reciente — Interface con campos comunes a ambos tipos de evento
+interface EventoActividad {
+    fecha: String!
+    tipoEvento: String!
+}
+
+type LibroAgregado implements EventoActividad {
+    libroId: Int!
+    titulo: String!
+    autor: String!
+    duenioNombre: String!
+    fecha: String!
+    tipoEvento: String!
+}
+
+type ReservaConfirmada implements EventoActividad {
+    reservaId: Int!
+    libroId: Int!
+    libroTitulo: String!
+    usuarioId: Int!
+    usuarioNombre: String!
+    fecha: String!
+    tipoEvento: String!
 }
