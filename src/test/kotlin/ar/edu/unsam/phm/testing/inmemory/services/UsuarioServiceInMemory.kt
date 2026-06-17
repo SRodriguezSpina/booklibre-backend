@@ -39,7 +39,7 @@ class UsuarioServiceInMemory(
         val existente = getUsuarioOrThrow(id)
 
         val email = Usuario.normalizarYValidarEmail(request.email)
-        val celular = Usuario.normalizarYValidarCelular(request.celular)
+        val celular = Usuario.normalizarYValidarCelular(request.celular ?: "")
         validarDuplicados(id, email, celular)
 
         // Solo un admin puede conservar el tipo ADMIN: bloquea la auto-escalación de privilegios

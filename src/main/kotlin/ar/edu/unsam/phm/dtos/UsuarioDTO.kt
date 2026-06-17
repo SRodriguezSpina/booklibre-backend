@@ -24,7 +24,7 @@ data class UsuarioUpdateRequest(
     val nombre: String,
     val desc: String,
     val email: String,
-    val celular: String = "",
+    val celular: String? = null,
     val ciudad: String,
     val tipoUsuario: String,
     val imagenUrl: String? = null,
