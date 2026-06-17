@@ -39,7 +39,7 @@ class UsuarioService(
     fun actualizarUsuario(id: Int, request: UsuarioUpdateRequest): UsuarioActualizadoConTokens {
         val usuario = usuarioJpa.findById(id).orElseThrow { NotFoundException("Usuario $id no encontrado") }
         val email   = Usuario.normalizarYValidarEmail(request.email)
-        val celular = Usuario.normalizarYValidarCelular(request.celular)
+        val celular = Usuario.normalizarYValidarCelular(request.celular ?: "")
 
         validarEmailDisponible(email, id)
         validarCelularDisponible(celular, id)

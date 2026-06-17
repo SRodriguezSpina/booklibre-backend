@@ -1,3 +1,0 @@
-ALTER TABLE usuarios ADD COLUMN es_admin BOOLEAN NOT NULL DEFAULT FALSE;
-
-UPDATE usuarios SET es_admin = TRUE WHERE UPPER(TRIM(tipo_usuario)) = 'ADMIN';

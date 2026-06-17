@@ -102,7 +102,7 @@ class ReservaService(
             UsuarioReservasDevueltasDTO(
                 usuarioId                = it.usuarioId,
                 usuarioNombre            = it.usuarioNombre,
-                cantidadReservasDevueltas = it.cantidadReservasDevueltas,
+                cantidadReservas = it.cantidadReservasDevueltas,
             )
         }
 

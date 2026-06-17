@@ -1,0 +1,94 @@
+# Render Blueprint (Infrastructure as Code) para BookLibre - Entrega 3, Parte 3.
+# Provisiona: monolito Spring Boot (Docker) + Key Value (Valkey) + PostgreSQL + Static Site.
+# MongoDB NO esta aca: se usa Atlas M0 (Render no ofrece Mongo gestionado). Ver docs/deploy.md.
+#
+# Secrets (sync: false) se cargan a mano en el dashboard, NUNCA en el repo:
+#   MONGODB_URI  -> string SRV de Atlas
+#   JWT_SECRET   -> clave >=32 caracteres
+#
+# region: mantener app + db + keyvalue en la MISMA region para usar conexiones internas.
+
+databases:
+  - name: booklibre-db
+    plan: free
+    region: oregon
+    databaseName: booklibre
+    user: booklibre
+
+services:
+  # Key Value (Valkey) - cache de "Libros Populares" (Parte 1)
+  - type: keyvalue
+    name: booklibre-kv
+    plan: free
+    region: oregon
+    ipAllowList: []          # solo accesible por la red interna de Render
+    maxmemoryPolicy: noeviction
+
+  # Backend - Spring Boot (REST + GraphQL) por Docker
+  - type: web
+    name: booklibre-api
+    runtime: docker
+    plan: free
+    region: oregon
+    repo: https://github.com/phm-unsam/backend-2026-grupo-12
+    branch: feat/deploy
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/libros/home?usuarioId=1
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=70
+      - key: JWT_EXPIRATION
+        value: "900000"
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://booklibre.com.ar,https://www.booklibre.com.ar
+      # --- Postgres gestionado (conexion interna, misma region) ---
+      - key: DB_HOST
+        fromDatabase:
+          name: booklibre-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: booklibre-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: booklibre-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: booklibre-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: booklibre-db
+          property: password
+      # --- Key Value (Valkey): URL interna redis://:password@host:port ---
+      - key: REDIS_URL
+        fromService:
+          name: booklibre-kv
+          type: keyvalue
+          property: connectionString
+      # --- Secrets: cargar a mano en el dashboard ---
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+
+  # Frontend - Static Site (Vite build -> dist). Repo aparte.
+  - type: web
+    runtime: static
+    name: booklibre-web
+    repo: https://github.com/phm-unsam/frontend-2026-grupo-12
+    branch: feat/deploy
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://api.booklibre.com.ar/api
+    routes:
+      # SPA: cualquier ruta -> index.html
+      - type: rewrite
+        source: /*
+        destination: /index.html
