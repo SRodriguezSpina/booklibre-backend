@@ -84,14 +84,19 @@ Todo el esquema + datos están versionados como migraciones **Flyway**
 (`src/main/resources/db/migration/V*.sql` + `src/main/kotlin/db/migration/V*.kt`). Recrear la
 base y reiniciar el servicio re-ejecuta todas las migraciones y resiembra los datos.
 
-> ⚠️ **Acoplamiento Mongo ↔ Postgres.** Las migraciones que siembran Mongo
-> (`V3/V5/V7/V8/V9/V10`) son migraciones Java de Flyway: su estado "ya ejecutada" se guarda en
-> la tabla `flyway_schema_history` **de Postgres**, pero escriben en **Atlas**. Por lo tanto:
+El baseline de migraciones para base virgen son **3 archivos**: `V1__init_schema.sql`
+(tablas + funciones + views), `V2__seed_postgres.sql` (usuarios + reservas) y
+`V3__seed_mongo.kt` (libros curados + masivos + calificaciones + reservas + índices).
+
+> ⚠️ **Acoplamiento Mongo ↔ Postgres.** `V3__seed_mongo` es una migración Java de Flyway: su
+> estado "ya ejecutada" se guarda en `flyway_schema_history` **de Postgres**, pero escribe en
+> **Atlas**. Para evitar duplicados al recrear Postgres, `V3` **vacía la colección `libros`
+> (`drop()`) al inicio** antes de sembrar: es idempotente.
 > - Primer deploy con `MONGODB_URI` → Atlas se siembra solo al arrancar. ✅
-> - Si se **recrea Postgres** y Atlas todavía tiene datos, Flyway vuelve a correr los seeds de
->   Mongo → posibles **duplicados**.
-> - **Regla:** al recrear Postgres, **vaciar primero la base de Atlas** (o recrear ambas
->   juntas) para mantenerlas en sync.
+> - Si se **recrea Postgres**, Flyway re-ejecuta `V3`, que dropea y resiembra Atlas → sin
+>   duplicados. ✅
+> - Único cuidado: no apuntar dos despliegues activos al mismo Atlas, porque el `drop()` de uno
+>   borraría los datos vivos (clicks/reservas) del otro.
 
 ## MongoDB Atlas — setup (una vez)
 
@@ -131,7 +136,7 @@ La zona se gestiona en **Hurricane Electric Free DNS** (dns.he.net), no en el pa
 
 1. Crear Atlas M0 y cargar los secrets en Render.
 2. Aplicar el blueprint (`render.yaml`) → crea db, key value, api, web.
-3. Deploy del backend → verificar en logs que Flyway aplicó `V1..V11` + seeds de Mongo.
+3. Deploy del backend → verificar en logs que Flyway aplicó `V1`, `V2` y `V3` (seed de Mongo).
 4. Deploy del frontend con `VITE_API_URL`.
 5. Conectar dominios + DNS; ajustar CORS si se usa `www`.
 6. Configurar el pinger de uptime.
