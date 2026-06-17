@@ -100,7 +100,9 @@ class LibroMongoRepository(
     }
 
     fun findLibroIdsByDuenioId(usuarioId: Int): List<Int> {
-        val query = Query(Criteria.where("duenio.id").`is`(usuarioId))
+        // Untyped query (Document target) → Spring no traduce el path de propiedad,
+        // así que hay que usar el nombre real del campo almacenado: duenio._id.
+        val query = Query(Criteria.where("duenio._id").`is`(usuarioId))
         query.fields().include("id").exclude("_id")
         return mongoTemplate.find(query, org.bson.Document::class.java, "libros")
             .mapNotNull { it.getInteger("id") }
@@ -121,13 +123,14 @@ class LibroMongoRepository(
         val criteria = Criteria.where("duenio.id").`is`(usuarioId)
         when (filtro.lowercase()) {
             "disponibles" -> {
+                // No disponible = tiene alguna reserva que aún no terminó (incluye futuras)
                 criteria.and("reservas").not().elemMatch(
-                    Criteria.where("fechaDesde").lte(ahora).and("fechaHasta").gte(ahora)
+                    Criteria.where("fechaHasta").gte(ahora)
                 )
             }
             "prestados"   -> {
                 criteria.and("reservas").elemMatch(
-                    Criteria.where("fechaDesde").lte(ahora).and("fechaHasta").gte(ahora)
+                    Criteria.where("fechaHasta").gte(ahora)
                 )
             }
         }
@@ -145,10 +148,7 @@ class LibroMongoRepository(
                     Document("\$size", Document("\$filter", Document()
                         .append("input", Document("\$ifNull", listOf("\$reservas", emptyList<Any>())))
                         .append("as", "res")
-                        .append("cond", Document("\$and", listOf(
-                            Document("\$lte", listOf("\$\$res.fechaDesde", ahora)),
-                            Document("\$gte", listOf("\$\$res.fechaHasta", ahora))
-                        )))
+                        .append("cond", Document("\$gte", listOf("\$\$res.fechaHasta", ahora)))
                     )),
                     0
                 ))))

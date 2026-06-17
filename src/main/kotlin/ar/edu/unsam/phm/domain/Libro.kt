@@ -116,7 +116,7 @@ abstract class Libro() : BaseEntity() {
     var reservas: MutableList<ReservaFecha> = mutableListOf()
 
     fun estaDisponible(ahora: LocalDateTime = LocalDateTime.now()): Boolean =
-        reservas.none { it.fechaDesde <= ahora && it.fechaHasta >= ahora }
+        reservas.none { it.fechaHasta >= ahora }
 
     constructor(data: LibroData) : this() {
         duenio          = data.duenio
