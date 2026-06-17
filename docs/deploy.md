@@ -90,13 +90,16 @@ El baseline de migraciones para base virgen son **3 archivos**: `V1__init_schema
 
 > ⚠️ **Acoplamiento Mongo ↔ Postgres.** `V3__seed_mongo` es una migración Java de Flyway: su
 > estado "ya ejecutada" se guarda en `flyway_schema_history` **de Postgres**, pero escribe en
-> **Atlas**. Para evitar duplicados al recrear Postgres, `V3` **vacía la colección `libros`
-> (`drop()`) al inicio** antes de sembrar: es idempotente.
-> - Primer deploy con `MONGODB_URI` → Atlas se siembra solo al arrancar. ✅
-> - Si se **recrea Postgres**, Flyway re-ejecuta `V3`, que dropea y resiembra Atlas → sin
->   duplicados. ✅
-> - Único cuidado: no apuntar dos despliegues activos al mismo Atlas, porque el `drop()` de uno
->   borraría los datos vivos (clicks/reservas) del otro.
+> **Atlas**. Para que recrear Postgres **no borre datos de usuarios** en Atlas, `V3` usa un
+> marcador (`_seed_meta._id = "mongo-seed-v3"`) guardado **en Atlas**:
+> - Primer deploy (Atlas virgen) → no hay marcador → siembra y escribe el marcador. ✅
+> - Se **recrea Postgres** y Flyway re-ejecuta `V3` → el marcador existe → **se saltea sin
+>   tocar `libros`**: clicks, reservas y libros creados por la app se conservan. ✅
+> - El `drop()` sólo corre cuando el marcador **no** existe (un seed parcial previo, todavía
+>   sin datos vivos), así que nunca destruye datos de usuarios.
+>
+> Para forzar un re-seed limpio (p. ej. resetear el demo): borrar la colección `_seed_meta`
+> (y opcionalmente `libros`) en Atlas, y redeployar.
 
 ## MongoDB Atlas — setup (una vez)
 

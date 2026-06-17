@@ -27,9 +27,18 @@ import kotlin.math.roundToInt
  *
  * Lee usuarios y reservas desde Postgres vía context.connection, por lo que las
  * migraciones V1 (schema) y V2 (seed Postgres) deben correr antes.
- * Idempotente: vacía la colección `libros` al inicio para tolerar re-ejecuciones.
+ *
+ * Protección de datos de usuario: un marcador en la colección `_seed_meta` (en Atlas)
+ * registra que el seed inicial ya se completó. Si Postgres se recrea (su
+ * flyway_schema_history se pierde) y Flyway re-ejecuta esta migración, el marcador hace
+ * que se saltee sin tocar `libros` → nunca borra clicks/reservas/libros creados por la app.
+ * El `drop()` sólo ocurre cuando el marcador NO existe (seed parcial previo, sin datos vivos).
  */
 class V3__seed_mongo : BaseJavaMigration() {
+
+    private companion object {
+        const val SEED_MARKER_ID = "mongo-seed-v3"
+    }
 
     private data class LibroSeed(
         val id: Int,
@@ -141,22 +150,35 @@ class V3__seed_mongo : BaseJavaMigration() {
         val mongoUri = System.getenv("MONGODB_URI") ?: "mongodb://booklibre_app:booklibre_app_secret@localhost:27017,localhost:27018/booklibreMongo?authSource=booklibreMongo&wtimeoutMS=5000&socketTimeoutMS=5000&connectTimeoutMS=5000"
         val dbName = ConnectionString(mongoUri).database ?: "booklibreMongo"
 
-        // Datos de Postgres (V1 + V2 ya corrieron).
-        val usuariosPorEmail = loadUsuarios(context.connection)
-        val usuarioIdPorEmail = loadUsuarioIds(context.connection)
-        val duenios = loadDuenios(context.connection)
-        require(duenios.isNotEmpty()) { "No hay usuarios no-admin para asignar libros" }
-        val reservasPorLibro = loadReservasPorLibro(context.connection)
-
         MongoClients.create(mongoUri).use { client ->
-            val libros = client.getDatabase(dbName).getCollection("libros")
-            libros.drop() // idempotencia ante re-ejecuciones
+            val db = client.getDatabase(dbName)
+            val meta = db.getCollection("_seed_meta")
+
+            // ¿Atlas ya fue sembrado alguna vez? El marcador vive en Atlas (no en el
+            // flyway_schema_history de Postgres), así que recrear Postgres NO vuelve a
+            // sembrar ni borra datos de usuarios. Si el marcador existe: no tocar nada.
+            if (meta.countDocuments(Document("_id", SEED_MARKER_ID)) > 0L) return
+
+            // Marcador ausente ⇒ el seed inicial nunca terminó ⇒ lo que haya en `libros`
+            // es un seed parcial (no datos de usuarios). Recién acá es seguro dropear.
+            val libros = db.getCollection("libros")
+            libros.drop()
+
+            // Datos de Postgres (V1 + V2 ya corrieron).
+            val usuariosPorEmail = loadUsuarios(context.connection)
+            val usuarioIdPorEmail = loadUsuarioIds(context.connection)
+            val duenios = loadDuenios(context.connection)
+            require(duenios.isNotEmpty()) { "No hay usuarios no-admin para asignar libros" }
+            val reservasPorLibro = loadReservasPorLibro(context.connection)
 
             seedLibrosCurados(libros, usuariosPorEmail)
             seedLibrosMasivos(libros, duenios)
             seedCalificaciones(libros, usuarioIdPorEmail)
             syncReservas(libros, reservasPorLibro)
             crearIndices(libros)
+
+            // Marca el seed como completo. A partir de acá ningún re-run vuelve a dropear.
+            meta.insertOne(Document("_id", SEED_MARKER_ID).append("seededAt", Date()))
         }
     }
 
