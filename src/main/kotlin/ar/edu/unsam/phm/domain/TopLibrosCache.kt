@@ -4,6 +4,7 @@ import ar.edu.unsam.phm.dtos.LibroHomeDTO
 import ar.edu.unsam.phm.dtos.LibroPopularCacheDTO
 import ar.edu.unsam.phm.dtos.PagedResponse
 import org.springframework.data.redis.core.RedisHash
+import org.springframework.data.redis.core.TimeToLive
 import org.springframework.data.annotation.Id
 import kotlin.math.ceil
 
@@ -13,6 +14,8 @@ data class TopLibrosCache(
     val id: String = CACHE_KEY,
     val libros: List<LibroPopularCacheDTO> = emptyList(),
     val totalElements: Long = 0L,
+    @TimeToLive
+    val ttl: Long = 3600L,
 ) {
     companion object {
         const val CACHE_KEY = "HOME"
