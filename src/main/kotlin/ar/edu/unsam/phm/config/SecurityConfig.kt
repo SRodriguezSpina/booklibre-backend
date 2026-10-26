@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.security.web.util.matcher.RegexRequestMatcher
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
@@ -53,7 +54,7 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.GET, "/api/libros/home", "/api/libros/populares").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/mas-clickeado").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/mejor-calificados").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/libros/*").permitAll()
+                    .requestMatchers(RegexRequestMatcher("^/api/libros/[0-9]+$", HttpMethod.GET.name())).permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/libros/*/calificaciones").permitAll()
                     .requestMatchers("/api/graphql").hasRole("ADMIN")
                     .requestMatchers("/api/graphiql/**").hasRole("ADMIN")

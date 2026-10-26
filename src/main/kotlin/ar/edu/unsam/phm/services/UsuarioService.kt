@@ -47,7 +47,9 @@ class UsuarioService(
         val tipoAnterior  = usuario.tipoUsuarioDomain()
         val nombreAnterior = usuario.nombre
 
-        if (request.tipoUsuario != usuario.tipoUsuario && tieneReservasActivas(id)) {
+        if (normalizarTipoUsuario(request.tipoUsuario) != normalizarTipoUsuario(usuario.tipoUsuario) &&
+            tieneReservasActivas(id)
+        ) {
             throw BusinessException("No podés cambiar el tipo de usuario mientras tenés reservas activas")
         }
 
@@ -147,6 +149,11 @@ class UsuarioService(
         if (existente != null && existente.id != idActual)
             throw ConflictException("El celular ya está en uso")
     }
+
+    private fun normalizarTipoUsuario(tipo: String): String =
+        tipo.trim().uppercase().replace(" ", "_").let {
+            if (it == "LECTORPUBLICADOR") "LECTOR_PUBLICADOR" else it
+        }
 
     private fun manejarCambioDeTipo(
         usuario: Usuario,

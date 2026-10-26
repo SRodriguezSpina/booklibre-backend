@@ -14,7 +14,7 @@ documental. Dominio: **booklibre.com.ar**.
                                   │ interno        │ interno        │ mongodb+srv (TLS)
                                   ▼                ▼                ▼
                           Render PostgreSQL   Render Key Value   MongoDB Atlas M0
-                            (gestionado)        (Valkey)          (single replica set)
+                            (gestionado)        (Valkey)          (gestionado)
 ```
 
 App, Postgres y Key Value viven en la **misma región** de Render para usar conexiones
@@ -52,24 +52,23 @@ todo de variables de entorno. En Render:
 
 ## Decisiones obligatorias
 
-### 1. MongoDB: instancia única en Atlas M0 (opción *a*)
+### 1. MongoDB: instancia única administrada en Atlas M0
 
-Elegimos **simplificar Mongo a una sola instancia (replica set único) en Atlas M0**, en lugar
-de mantener el cluster de 2 shards de la Entrega 2.
+La aplicación se conecta a **una instancia/cluster administrado por Atlas M0**.
+No configuramos ni mantenemos sharding o replica sets desde la aplicación o el
+entorno local.
 
 **Justificación:**
 - El corrector debe poder acceder a la app **sin depender de nuestras máquinas**; un deploy
   totalmente en la nube es reproducible y siempre disponible.
-- El cluster sharded de la Entrega 2 (2 shards PSA + config servers + routers) **no entra en
-  el free tier de Atlas (M0)**, que es un único replica set sin sharding.
-- El sharding es una preocupación de **infraestructura, transparente al código**: la app solo
-  conoce un connection string (`MONGODB_URI`); ninguna lógica de negocio depende de la shard
-  key. Cambiar `mongos` por `mongodb+srv` no altera el comportamiento funcional.
-- El cluster sharded **ya fue construido y demostrado en la Entrega 2**. Lo conservamos
-  versionado en el repo (`docker-compose.yml` + `mongo-init/`) como setup local reproducible.
+- El plan gratuito no permite mantener el cluster sharded usado anteriormente.
+- La aplicación solo requiere una URI (`MONGODB_URI`) y no depende de una shard key
+  ni de topología de replica sets.
+- En desarrollo, `docker-compose.yml` levanta una instancia Mongo standalone para
+  que el backend funcione sin infraestructura adicional.
 
-**Trade-off aceptado:** se pierde la demostración de sharding *en vivo* en la nube; se sigue
-pudiendo reproducir localmente con `docker compose up`.
+**Trade-off aceptado:** no se mantiene sharding ni alta disponibilidad administrada por
+nosotros; Atlas es responsable de la infraestructura que ofrece su plan.
 
 ### 2. Web Service free: cold start
 
@@ -84,9 +83,10 @@ Todo el esquema + datos están versionados como migraciones **Flyway**
 (`src/main/resources/db/migration/V*.sql` + `src/main/kotlin/db/migration/V*.kt`). Recrear la
 base y reiniciar el servicio re-ejecuta todas las migraciones y resiembra los datos.
 
-El baseline de migraciones para base virgen son **3 archivos**: `V1__init_schema.sql`
+El baseline de migraciones para base virgen son **4 archivos**: `V1__init_schema.sql`
 (tablas + funciones + views), `V2__seed_postgres.sql` (usuarios + reservas) y
-`V3__seed_mongo.kt` (libros curados + masivos + calificaciones + reservas + índices).
+`V3__seed_mongo.kt` (libros curados + masivos + calificaciones + reservas + índices),
+`V4__expand_user_image_url.sql` (columna de imagen de perfil tipo `TEXT`).
 
 > ⚠️ **Acoplamiento Mongo ↔ Postgres.** `V3__seed_mongo` es una migración Java de Flyway: su
 > estado "ya ejecutada" se guarda en `flyway_schema_history` **de Postgres**, pero escribe en

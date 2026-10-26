@@ -25,7 +25,7 @@ class Usuario(
     @Column(nullable = false) var tipoUsuario: String = "LECTOR",
     @Column(name = "es_admin", nullable = false) var esAdmin: Boolean = false,
     @Column(nullable = false) var bibliokarmas: Int = 0,
-    @Column(nullable = true)  var imagenUrl: String? = null,
+    @Column(nullable = true, columnDefinition = "TEXT") var imagenUrl: String? = null,
     @Column(nullable = false) var fechaRegistro: LocalDate = LocalDate.now(),
     @Column(nullable = false) var leidos: Int = 0,
     @Column(nullable = false) var reservados: Int = 0,

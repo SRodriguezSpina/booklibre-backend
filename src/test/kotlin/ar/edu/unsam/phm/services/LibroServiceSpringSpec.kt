@@ -48,6 +48,7 @@ class LibroServiceSpringSpec : DescribeSpec({
 
     every { libroRepository.findAllByIds(any()) } returns emptyList()
     every { libroRepository.contarLibrosActivos() } returns 0L
+    every { libroRepository.findTopActivosExcluyendo(any(), any()) } returns emptyList()
     every { topLibrosCacheRepository.save(any<TopLibrosCache>()) } answers { firstArg() }
 
     val duenio = Usuario(

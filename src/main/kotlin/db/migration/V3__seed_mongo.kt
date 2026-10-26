@@ -147,7 +147,7 @@ class V3__seed_mongo : BaseJavaMigration() {
     private val estados = arrayOf("EXCELENTE", "MUY_BUENO", "BUENO")
 
     override fun migrate(context: Context) {
-        val mongoUri = System.getenv("MONGODB_URI") ?: "mongodb://booklibre_app:booklibre_app_secret@localhost:27017,localhost:27018/booklibreMongo?authSource=booklibreMongo&wtimeoutMS=5000&socketTimeoutMS=5000&connectTimeoutMS=5000"
+        val mongoUri = System.getenv("MONGODB_URI") ?: "mongodb://localhost:27017/booklibreMongo"
         val dbName = ConnectionString(mongoUri).database ?: "booklibreMongo"
 
         MongoClients.create(mongoUri).use { client ->
