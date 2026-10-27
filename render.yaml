@@ -30,8 +30,8 @@ services:
     runtime: docker
     plan: free
     region: oregon
-    repo: https://github.com/phm-unsam/backend-2026-grupo-12
-    branch: feat/deploy
+    repo: https://github.com/SRodriguezSpina/booklibre-backend
+    branch: feat/ajustes-deploy
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/libros/home?usuarioId=1
     envVars:
@@ -80,8 +80,8 @@ services:
   - type: web
     runtime: static
     name: booklibre-web
-    repo: https://github.com/phm-unsam/frontend-2026-grupo-12
-    branch: feat/deploy
+    repo: https://github.com/SRodriguezSpina/booklibre-frontend
+    branch: feat/ajustes-deploy
     buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
     staticPublishPath: ./dist
     envVars:
