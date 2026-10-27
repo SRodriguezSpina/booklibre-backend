@@ -4,6 +4,8 @@ BookLibre is a community book-lending application. This repository contains the 
 
 The backend is a Kotlin and Spring Boot application. It exposes REST endpoints for the core application workflows and GraphQL queries for administrative analytics. The project was developed as part of a group academic project.
 
+The companion web client is maintained in the [BookLibre frontend repository](https://github.com/SRodriguezSpina/booklibre-frontend/tree/feat/ajustes-deploy).
+
 ## Architecture
 
 ```text
